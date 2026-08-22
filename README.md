@@ -33,4 +33,4 @@ Untuk pertanyaan lebih lanjut atau saran, silakan hubungi tim pengembang atau bu
 
 --- 
 
-© 2026 Program Studi S1 Informatika — Universitas Nasional Pasim (UNIPI).
+© 2026 Program Studi S1 Informatika — Universitas Persatuan Islam
