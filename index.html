@@ -24,7 +24,44 @@
     --font-display:'Space Grotesk',system-ui,sans-serif;
     --font-body:'Source Sans 3',system-ui,sans-serif;
     --font-mono:'JetBrains Mono',ui-monospace,monospace;
+    --transition-speed:0.3s;
   }
+
+  /* Dark mode variables */
+  [data-theme="dark"]{
+    --paper:#0F172A;
+    --card:#1E293B;
+    --ink:#E2E8F0;
+    --ink-soft:#94A3B8;
+    --line:#334155;
+    --teal-100:#164E63;
+    --amber-100:#422006;
+  }
+  [data-theme="dark"] body{background:var(--paper);color:var(--ink);}
+  [data-theme="dark"] .sidebar{background:#0B1120;}
+  [data-theme="dark"] .row__title{color:#CBD5E1;}
+  [data-theme="dark"] .row__num{color:#64748B;}
+  [data-theme="dark"] section.block{background:var(--card);border-color:var(--line);}
+  [data-theme="dark"] code{background:#1E293B;border-color:#334155;color:#7DD3FC;}
+  [data-theme="dark"] .callout{background:#164E63;border-left-color:var(--teal-500);}
+  [data-theme="dark"] .callout--amber{background:#422006;border-left-color:var(--amber-400);}
+  [data-theme="dark"] .interactive-card{background:#1E293B;border-color:var(--teal-500);}
+  [data-theme="dark"] .quiz-option{background:#1E293B;border-color:#334155;color:#E2E8F0;}
+  [data-theme="dark"] .quiz-option:hover{background:#164E63;}
+  [data-theme="dark"] .sim-box{background:#1E293B;border-color:#334155;}
+  [data-theme="dark"] .toc{background:var(--card);border-color:var(--line);}
+  [data-theme="dark"] .toc a{background:#1E293B;border-color:#334155;color:#94A3B8;}
+  [data-theme="dark"] .toc a:hover{background:#164E63;border-color:var(--teal-500);}
+  [data-theme="dark"] table.dtable tbody tr:nth-child(even){background:#1E293B;}
+  [data-theme="dark"] table.dtable tbody th{background:#0F172A;}
+  [data-theme="dark"] table.dtable tbody tr:hover{background:#164E63;}
+  [data-theme="dark"] .navBtn{background:var(--card);border-color:var(--line);color:#94A3B8;}
+  [data-theme="dark"] .navBtn:hover{border-color:var(--teal-500);color:var(--teal-500);}
+  [data-theme="dark"] .chip{background:#164E63;border-color:#0E4444;color:#99F6E4;}
+  [data-theme="dark"] .chip--amber{background:#422006;border-color:#78350F;color:#FCD34D;}
+  [data-theme="dark"] .diagram-wrapper{background:#0F172A;}
+  [data-theme="dark"] .sim-box{background:#1E293B;}
+  [data-theme="dark"] .lockedNotice{background:var(--card);border-color:#334155;color:#94A3B8;}
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -186,6 +223,30 @@
     border:1px solid var(--line); padding:1px 5px; border-radius:4px; color:var(--navy-700);
   }
 
+  /* Code block highlighting */
+  pre {
+    background:#1E293B; border:1px solid #334155; border-radius:8px;
+    padding:16px 18px; margin:14px 0; overflow-x:auto; position:relative;
+  }
+  pre code {
+    background:none; border:none; padding:0; color:#E2E8F0; font-size:13px; line-height:1.6;
+  }
+  .code-lang {
+    position:absolute; top:8px; right:12px; font-family:var(--font-mono);
+    font-size:10px; color:#64748B; text-transform:uppercase; letter-spacing:.05em;
+  }
+  .hl-keyword { color:#7DD3FC; font-weight:600; }
+  .hl-function { color:#A78BFA; }
+  .hl-string { color:#86EFAC; }
+  .hl-number { color:#FCA5A5; }
+  .hl-comment { color:#64748B; font-style:italic; }
+  .hl-operator { color:#FDE68A; }
+  .hl-type { color:#F0ABFC; }
+
+  [data-theme="dark"] code {
+    background:#1E293B; border-color:#334155; color:#7DD3FC;
+  }
+
   ol.steps{list-style:none; padding-left:0; counter-reset:step;}
   ol.steps li{
     counter-increment:step; position:relative; padding-left:34px; margin-bottom:10px;
@@ -252,6 +313,34 @@
   .navBtn[disabled]{opacity:.35; pointer-events:none;}
 
   .menuToggle{display:none;}
+
+  /* --- ANIMATIONS --- */
+  @keyframes fadeIn {
+    from { opacity:0; transform:translateY(12px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity:0; transform:translateY(20px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .content .contentHeader { animation: fadeInUp 0.4s ease-out; }
+  .content .toc { animation: fadeIn 0.35s ease-out 0.1s both; }
+  .content section.block {
+    animation: fadeIn 0.35s ease-out both;
+  }
+  .content section.block:nth-child(3) { animation-delay:0.15s; }
+  .content section.block:nth-child(4) { animation-delay:0.2s; }
+  .content section.block:nth-child(5) { animation-delay:0.25s; }
+  .content section.block:nth-child(6) { animation-delay:0.3s; }
+  .content section.block:nth-child(7) { animation-delay:0.35s; }
+  .content .navFooter { animation: fadeIn 0.3s ease-out 0.4s both; }
+
+  html { scroll-behavior: smooth; }
+
+  .row { transition:background .15s ease, border-left-color .15s ease, opacity .2s ease; }
+  .navBtn { transition:border-color .2s ease, color .2s ease, background .2s ease; }
+  .toc a { transition:background .2s ease, border-color .2s ease, color .2s ease; }
+  .quiz-option { transition:background .2s ease, border-color .2s ease; }
 
   /* --- INTERACTIVE ELEMENTS --- */
   .interactive-card {
@@ -375,9 +464,17 @@
       <div class="sidebar__progress-label"><span>PROGRES MATERI</span><span id="progressText"></span></div>
       <div class="sidebar__progress-bar"><div class="sidebar__progress-fill" id="progressFill"></div></div>
     </div>
+    <div style="padding:8px 12px;">
+      <input type="text" id="sidebarSearch" placeholder="Cari materi..." style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#E2E8F0; font-family:var(--font-mono); font-size:12px; outline:none; transition:border-color 0.2s;">
+    </div>
     <ul class="sidebar__list" id="sidebarList"></ul>
     <div class="sidebar__footer">
       Portal materi lokal — buka <code style="background:rgba(255,255,255,.08);border:none;color:#B9C6D8;">index.html</code> langsung dari browser. Update materi lewat <code style="background:rgba(255,255,255,.08);border:none;color:#B9C6D8;">content.js</code>.
+      <div style="margin-top:12px; display:flex; align-items:center; gap:8px;">
+        <button id="themeToggle" class="zoom-btn" style="width:100%; padding:8px 12px; background:#1F3864; color:#E2E8F0; border:1px solid rgba(255,255,255,.1); font-size:12px; cursor:pointer; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+        </button>
+      </div>
     </div>
   </aside>
 

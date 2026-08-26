@@ -111,6 +111,23 @@ const PERTEMUAN = [
           <div class="callout">
             <span class="callout__label">Ilustrasi sederhana</span>
             <p>Buku telepon manual berisi ratusan nomor kontak adalah kumpulan data. Jika buku itu dikelola dengan aplikasi kontak di smartphone yang memungkinkan pencarian, penyortiran, dan sinkronisasi otomatis, maka aplikasi tersebut berperan sebagai DBMS sederhana yang mengelola "basis data kontak" pengguna.</p>
+          </div>
+
+          <h4>Jenis-Jenis Basis Data dalam Kehidupan Sehari-hari</h4>
+          <p>Berikut berbagai jenis basis data yang mungkin sudah Anda gunakan tanpa sadar:</p>
+          <table class="dtable">
+            <thead><tr><th>Jenis</th><th>Cara Kerja</th><th>Contoh Nyata</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Basis Data Relasional</strong></td><td>Data disusun dalam tabel (baris &amp; kolom) dengan hubungan antar tabel melalui key.</td><td>SIAKAD kampus, sistem perbankan, aplikasi e-commerce.</td></tr>
+              <tr><td><strong>Basis Data Kolom</strong></td><td>Menyimpan data dalam kolom terpisah, optimal untuk analisis data waktu nyata.</td><td>Instagram (analisis popularitas postingan), sistem monitoring IoT.</td></tr>
+              <tr><td><strong>Basis Data Graf</strong></td><td>Data disimpan sebagai node dan edge, memodelkan hubungan kompleks.</td><td>LinkedIn (rekomendasi koneksi), Google Maps (rute navigasi).</td></tr>
+              <tr><td><strong>Basis Data Dokumen</strong></td><td>Data disimpan dalam format dokumen (JSON/BSON), fleksibel tanpa skema ketat.</td><td>WhatsApp (riwayat chat), MongoDB untuk aplikasi web modern.</td></tr>
+              <tr><td><strong>Basis Data Kunci-Nilai</strong></td><td>Penyimpanan sederhana berpasangan kunci dan nilai, sangat cepat untuk akses data.</td><td>Session management di website, caching Redis.</td></tr>
+            </tbody>
+          </table>
+          <div class="callout callout--amber">
+            <span class="callout__label">Catatan Penting</span>
+            <p>Meskipun ada berbagai jenis basis data, <strong>model relasional (RDBMS)</strong> tetap menjadi yang paling banyak digunakan di dunia industri karena keandalannya dalam menjaga konsistensi data transaksional (ACID). Itulah sebabnya mata kuliah ini berfokus pada RDBMS.</p>
           </div>`,
       },
       {
@@ -356,6 +373,25 @@ const PERTEMUAN = [
           </div>`,
       },
       {
+        heading: "E.6 Latihan: Pencocokan Konsep Database",
+        html: `
+          <p>Cocokkan istilah database dengan definisi yang benar. Klik pasangan yang sesuai untuk menguji pemahaman Anda!</p>
+          <div class="interactive-card">
+            <p><strong>Pencocokan Istilah</strong></p>
+            <p class="muted">Klik istilah di sebelah kiri, lalu klik definisi yang cocok di sebelah kanan.</p>
+            <div id="matchGame" style="display:flex; gap:20px; margin-top:15px; flex-wrap:wrap;">
+              <div id="matchTerms" style="flex:1; min-width:180px;">
+                <p style="font-weight:600; margin-bottom:8px;">Istilah</p>
+              </div>
+              <div id="matchDefs" style="flex:1.5; min-width:240px;">
+                <p style="font-weight:600; margin-bottom:8px;">Definisi</p>
+              </div>
+            </div>
+            <div id="matchFeedback" style="margin-top:15px; font-weight:600; min-height:24px;"></div>
+            <button class="btn-sim" id="matchReset" style="background:#E7A83D; margin-top:10px;">Ulangi</button>
+          </div>`,
+      },
+      {
         heading: "F. Studi Kasus Nyata: Basis Data pada Aplikasi E-Commerce",
         html: `
           <p>Untuk mengaitkan konsep dengan pengalaman sehari-hari, perhatikan bagaimana aplikasi e-commerce (seperti yang biasa digunakan mahasiswa untuk berbelanja daring) menyimpan datanya. Setiap kali pengguna membuka aplikasi di smartphone, aplikasi tersebut sesungguhnya sedang mengakses basis data relasional di server melalui internet. Berikut gambaran sederhana entitas/tabel yang terlibat:</p>
@@ -374,6 +410,29 @@ const PERTEMUAN = [
           </div>`,
       },
       {
+        heading: "F.2 Studi Kasus: Basis Data Media Sosial",
+        html: `
+          <p>Selain e-commerce, media sosial juga sangat bergantung pada basis data untuk menyimpan dan mengelola jutaan data pengguna setiap detik. Perhatikan bagaimana sebuah platform media sosial (seperti Instagram atau TikTok) mengelola datanya:</p>
+          <table class="dtable">
+            <thead><tr><th>Entitas / Tabel</th><th>Contoh Atribut (Kolom)</th><th>Fungsi dalam Aplikasi</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Pengguna (User)</strong></td><td><code>user_id, username, email, password_hash, bio, created_at</code></td><td>Menyimpan data akun pengguna yang terdaftar.</td></tr>
+              <tr><td><strong>Postingan (Post)</strong></td><td><code>post_id, user_id, caption, media_url, location, posted_at</code></td><td>Mencatat setiap konten yang dibagikan pengguna.</td></tr>
+              <tr><td><strong>Komentar (Comment)</strong></td><td><code>comment_id, post_id, user_id, text, commented_at</code></td><td>Menyimpan respons pengguna terhadap postingan.</td></tr>
+              <tr><td><strong>Likes</strong></td><td><code>like_id, post_id, user_id, liked_at</code></td><td>Mencatat siapa saja yang menyukai sebuah postingan.</td></tr>
+              <tr><td><strong>Follower</strong></td><td><code>follower_id, user_id, following_id, followed_at</code></td><td>Mengelola hubungan pertemanan/pengikut antar pengguna.</td></tr>
+            </tbody>
+          </table>
+          <div class="callout">
+            <span class="callout__label">Diskusi Cepat</span>
+            <p>Jika Anda menekan tombol "Like" pada sebuah postingan di Instagram, tabel <strong>Likes</strong> akan menambah satu baris data baru. Pertanyaan: Apa yang terjadi pada kolom <code>liked_at</code> (waktu suka) dan mengapa kolom ini penting untuk disimpan?</p>
+          </div>
+          <div class="callout callout--amber">
+            <span class="callout__label">Pembanding</span>
+            <p>Perbedaan mendasar basis data e-commerce dengan media sosial: <strong>E-commerce</strong> berfokus pada data transaksi (pesanan, pembayaran) yang membutuhkan integritas tinggi (ACID), sedangkan <strong>media sosial</strong> berfokus pada data interaksi (likes, komentar, share) yang membutuhkan skalabilitas tinggi untuk jutaan pengguna aktif bersamaan.</p>
+          </div>`,
+      },
+      {
         heading: "G. Simulasi Interaktif: Database Explorer",
         html: `
           <p>Coba simulasi pencarian data pada tabel "Produk" di bawah ini. Bayangkan ini adalah apa yang terjadi di balik layar aplikasi e-commerce saat Anda mengetik di kolom pencarian.</p>
@@ -382,18 +441,25 @@ const PERTEMUAN = [
             <div class="sim-table-res">
               <table class="dtable" id="simTable">
                 <thead>
-                  <tr><th>ID</th><th>Nama Produk</th><th>Kategori</th><th>Harga</th></tr>
+                  <tr><th>ID</th><th>Nama Produk</th><th>Kategori</th><th>Harga</th><th>Stok</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>P01</td><td>Smartphone X Pro</td><td>Gadget</td><td>Rp 5.000.000</td></tr>
-                  <tr><td>P02</td><td>Laptop Ultra 14</td><td>Gadget</td><td>Rp 12.000.000</td></tr>
-                  <tr><td>P03</td><td>Kopi Arabika 250g</td><td>Food</td><td>Rp 65.000</td></tr>
-                  <tr><td>P04</td><td>Mouse Wireless</td><td>Aksesoris</td><td>Rp 150.000</td></tr>
-                  <tr><td>P05</td><td>Keyboard Mekanik</td><td>Aksesoris</td><td>Rp 450.000</td></tr>
+                  <tr><td>P01</td><td>Smartphone X Pro</td><td>Gadget</td><td>Rp 5.000.000</td><td>25</td></tr>
+                  <tr><td>P02</td><td>Laptop Ultra 14</td><td>Gadget</td><td>Rp 12.000.000</td><td>10</td></tr>
+                  <tr><td>P03</td><td>Kopi Arabika 250g</td><td>Food</td><td>Rp 65.000</td><td>200</td></tr>
+                  <tr><td>P04</td><td>Mouse Wireless</td><td>Aksesoris</td><td>Rp 150.000</td><td>50</td></tr>
+                  <tr><td>P05</td><td>Keyboard Mekanik</td><td>Aksesoris</td><td>Rp 450.000</td><td>30</td></tr>
+                  <tr><td>P06</td><td>Headphone Bluetooth</td><td>Aksesoris</td><td>Rp 350.000</td><td>40</td></tr>
+                  <tr><td>P07</td><td>Power Bank 20000mAh</td><td>Gadget</td><td>Rp 280.000</td><td>60</td></tr>
+                  <tr><td>P08</td><td>Tumbler Stainless 500ml</td><td>Food</td><td>Rp 85.000</td><td>120</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="muted" style="margin-top:10px;">* Ketikkan kata kunci seperti "Gadget" atau "Kopi" untuk melihat bagaimana DBMS memfilter data secara instan.</p>
+            <p class="muted" style="margin-top:10px;">* Ketikkan kata kunci seperti "Gadget", "Aksesoris", atau "Kopi" untuk melihat bagaimana DBMS memfilter data secara instan.</p>
+            <div class="callout" style="margin-top:15px;">
+              <span class="callout__label">Yang Terjadi di Balik Layar</span>
+              <p>Ketika Anda mengetik "Gadget", DBMS menjalankan perintah SQL: <code>SELECT * FROM produk WHERE kategori = 'Gadget'</code>. Proses ini disebut <strong>query</strong> — instruksi untuk mengambil data dari basis data sesuai kriteria tertentu.</p>
+            </div>
           </div>`,
       },
       {
@@ -414,6 +480,40 @@ const PERTEMUAN = [
             <button class="quiz-option" data-correct="true" data-explanation="Three-Schema Architecture (ANSI-SPARC) membagi database menjadi External, Conceptual, dan Internal level.">Three-Schema Architecture</button>
             <button class="quiz-option" data-correct="false">Client-Server Architecture</button>
             <button class="quiz-option" data-correct="false">Single-Tier Architecture</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>3. Manakah yang merupakan keunggulan utama basis data dibandingkan sistem berbasis file?</strong></p>
+            <button class="quiz-option" data-correct="false">Lebih mudah diakses tanpa software khusus</button>
+            <button class="quiz-option" data-correct="false">Tidak membutuhkan hardware khusus</button>
+            <button class="quiz-option" data-correct="true" data-explanation="Basis data mengurangi duplikasi data (redundansi) dan menjaga konsistensi data melalui mekanisme terpusat yang dikelola DBMS.">Mengurangi redundansi data dan menjaga konsistensi</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>4. Komponen sistem basis data yang bertanggung jawab atas backup rutin dan kontrol akses adalah...</strong></p>
+            <button class="quiz-option" data-correct="false">Hardware</button>
+            <button class="quiz-option" data-correct="true" data-explanation="Prosedur mencakup SOP dan aturan dalam mengelola basis data, termasuk backup rutin dan kontrol akses keamanan data.">Prosedur</button>
+            <button class="quiz-option" data-correct="false">Data</button>
+            <button class="quiz-option" data-correct="false">Software</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>5. Model basis data yang paling cocok untuk data tidak terstruktur dengan skala besar (big data) adalah...</strong></p>
+            <button class="quiz-option" data-correct="false">Relational (RDBMS)</button>
+            <button class="quiz-option" data-correct="false">Hierarchical</button>
+            <button class="quiz-option" data-correct="true" data-explanation="NoSQL dirancang untuk menangani data tidak terstruktur dan skala besar dengan skema yang fleksibel.">NoSQL</button>
+            <button class="quiz-option" data-correct="false">Network</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>6. Level pada arsitektur three-schema yang menentukan bagaimana data benar-benar disimpan di disk adalah...</strong></p>
+            <button class="quiz-option" data-correct="false">External Level</button>
+            <button class="quiz-option" data-correct="false">Conceptual Level</button>
+            <button class="quiz-option" data-correct="true" data-explanation="Internal Level adalah level fisik yang menentukan bagaimana data disimpan di storage/disk, termasuk struktur indeks dan blok data.">Internal Level</button>
             <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
           </div>
         `,
@@ -582,6 +682,21 @@ const PERTEMUAN = [
               </div>
             </div>
             <p class="diagram-source">Sumber konsep: Elmasri &amp; Navathe (2016), Bab 7; Representasi Entitas Kuat vs Lemah.</p>
+          </div>
+
+          <h4>Latihan: Klasifikasi Entitas</h4>
+          <div class="interactive-card">
+            <p>Klasifikasikan entitas-entitas berikut sebagai <strong>Kuat</strong> atau <strong>Lemah</strong>:</p>
+            <div id="entityGame" style="margin-top:12px;">
+              <p id="entityQ" style="font-weight:600; font-size:15px; margin-bottom:12px;">Klik "Mulai" untuk memulai.</p>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-sim" id="entityStart" style="background:#2BA6A0;">Mulai</button>
+                <button class="btn-sim entity-btn" data-type="KUAT" disabled style="background:#166534;">Kuat</button>
+                <button class="btn-sim entity-btn" data-type="LEMAH" disabled style="background:#991b1b;">Lemah</button>
+              </div>
+              <div id="entityFeedback" style="margin-top:10px; font-weight:600;"></div>
+              <p class="muted" style="margin-top:8px;">Skor: <span id="entityScore">0</span>/<span id="entityTotal">0</span></p>
+            </div>
           </div>`,
       },
       {
@@ -596,7 +711,24 @@ const PERTEMUAN = [
               <tr><td><strong>Multi-valued</strong></td><td>Memungkinkan lebih dari satu nilai untuk satu instansi entitas.</td><td><code>No_Handphone, Skill</code></td></tr>
               <tr><td><strong>Derived</strong></td><td>Nilai yang dihasilkan melalui perhitungan atribut lain, tidak disimpan secara fisik.</td><td><code>Usia</code> (dari Tgl_Lahir)</td></tr>
             </tbody>
-          </table>`,
+          </table>
+
+          <h4>Latihan: Klasifikasi Atribut</h4>
+          <div class="interactive-card">
+            <p>Klasifikasikan atribut-atribut berikut ke dalam kategori yang benar:</p>
+            <div id="attrGame" style="margin-top:12px;">
+              <p id="attrQ" style="font-weight:600; font-size:15px; margin-bottom:12px;">Klik "Mulai" untuk memulai.</p>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn-sim" id="attrStart" style="background:#2BA6A0;">Mulai</button>
+                <button class="btn-sim attr-btn" data-type="SIMPLE" disabled style="background:#16294A;">Simple</button>
+                <button class="btn-sim attr-btn" data-type="COMPOSITE" disabled style="background:#1F3864;">Composite</button>
+                <button class="btn-sim attr-btn" data-type="MULTI-VALUED" disabled style="background:#7A6FC9;">Multi-valued</button>
+                <button class="btn-sim attr-btn" data-type="DERIVED" disabled style="background:#C9584F;">Derived</button>
+              </div>
+              <div id="attrFeedback" style="margin-top:10px; font-weight:600;"></div>
+              <p class="muted" style="margin-top:8px;">Skor: <span id="attrScore">0</span>/<span id="attrTotal">0</span></p>
+            </div>
+          </div>`,
       },
       {
         heading: "E.4 Batasan Struktural: Kardinalitas dan Partisipasi",
@@ -611,15 +743,91 @@ const PERTEMUAN = [
             <li><strong>Partial Participation (Opsional):</strong> Instansi entitas boleh tidak terlibat dalam relasi.</li>
           </ul>
 
+          <h4>Contoh Partisipasi dalam Konteks Nyata</h4>
+          <table class="dtable">
+            <thead><tr><th>Relasi</th><th>Tipe Partisipasi</th><th>Penjelasan</th></tr></thead>
+            <tbody>
+              <tr><td>DOSEN — MENGAJAR — KULIAH</td><td><strong>Total</strong> (Dosen)</td><td>Setiap dosen di kampus WAJIB mengajar minimal satu mata kuliah.</td></tr>
+              <tr><td>MAHASISWA — MENGIKUTI — UKT</td><td><strong>Total</strong> (Mahasiswa)</td><td>Setiap mahasiswa WAJIB membayar UKT untuk bisa kuliah.</td></tr>
+              <tr><td>PELANGGAN — MEMBERI — ULASAN</td><td><strong>Parsial</strong> (Pelanggan)</td><td>Tidak semua pelanggan memberi ulasan setelah membeli.</td></tr>
+              <tr><td>DOSEN — MEMBINA — SKRIPSI</td><td><strong>Parsial</strong> (Dosen)</td><td>Tidak semua dosen membina mahasiswa skripsi (terutama dosen muda).</td></tr>
+            </tbody>
+          </table>
+
           <div class="interactive-card">
             <p><strong>Visualisasi Interaktif: Rasio Kardinalitas</strong></p>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
+              <button class="btn-sim" onclick="showRel('11')">One-to-One (1:1)</button>
               <button class="btn-sim" onclick="showRel('1n')">One-to-Many (1:N)</button>
               <button class="btn-sim" onclick="showRel('mn')">Many-to-Many (M:N)</button>
             </div>
-            <div id="relVis" class="sim-box" style="height:150px; background:#f8fafc; border:1px solid var(--line);">
-              <p style="text-align:center; color:#8CA0BA; margin-top:55px;">Pilih tipe relasi untuk melihat struktur</p>
+            <div id="relVis" class="sim-box" style="height:180px; background:#f8fafc; border:1px solid var(--line);">
+              <p style="text-align:center; color:#8CA0BA; margin-top:65px;">Pilih tipe relasi untuk melihat struktur</p>
             </div>
+            <div id="relDesc" style="margin-top:10px; font-size:13px; color:#3A4A63; min-height:40px;"></div>
+          </div>
+
+          <h4>Panduan Membaca Notasi Crow's Foot</h4>
+          <p>Notasi Crow's Foot menggunakan simbol-simbol khusus pada ujung garis relasi untuk menunjukkan kardinalitas:</p>
+          <div class="diagram-container">
+            <div class="diagram-zoom-controls">
+              <button class="zoom-btn zoom-out">−</button>
+              <span class="zoom-btn zoom-level" style="background:#EEF2F5;color:#3A4A63;cursor:default;">100%</span>
+              <button class="zoom-btn zoom-in">+</button>
+              <button class="zoom-btn zoom-reset">Reset</button>
+            </div>
+            <div class="diagram-wrapper">
+              <div class="diagram-inner">
+                <svg viewBox="0 0 500 200" style="width:480px;" font-family="JetBrains Mono" font-size="11">
+                  <!-- 1:1 -->
+                  <line x1="30" y1="40" x2="170" y2="40" stroke="#16294A" stroke-width="2"/>
+                  <circle cx="30" cy="40" r="4" fill="#16294A"/>
+                  <circle cx="170" cy="40" r="4" fill="#16294A"/>
+                  <text x="100" y="30" text-anchor="middle" font-size="12" font-weight="bold">1 : 1</text>
+                  <text x="100" y="55" text-anchor="middle" font-size="10" fill="#666">Satu — Satu</text>
+
+                  <!-- 1:N -->
+                  <line x1="30" y1="100" x2="170" y2="100" stroke="#16294A" stroke-width="2"/>
+                  <circle cx="30" cy="100" r="4" fill="#16294A"/>
+                  <line x1="160" y1="90" x2="170" y2="100" stroke="#16294A" stroke-width="2"/>
+                  <line x1="160" y1="110" x2="170" y2="100" stroke="#16294A" stroke-width="2"/>
+                  <line x1="170" y1="90" x2="170" y2="110" stroke="#16294A" stroke-width="2"/>
+                  <text x="100" y="90" text-anchor="middle" font-size="12" font-weight="bold">1 : N</text>
+                  <text x="100" y="115" text-anchor="middle" font-size="10" fill="#666">Satu — Banyak</text>
+
+                  <!-- M:N -->
+                  <line x1="30" y1="160" x2="170" y2="160" stroke="#16294A" stroke-width="2"/>
+                  <line x1="20" y1="150" x2="30" y2="160" stroke="#16294A" stroke-width="2"/>
+                  <line x1="20" y1="170" x2="30" y2="160" stroke="#16294A" stroke-width="2"/>
+                  <line x1="30" y1="150" x2="30" y2="170" stroke="#16294A" stroke-width="2"/>
+                  <line x1="160" y1="150" x2="170" y2="160" stroke="#16294A" stroke-width="2"/>
+                  <line x1="160" y1="170" x2="170" y2="160" stroke="#16294A" stroke-width="2"/>
+                  <line x1="170" y1="150" x2="170" y2="170" stroke="#16294A" stroke-width="2"/>
+                  <text x="100" y="150" text-anchor="middle" font-size="12" font-weight="bold">M : N</text>
+                  <text x="100" y="175" text-anchor="middle" font-size="10" fill="#666">Banyak — Banyak</text>
+
+                  <!-- Legend -->
+                  <text x="250" y="40" font-size="11" font-weight="bold" fill="#16294A">Simbol:</text>
+                  <circle cx="260" cy="60" r="4" fill="#16294A"/>
+                  <text x="270" y="64" font-size="10" fill="#3A4A63">= "Satu" (One)</text>
+                  <line x1="250" y1="85" x2="260" y2="85" stroke="#16294A" stroke-width="2"/>
+                  <line x1="250" y1="80" x2="260" y2="85" stroke="#16294A" stroke-width="2"/>
+                  <line x1="250" y1="90" x2="260" y2="85" stroke="#16294A" stroke-width="2"/>
+                  <line x1="260" y1="80" x2="260" y2="90" stroke="#16294A" stroke-width="2"/>
+                  <text x="270" y="90" font-size="10" fill="#3A4A63">= "Banyak" (Crow's Foot)</text>
+                  <line x1="250" y1="115" x2="260" y2="115" stroke="#16294A" stroke-width="2"/>
+                  <circle cx="260" cy="115" r="4" fill="#fff" stroke="#16294A" stroke-width="2"/>
+                  <text x="270" y="119" font-size="10" fill="#3A4A63">= "Nol atau Satu" (Optional)</text>
+                  <line x1="250" y1="140" x2="260" y2="140" stroke="#16294A" stroke-width="2"/>
+                  <circle cx="252" cy="140" r="4" fill="#fff" stroke="#16294A" stroke-width="2"/>
+                  <line x1="252" y1="133" x2="260" y2="140" stroke="#16294A" stroke-width="2"/>
+                  <line x1="252" y1="147" x2="260" y2="140" stroke="#16294A" stroke-width="2"/>
+                  <line x1="260" y1="133" x2="260" y2="147" stroke="#16294A" stroke-width="2"/>
+                  <text x="270" y="144" font-size="10" fill="#3A4A63">= "Nol atau Banyak" (Optional Many)</text>
+                </svg>
+              </div>
+            </div>
+            <p class="diagram-source">Notasi Crow's Foot adalah standar industri yang paling banyak digunakan untuk diagram ER.</p>
           </div>`,
       },
       {
@@ -634,7 +842,88 @@ const PERTEMUAN = [
             <li><strong>Entitas:</strong> BUKU, ANGGOTA, DOSEN.</li>
             <li><strong>Relasi ANGGOTA-BUKU:</strong> M:N (Peminjaman).</li>
             <li><strong>Relasi DOSEN-BUKU:</strong> 1:N (Pembinaan).</li>
-          </ul>`,
+          </ul>
+
+          <h4>Diagram ER Perpustakaan (Notasi Crow's Foot)</h4>
+          <div class="diagram-container">
+            <div class="diagram-zoom-controls">
+              <button class="zoom-btn zoom-out">−</button>
+              <span class="zoom-btn zoom-level" style="background:#EEF2F5;color:#3A4A63;cursor:default;">100%</span>
+              <button class="zoom-btn zoom-in">+</button>
+              <button class="zoom-btn zoom-reset">Reset</button>
+            </div>
+            <div class="diagram-wrapper">
+              <div class="diagram-inner">
+                <svg viewBox="0 0 600 350" style="width:560px;" font-family="JetBrains Mono" font-size="11">
+                  <!-- DOSEN -->
+                  <rect x="20" y="130" width="140" height="80" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+                  <text x="90" y="155" text-anchor="middle" font-weight="bold" font-size="12">DOSEN</text>
+                  <line x1="20" y1="165" x2="160" y2="165" stroke="#16294A" stroke-width="1"/>
+                  <text x="90" y="180" text-anchor="middle" font-size="10" fill="#3A4A63">nip</text>
+                  <text x="90" y="195" text-anchor="middle" font-size="10" fill="#3A4A63">nama_dosen</text>
+
+                  <!-- BUKU -->
+                  <rect x="220" y="130" width="160" height="100" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+                  <text x="300" y="155" text-anchor="middle" font-weight="bold" font-size="12">BUKU</text>
+                  <line x1="220" y1="165" x2="380" y2="165" stroke="#16294A" stroke-width="1"/>
+                  <text x="300" y="180" text-anchor="middle" font-size="10" fill="#3A4A63">isbn (PK)</text>
+                  <text x="300" y="195" text-anchor="middle" font-size="10" fill="#3A4A63">judul</text>
+                  <text x="300" y="210" text-anchor="middle" font-size="10" fill="#3A4A63">tahun</text>
+                  <text x="300" y="225" text-anchor="middle" font-size="10" fill="#7A6FC9">nip_dosen (FK)</text>
+
+                  <!-- ANGGOTA -->
+                  <rect x="430" y="130" width="150" height="80" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+                  <text x="505" y="155" text-anchor="middle" font-weight="bold" font-size="12">ANGGOTA</text>
+                  <line x1="430" y1="165" x2="580" y2="165" stroke="#16294A" stroke-width="1"/>
+                  <text x="505" y="180" text-anchor="middle" font-size="10" fill="#3A4A63">id_anggota (PK)</text>
+                  <text x="505" y="195" text-anchor="middle" font-size="10" fill="#3A4A63">nama</text>
+
+                  <!-- PINJAMAN (tabel penghubung M:N) -->
+                  <rect x="300" y="290" width="160" height="50" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
+                  <text x="380" y="315" text-anchor="middle" font-weight="bold" font-size="11" fill="#C9584F">PINJAMAN</text>
+                  <text x="380" y="335" text-anchor="middle" font-size="9" fill="#3A4A63">isbn (FK) + id_anggota (FK) + tanggal</text>
+
+                  <!-- Relasi 1:N DOSEN-BUKU -->
+                  <line x1="160" y1="170" x2="220" y2="170" stroke="#16294A" stroke-width="2"/>
+                  <text x="185" y="165" font-size="10" fill="#666">1 : N</text>
+
+                  <!-- Relasi M:N via PINJAMAN -->
+                  <line x1="300" y1="230" x2="340" y2="290" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+                  <line x1="505" y1="210" x2="420" y2="290" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+                  <text x="395" y="260" font-size="10" fill="#C9584F" font-weight="bold">M:N dipecah</text>
+                  <text x="395" y="275" font-size="9" fill="#888">→ tabel penghubung</text>
+
+                  <!-- Crow's foot notation hints -->
+                  <text x="175" y="185" font-size="9" fill="#888">──┤</text>
+                  <text x="210" y="185" font-size="9" fill="#888">├──</text>
+                </svg>
+              </div>
+            </div>
+            <p class="diagram-source">Diagram ER Sistem Perpustakaan dengan notasi Crow's Foot. Relasi M:N antara ANGGOTA dan BUKU dipecah menjadi tabel penghubung PINJAMAN.</p>
+          </div>
+
+          <div class="callout callout--amber">
+            <span class="callout__label">Poin Penting</span>
+            <p>Perhatikan bahwa relasi <strong>M:N</strong> antara ANGGOTA dan BUKU tidak bisa langsung dihubungkan. Harus ada <strong>tabel penghubung</strong> (PINJAMAN) yang menyimpan foreign key dari kedua entitas, ditambah atribut seperti tanggal_peminjaman dan tanggal_pengembalian.</p>
+          </div>
+
+          <h4>Studi Kasus Tambahan: Sistem Ticketing Konser</h4>
+          <div class="callout">
+            <p>"Sebuah platform penjualan tiket konser mencatat data <strong>Event</strong> (nama, tanggal, tempat), <strong>Pembeli</strong> (nama, email, no_hp), dan <strong>Tiket</strong> (jenis, harga). Satu event memiliki banyak tiket, dan satu tiket jenis tertentu hanya ada di satu event. Satu pembeli bisa membeli banyak tiket dari berbagai event."</p>
+          </div>
+          <table class="dtable">
+            <thead><tr><th>Entitas</th><th>Atribut</th><th>Relasi</th></tr></thead>
+            <tbody>
+              <tr><td><strong>EVENT</strong></td><td>event_id (PK), nama_event, tanggal, tempat</td><td>1 event → banyak tiket (1:N)</td></tr>
+              <tr><td><strong>PEMBELI</strong></td><td>pembeli_id (PK), nama, email, no_hp</td><td>1 pembeli → banyak pembelian (1:N)</td></tr>
+              <tr><td><strong>TIKET</strong></td><td>tiket_id (PK), jenis, harga, event_id (FK)</td><td>1 tiket → 1 event (N:1)</td></tr>
+              <tr><td><strong>PEMBELIAN</strong></td><td>pembelian_id (PK), pembeli_id (FK), tiket_id (FK), tanggal_beli</td><td>Tabel penghubung M:N antara PEMBELI dan TIKET</td></tr>
+            </tbody>
+          </table>
+          <div class="callout">
+            <span class="callout__label">Diskusi Cepat</span>
+            <p>Mengapa data "tanggal_beli" diletakkan di tabel PEMBELIAN (tabel penghubung), bukan di tabel PEMBELI atau TIKET?</p>
+          </div>`,
       },
       {
         heading: "G. Aktivitas Praktik: Perancangan Mandiri",
@@ -646,6 +935,28 @@ const PERTEMUAN = [
             <li>Identifikasi minimal 3 entitas, atribut kunci, dan kardinalitas relasinya.</li>
             <li>Gambarkan menggunakan notasi Crow's Foot.</li>
           </ol>`,
+      },
+      {
+        heading: "G.2 Simulasi: Identifikasi Komponen ERD dari Narasi",
+        html: `
+          <p>Latihan mengidentifikasi komponen ERD dari sebuah narasi bisnis sederhana. Baca narasi, lalu tentukan apakah pernyataan yang diberikan benar atau salah:</p>
+          <div class="interactive-card">
+            <p><strong>Narasi:</strong></p>
+            <div class="callout">
+              <p>"Di sebuah <strong>toko online</strong>, ada <strong>Pelanggan</strong> yang bisa memesan banyak <strong>Produk</strong>. Satu produk bisa dipesan oleh banyak pelanggan. Setiap pesanan punya <strong>tanggal</strong> dan <strong>status</strong>. Pelanggan punya <strong>nama</strong> dan <strong>email</strong>. Produk punya <strong>nama</strong> dan <strong>harga</strong>."</p>
+            </div>
+
+            <div id="erdGame" style="margin-top:15px;">
+              <p id="erdQ" style="font-weight:600; font-size:14px; margin-bottom:12px;">Klik "Mulai" untuk memulai.</p>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-sim" id="erdStart" style="background:#2BA6A0;">Mulai</button>
+                <button class="btn-sim erd-btn" data-type="true" disabled style="background:#166534;">Benar ✓</button>
+                <button class="btn-sim erd-btn" data-type="false" disabled style="background:#991b1b;">Salah ✗</button>
+              </div>
+              <div id="erdFeedback" style="margin-top:10px; font-weight:600;"></div>
+              <p class="muted" style="margin-top:8px;">Skor: <span id="erdScore">0</span>/<span id="erdTotal">0</span></p>
+            </div>
+          </div>`,
       },
       {
         heading: "H. Evaluasi Formatif (OBE Outcome Check)",
@@ -661,7 +972,40 @@ const PERTEMUAN = [
             <button class="quiz-option" data-correct="false">Multi-valued</button>
             <button class="quiz-option" data-correct="true" data-explanation="Atribut composite adalah atribut yang dapat dipecah menjadi komponen yang lebih kecil namun memiliki arti mandiri.">Composite</button>
             <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
-          </div>`,
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>3. Entitas "TANGGUNGAN" yang tidak memiliki Primary Key sendiri dan bergantung pada KARYAWAN disebut...</strong></p>
+            <button class="quiz-option" data-correct="true" data-explanation="Entitas lemah (weak entity) tidak memiliki identitas mandiri dan bergantung pada entitas kuat sebagai owner.">Weak Entity (Entitas Lemah)</button>
+            <button class="quiz-option" data-correct="false">Strong Entity</button>
+            <button class="quiz-option" data-correct="false">Derived Entity</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>4. Jika setiap mahasiswa harus memiliki minimal satu alamat email kampus, maka partisipasi entitas MAHASISWA terhadap relasi EMAIL adalah...</strong></p>
+            <button class="quiz-option" data-correct="false">Partial Participation</button>
+            <button class="quiz-option" data-correct="true" data-explanation="Total participation (partisipasi total) berarti SETIAP instansi entitas WAJIB terlibat dalam relasi. Karena setiap mahasiswa harus punya email, maka ini adalah total participation.">Total Participation</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>5. Manakah yang merupakan contoh relasi One-to-One (1:1) dalam dunia nyata?</strong></p>
+            <button class="quiz-option" data-correct="true" data-explanation="Satu negara memiliki satu ibu kota, dan satu ibu kota mewakili satu negara.">Negara — Ibu Kota</button>
+            <button class="quiz-option" data-correct="false">Dosen — Kuliah (1:N)</button>
+            <button class="quiz-option" data-correct="false">Mahasiswa — Mata Kuliah (M:N)</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <div class="interactive-card">
+            <p><strong>6. Atribut "Usia" yang dihitung dari "Tanggal_Lahir" termasuk kategori atribut...</strong></p>
+            <button class="quiz-option" data-correct="false">Simple</button>
+            <button class="quiz-option" data-correct="false">Composite</button>
+            <button class="quiz-option" data-correct="true" data-explanation="Atribut derived adalah atribut yang nilainya diperoleh dari perhitungan atribut lain dan tidak disimpan secara fisik di database.">Derived</button>
+            <button class="quiz-option" data-correct="false">Multi-valued</button>
+            <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+          </div>
+        `,
       },
       {
         heading: "I. Rangkuman",
