@@ -37,6 +37,13 @@ const available = sorted.filter(p => !p.data.locked).length;
 </div>
 
 <ul class="sidebar__list" id="sidebarList">
+  <li class="row praktikum-link" data-kind="praktikum" data-title="worksheet praktikum perancangan erd">
+    <span class="row__pk" style="background:#E7A83D; color:#03211D;">🧪</span>
+    <span class="row__text">
+      <span class="row__num">PRAKTIKUM</span>
+      <span class="row__title" style="color:#FCD34D;">Worksheet Perancangan ERD</span>
+    </span>
+  </li>
   {sorted.map((p) => (
     <li 
       class={`row ${p.data.locked ? 'locked' : ''} ${p.data.id === activeId ? 'active' : ''}`}
@@ -83,8 +90,19 @@ const available = sorted.filter(p => !p.data.locked).length;
   const rows = document.querySelectorAll('.row:not(.locked)');
   rows.forEach(row => {
     row.addEventListener('click', function() {
+      const kind = this.getAttribute('data-kind');
+      if (kind === 'praktikum') {
+        window.location.href = '/praktikum';
+        return;
+      }
       const id = this.getAttribute('data-id');
       window.location.href = `/pertemuan/${id}`;
     });
   });
+
+  // Active state for praktikum link
+  if (window.location.pathname.includes('/praktikum')) {
+    const pk = document.querySelector('.praktikum-link');
+    if (pk) pk.classList.add('active');
+  }
 </script>

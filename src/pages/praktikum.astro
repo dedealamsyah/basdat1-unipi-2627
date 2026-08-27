@@ -1,0 +1,548 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+const studyCases = [
+  {
+    id: "SIAKAD",
+    title: "Sistem Informasi Akademik",
+    narasi: "Universitas memiliki Mahasiswa yang terdaftar di suatu Program Studi. Setiap mahasiswa dapat mengambil banyak Mata Kuliah, dan satu mata kuliah dapat diambil oleh banyak mahasiswa. Setiap mata kuliah diasuh oleh minimal satu Dosen. Sistem mencatat Nilai setiap mahasiswa pada setiap mata kuliah."
+  },
+  {
+    id: "PERPUSTAKAAN",
+    title: "Sistem Perpustakaan Universitas",
+    narasi: "Perpustakaan memiliki Buku (ISBN, judul, tahun) yang dipinjam oleh Anggota. Satu anggota bisa meminjam banyak buku. Setiap kategori buku dibina oleh satu Dosen."
+  },
+  {
+    id: "REDSOMS",
+    title: "Sistem Manajemen Rumah Sakit",
+    narasi: "Rumah sakit memiliki Dokter yang bekerja di suatu Unit. Pasien datang untuk Kunjungan. Setiap kunjungan ditangani satu dokter dan tercatat dalam Rekam Medis. Pasien mendapatkan Resep Obat yang berisi Daftar Obat."
+  },
+  {
+    id: "PARKIR",
+    title: "Sistem Manajemen Parkir",
+    narasi: "Area Parkir mencatat Kendaraan yang masuk. Setiap kendaraan mendapatkan Tiket. Saat keluar, pengendara melakukan Pembayaran berdasarkan durasi parkir."
+  },
+  {
+    id: "HOTEL",
+    title: "Sistem Booking Hotel",
+    narasi: "Hotel memiliki Kamar dengan berbagai Tipe. Tamu melakukan Reservasi untuk kamar tertentu. Setiap reservasi dapat mencakup Fasilitas tambahan."
+  }
+];
+---
+
+<BaseLayout title="Worksheet Praktikum · Perancangan ERD" description="Worksheet interaktif praktikum perancangan ERD — UNIPI">
+  <Sidebar slot="sidebar" />
+
+  <div class="contentHeader">
+    <div class="eyebrow">PRAKTIKUM · BASIS DATA</div>
+    <h1 class="pageTitle">Worksheet Perancangan ERD</h1>
+    <p class="pageSubtitle">
+      Lembar kerja interaktif untuk praktikum perancangan model data. Isi setiap tahap, hasilnya bisa disimpan dan dicetak.
+    </p>
+    <div class="chipRow">
+      <span class="chip">⏱ 3 × 50 menit</span>
+      <span class="chip chip--amber">BOBOT 5%</span>
+      <span class="chip">Terkait: Pertemuan 3</span>
+    </div>
+  </div>
+
+  <div class="callout callout--amber">
+    <span class="callout__label">Cara Menggunakan</span>
+    <p>Isi langkah A sampai F secara berurutan. Isian <strong>tersimpan otomatis</strong> di browser Anda (localStorage). Klik <strong>"Simpan &amp; Unduh"</strong> untuk menghasilkan file laporan, atau <strong>"Cetak"</strong> untuk versi kertas.</p>
+  </div>
+
+  <!-- ============ A. IDENTITAS ============ -->
+  <section class="block">
+    <h2>A. Identitas Kelompok</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div>
+        <label for="kelNama" style="display:block; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin-bottom:4px;">NAMA ANGGOTA (dipisah koma)</label>
+        <input type="text" id="kelNama" class="wks-input" placeholder="Budi Santoso, Sari Wulandari, Andi Pratama">
+      </div>
+      <div>
+        <label for="kelNim" style="display:block; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin-bottom:4px;">NIM (dipisah koma)</label>
+        <input type="text" id="kelNim" class="wks-input" placeholder="22104001, 22104002, 22104003">
+      </div>
+      <div>
+        <label for="kelKelas" style="display:block; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin-bottom:4px;">KELAS</label>
+        <input type="text" id="kelKelas" class="wks-input" placeholder="A1">
+      </div>
+      <div>
+        <label for="kelTanggal" style="display:block; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin-bottom:4px;">TANGGAL</label>
+        <input type="date" id="kelTanggal" class="wks-input">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ B. STUDI KASUS ============ -->
+  <section class="block">
+    <h2>B. Studi Kasus</h2>
+    <p>Pilih salah satu studi kasus yang akan dirancang:</p>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+      {studyCases.map((sc) => (
+        <button class="btn-sim case-btn" data-sc={sc.id} style="background:var(--navy-700);">{sc.title}</button>
+      ))}
+    </div>
+    <div class="sim-box" id="caseNarasi">
+      <p class="muted" style="margin:0;">Pilih studi kasus untuk menampilkan narasi bisnisnya.</p>
+    </div>
+  </section>
+
+  <!-- ============ C. ENTITAS ============ -->
+  <section class="block">
+    <h2>C. Identifikasi Entitas</h2>
+    <p>
+      Tuliskan entitas yang Anda temukan dari narasi. <strong>Hint:</strong> entitas umumnya adalah kata benda (objek) yang datanya perlu disimpan.
+    </p>
+    <div id="entitasRows"></div>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn-sim" id="entitasAdd" style="background:#2BA6A0;">+ Tambah Entitas</button>
+      <button class="btn-sim" id="entitasClear" style="background:#C9584F;">Bersihkan</button>
+    </div>
+  </section>
+
+  <!-- ============ D. ATRIBUT ============ -->
+  <section class="block">
+    <h2>D. Penentuan Atribut & Key</h2>
+    <p>
+      Untuk setiap entitas (kolom pertama diisi otomatis dari langkah C), tentukan atribut, primary key (PK), dan foreign key (FK).
+    </p>
+    <div id="atributRows"></div>
+    <div class="sim-box" style="margin-top:12px; background:#E7F0F1; border-color:#2BA6A0;">
+      <p style="margin:0; font-size:12.5px;">
+        <strong>PK</strong> = Primary Key (identitas unik) &nbsp;·&nbsp; <strong>FK</strong> = Foreign Key (penunjuk ke entitas lain)
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ E. RELASI ============ -->
+  <section class="block">
+    <h2>E. Relasi Antar Entitas</h2>
+    <p>Tentukan hubungan antar entitas beserta kardinalitasnya.</p>
+    <div id="relasiRows"></div>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn-sim" id="relasiAdd" style="background:#2BA6A0;">+ Tambah Relasi</button>
+      <button class="btn-sim" id="relasiClear" style="background:#C9584F;">Bersihkan</button>
+    </div>
+    <div class="callout" style="margin-top:16px;">
+      <span class="callout__label">Total Partisipasi vs Parsial</span>
+      <p>Klik "Validasi" setelah selesai agar worksheet mengecek relasi yang belum lengkap.</p>
+    </div>
+  </section>
+
+  <!-- ============ F. ASUNSI ============ -->
+  <section class="block">
+    <h2>F. Asumsi & Keputusan Perancangan</h2>
+    <label for="asumsiText" style="display:block; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin-bottom:4px;">CATATAN ASUMSI (mis. "Satu mahasiswa hanya boleh dalam satu prodi", "Pembayaran selalu tunai", dst.)</label>
+    <textarea id="asumsiText" class="wks-input" rows="5" placeholder="Tuliskan asumsi yang Anda ambil saat merancang..."></textarea>
+  </section>
+
+  <!-- ============ G. AKSI ============ -->
+  <section class="block">
+    <h2>G. Simpan, Unduh & Cetak</h2>
+    <p>Isian terdokumentasi otomatis. Gunakan tombol di bawah untuk memproduksi laporan:</p>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
+      <button class="btn-sim" id="wksSave" style="background:#2BA6A0;">💾 Simpan & Unduh Laporan (.txt)</button>
+      <button class="btn-sim" id="wksPrint" style="background:#1F3864;">🖨 Cetak / Simpan PDF</button>
+      <button class="btn-sim" id="wksReset" style="background:#C9584F;">Reset Semua</button>
+    </div>
+    <div id="wksFeedback" style="margin-top:14px;"></div>
+  </section>
+
+  <div class="navFooter">
+    <a class="navBtn" href="/pertemuan/3">‹ Kembali ke Materi Pertemuan 3</a>
+    <a class="navBtn" href="/pertemuan/4">Pertemuan 4 ›</a>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .wks-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    margin-bottom: 6px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .wks-input:focus { border-color: var(--teal-500); }
+  .wks-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .wks-table th {
+    background: var(--navy-700); color: #fff; font-family: var(--font-mono);
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em;
+    padding: 7px 10px; text-align: left;
+  }
+  .wks-table td { padding: 4px 4px; border-bottom: 1px solid var(--line); }
+  .wks-table input, .wks-table select {
+    width: 100%; padding: 7px 8px; border-radius: 4px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    font-family: var(--font-mono); font-size: 12px; outline: none;
+  }
+  .wks-table select { cursor: pointer; }
+  .wks-del {
+    background: #C9584F; border: none; border-radius: 4px; color: #fff;
+    width: 26px; height: 26px; cursor: pointer; font-size: 14px; line-height: 1;
+  }
+  .wks-del:hover { background: #a8433b; }
+
+  @media print {
+    .wks-table input, .wks-table select,
+    #entitasAdd, #entitasClear, #relasiAdd, #relasiClear,
+    .wks-del, #wksSave, #wksPrint, #wksReset,
+    .case-btn, .btn-sim {
+      display: none !important;
+    }
+    .wks-table th, .wks-table td { border: 1px solid #999 !important; }
+    section.block { break-inside: auto !important; }
+  }
+</style>
+
+<script is:inline>
+(function () {
+  "use strict";
+
+  var LS_KEY = "basdat_wks_v1";
+
+  // ---------- state ----------
+  var state = {
+    identitas: { nama: "", nim: "", kelas: "", tanggal: "" },
+    studiKasus: "",
+    entitas: [],
+    atribut: [],   // { entitas, atribut, pk, fk }
+    relasi: [],    // { entitasA, relasi, entitasB, kardinalitas, partisipasi }
+    asumsi: ""
+  };
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      if (raw) state = Object.assign(state, JSON.parse(raw));
+    } catch (e) {}
+  }
+  function save() {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    $("wksFeedback") && ($("wksFeedback").innerHTML = '<span class="muted">✓ Tersimpan otomatis.</span>');
+  }
+  function $(id) { return document.getElementById(id); }
+
+  // ---------- entitas ----------
+  function renderEntitas() {
+    var box = $("entitasRows");
+    if (!box) return;
+    box.innerHTML =
+      '<table class="wks-table"><thead><tr><th style="width:40px">#</th><th>Nama Entitas</th><th>Deskripsi Singkat</th><th style="width:40px">✕</th></tr></thead><tbody></tbody></table>';
+    var tbody = box.querySelector("tbody");
+    state.entitas.forEach(function (e, i) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + (i + 1) + "</td>" +
+        '<td><input type="text" data-role="nama" value="' + esc(e.nama) + '" placeholder="mis. MAHASISWA"></td>' +
+        '<td><input type="text" data-role="desk" value="' + esc(e.desk) + '" placeholder="mis. Data mahasiswa aktif"></td>' +
+        '<td><button class="wks-del" data-i="' + i + '">✕</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- atribut ----------
+  function renderAtribut() {
+    var box = $("atributRows");
+    if (!box) return;
+    if (!state.entitas.length) {
+      box.innerHTML = '<p class="muted">Isi daftar entitas pada langkah C terlebih dahulu.</p>';
+      return;
+    }
+    // sinkronkan baris atribut → jika entitas baru, tambahkan baris kosong
+    state.entitas.forEach(function (e) {
+      if (!state.atribut.find(function (a) { return a.entitas === e.nama; })) {
+        state.atribut.push({ entitas: e.nama, atribut: e.nama + " (PK)?", pk: false, fk: false, truepk: "" });
+      }
+    });
+    // hapus baris atribut yang entitasnya dihapus
+    state.atribut = state.atribut.filter(function (a) {
+      return state.entitas.some(function (e) { return e.nama === a.entitas; });
+    });
+    box.innerHTML =
+      '<table class="wks-table"><thead><tr><th style="width:30%">Entitas</th><th>Daftar Atribut</th><th style="width:70px">PK</th><th style="width:70px">FK</th></tr></thead><tbody></tbody></table>';
+    var tbody = box.querySelector("tbody");
+    state.atribut.forEach(function (a, i) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td><input type="text" data-role="entitas" value="' + esc(a.entitas) + '" readonly></td>' +
+        '<td><input type="text" data-role="atribut" value="' + esc(a.atribut) + '" placeholder="mis. nim (PK), nama, alamat"></td>' +
+        '<td style="text-align:center"><input type="checkbox" data-role="pk" ' + (a.pk ? "checked" : "") + '></td>' +
+        '<td style="text-align:center"><input type="checkbox" data-role="fk" ' + (a.fk ? "checked" : "") + '></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- relasi ----------
+  function renderRelasi() {
+    var box = $("relasiRows");
+    if (!box) return;
+    if (!state.entitas.length) {
+      box.innerHTML = '<p class="muted">Isi daftar entitas pada langkah C terlebih dahulu.</p>';
+      return;
+    }
+    var options = state.entitas.map(function (e) {
+      return '<option value="' + esc(e.nama) + '">' + esc(e.nama) + "</option>";
+    }).join("");
+    box.innerHTML =
+      '<table class="wks-table"><thead><tr><th>Entitas A</th><th style="width:70px">Kardinalitas</th><th>Entitas B</th><th style="width:120px">Partisipasi</th><th style="width:40px">✕</th></tr></thead><tbody></tbody></table>';
+    var tbody = box.querySelector("tbody");
+    if (!state.relasi.length) {
+      // satu baris default
+      state.relasi.push({ entitasA: state.entitas[0].nama, relasi: "1 : N", entitasB: state.entitas[1] ? state.entitas[1].nama : state.entitas[0].nama, partisipasi: "Total" });
+    }
+    state.relasi.forEach(function (r, i) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td><select data-role="entitasA">' + options.replace('value="' + esc(r.entitasA) + '"', 'value="' + esc(r.entitasA) + '" selected') + "</select></td>" +
+        '<td><select data-role="kard"><option>1 : 1</option><option>1 : N</option><option>M : N</option></select></td>' +
+        '<td><select data-role="entitasB">' + options.replace('value="' + esc(r.entitasB) + '"', 'value="' + esc(r.entitasB) + '" selected') + "</select></td>" +
+        '<td><select data-role="part"><option>Total</option><option>Parsial</option></select></td>' +
+        '<td><button class="wks-del" data-i="' + i + '">✕</button></td>';
+      tbody.appendChild(tr);
+      var kard = tr.querySelector('[data-role="kard"]');
+      kard.value = r.relasi;
+      var part = tr.querySelector('[data-role="part"]');
+      part.value = r.partisipasi;
+    });
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function generateReport() {
+    var L = [];
+    L.push("=============================================");
+    L.push("LAPORAN WORKSHEET PERANCANGAN ERD — BASIS DATA");
+    L.push("Program Studi S1 Informatika, UNIPI");
+    L.push("=============================================");
+    L.push("");
+    L.push("A. IDENTITAS KELOMPOK");
+    L.push("   Nama   : " + (state.identitas.nama || "-"));
+    L.push("   NIM    : " + (state.identitas.nim || "-"));
+    L.push("   Kelas  : " + (state.identitas.kelas || "-"));
+    L.push("   Tanggal: " + (state.identitas.tanggal || "-"));
+    L.push("");
+    L.push("B. STUDI KASUS");
+    L.push("   " + (state.studiKasus || "-"));
+    L.push("");
+    L.push("C. ENTITAS");
+    state.entitas.forEach(function (e, i) {
+      L.push("   " + (i + 1) + ". " + (e.nama || "-") + " — " + (e.desk || ""));
+    });
+    L.push("");
+    L.push("D. ATRIBUT & KEY");
+    state.atribut.forEach(function (a) {
+      L.push("   " + (a.entitas || "-") + " | " + (a.atribut || "") + " | PK:" + (a.pk ? "√" : "-") + " FK:" + (a.fk ? "√" : "-"));
+    });
+    L.push("");
+    L.push("E. RELASI");
+    state.relasi.forEach(function (r, i) {
+      L.push("   " + (i + 1) + ". " + (r.entitasA || "-") + " " + (r.relasi || "") + " " + (r.entitasB || "") + " | Partisipasi: " + (r.partisipasi || "-"));
+    });
+    L.push("");
+    L.push("F. ASUMSI");
+    L.push("   " + (state.asumsi || "-"));
+    L.push("");
+    L.push("=============================================");
+    return L.join("\n");
+  }
+
+  // ---------- init events ----------
+  document.addEventListener("DOMContentLoaded", function () {
+    load();
+
+    // bind identitas inputs
+    bindsInput("kelNama", "nama");
+    bindsInput("kelNim", "nim");
+    bindsInput("kelKelas", "kelas");
+    bindsInput("kelTanggal", "tanggal");
+    bindsInput("asumsiText", "asumsi");
+
+    renderEntitas(); renderAtribut(); renderRelasi();
+
+    // studi kasus narasi hidden store
+    var NAR = {
+      "SIAKAD": "Universitas memiliki Mahasiswa yang terdaftar di suatu Program Studi. Setiap mahasiswa dapat mengambil banyak Mata Kuliah, dan satu mata kuliah dapat diambil oleh banyak mahasiswa. Setiap mata kuliah diasuh oleh minimal satu Dosen. Sistem mencatat Nilai setiap mahasiswa pada setiap mata kuliah.",
+      "PERPUSTAKAAN": "Perpustakaan memiliki Buku (ISBN, judul, tahun) yang dipinjam oleh Anggota. Satu anggota bisa meminjam banyak buku. Setiap kategori buku dibina oleh satu Dosen.",
+      "REDSOMS": "Rumah sakit memiliki Dokter yang bekerja di suatu Unit. Pasien datang untuk Kunjungan. Setiap kunjungan ditangani satu dokter dan tercatat dalam Rekam Medis. Pasien mendapatkan Resep Obat yang berisi Daftar Obat.",
+      "PARKIR": "Area Parkir mencatat Kendaraan yang masuk. Setiap kendaraan mendapatkan Tiket. Saat keluar, pengendara melakukan Pembayaran berdasarkan durasi parkir.",
+      "HOTEL": "Hotel memiliki Kamar dengan berbagai Tipe. Tamu melakukan Reservasi untuk kamar tertentu. Setiap reservasi dapat mencakup Fasilitas tambahan."
+    };
+    document.querySelectorAll(".case-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = this.getAttribute("data-sc");
+        state.studiKasus = id;
+        var title = this.textContent;
+        $("caseNarasi").innerHTML = '<p style="margin:0 0 6px;"><strong>' + title + '</strong></p><p style="margin:0;">' + (NAR[id] || "") + "</p>";
+        document.querySelectorAll(".case-btn").forEach(function (x) {
+          x.style.background = x === b ? "#E7A83D" : "var(--navy-700)";
+        });
+        save();
+      });
+    });
+
+    // entitas add/clear
+    $("entitasAdd").addEventListener("click", function () {
+      state.entitas.push({ nama: "", desk: "" });
+      renderEntitas(); renderAtribut(); renderRelasi(); save();
+    });
+    $("entitasClear").addEventListener("click", function () {
+      state.entitas = []; state.atribut = []; state.relasi = [];
+      renderEntitas(); renderAtribut(); renderRelasi(); save();
+    });
+
+    // relasi add/clear
+    $("relasiAdd").addEventListener("click", function () {
+      if (state.entitas.length < 2) {
+        $("wksFeedback").innerHTML = '<span style="color:#C9584F;">Minimal 2 entitas untuk membuat relasi.</span>';
+        return;
+      }
+      state.relasi.push({ entitasA: state.entitas[0].nama, relasi: "1:N", entitasB: state.entitas[1].nama, partisipasi: "Total" });
+      renderRelasi(); save();
+    });
+    $("relasiClear").addEventListener("click", function () {
+      state.relasi = [];
+      renderRelasi(); save();
+    });
+
+    // simpan/unduh
+    $("wksSave").addEventListener("click", function () {
+      var report = generateReport();
+      var blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "worksheet-erd-" + (state.studiKasus || "kelompok").toLowerCase() + ".txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      save();
+    });
+
+    // cetak
+    $("wksPrint").addEventListener("click", function () { window.print(); });
+
+    // reset
+    $("wksReset").addEventListener("click", function () {
+      if (confirm("Yakin reset semua isian worksheet?")) {
+        localStorage.removeItem(LS_KEY);
+        state = {
+          identitas: { nama: "", nim: "", kelas: "", tanggal: "" },
+          studiKasus: "",
+          entitas: [], atribut: [], relasi: [],
+          asumsi: ""
+        };
+        renderEntitas(); renderAtribut(); renderRelasi();
+        ["kelNama","kelNim","kelKelas","kelTanggal","asumsiText"].forEach(function (id) {
+          var el = $(id); if (el && id !== "kelTanggal") el.value = "";
+        });
+        $("kelTanggal").value = "";
+        $("caseNarasi").innerHTML = '<p class="muted" style="margin:0;">Pilih studi kasus untuk menampilkan narasi bisnisnya.</p>';
+        $("wksFeedback").innerHTML = '<span style="color:#166534;">Worksheet telah direset.</span>';
+      }
+    });
+
+    // delegated editing
+    $("entitasRows").addEventListener("input", onEdit);
+    $("atributRows").addEventListener("input", onEdit);
+    $("relasiRows").addEventListener("input", onEdit);
+    $("relasiRows").addEventListener("change", onEdit);
+
+    // delegated delete
+    document.querySelectorAll("#entitasRows, #relasiRows").forEach(function (box) {
+      box.addEventListener("click", function (e) {
+        var btn = e.target.closest(".wks-del");
+        if (!btn) return;
+        var i = parseInt(btn.getAttribute("data-i"), 10);
+        if (box === $("entitasRows")) {
+          var name = state.entitas[i] && state.entitas[i].nama;
+          state.entitas.splice(i, 1);
+          if (name) {
+            state.atribut = state.atribut.filter(function (a) { return a.entitas !== name; });
+            state.relasi = state.relasi.filter(function (r) { return r.entitasA !== name && r.entitasB !== name; });
+          }
+        } else {
+          state.relasi.splice(i, 1);
+        }
+        renderEntitas(); renderAtribut(); renderRelasi(); save();
+      });
+    });
+
+    // restore identitas values
+    $("kelNama").value = state.identitas.nama || "";
+    $("kelNim").value = state.identitas.nim || "";
+    $("kelKelas").value = state.identitas.kelas || "";
+    $("kelTanggal").value = state.identitas.tanggal || "";
+    $("asumsiText").value = state.asumsi || "";
+
+    // restore studi kasus highlight
+    if (state.studiKasus) {
+      document.querySelectorAll(".case-btn").forEach(function (b) {
+        if (b.getAttribute("data-sc") === state.studiKasus) b.click();
+      });
+    }
+  });
+
+  // helper bind identitas
+  function bindsInput(id, prop) {
+    var el = $(id);
+    if (el) el.addEventListener("input", function () { state.identitas[prop] = this.value; save(); });
+  }
+
+  // delegate edits ke state (tanpa re-render penuh agar fokus tidak hilang)
+  function onEdit(e) {
+    var t = e.target;
+    var role = t.getAttribute("data-role");
+    if (!role) return;
+    var tr = t.closest("tr");
+    var tbody = tr.parentNode;
+
+    if (tbody.parentNode && tbody.parentNode.parentNode === $("entitasRows")) {
+      var idx = Array.prototype.indexOf.call(tbody.children, tr);
+      if (idx < 0) return;
+      if (role === "desk") {
+        state.entitas[idx].desk = t.value;
+      } else if (role === "nama") {
+        var old = state.entitas[idx].nama;
+        state.entitas[idx].nama = t.value.toUpperCase().replace(/\s+/g, "_");
+        t.value = state.entitas[idx].nama;
+        // sinkronkan referensi di atribut & relasi
+        state.atribut.forEach(function (a) { if (a.entitas === old) a.entitas = state.entitas[idx].nama; });
+        state.relasi.forEach(function (r) {
+          if (r.entitasA === old) r.entitasA = state.entitas[idx].nama;
+          if (r.entitasB === old) r.entitasB = state.entitas[idx].nama;
+        });
+        // update sel entitas readonly pada tabel atribut
+        $("atributRows").querySelectorAll('input[data-role="entitas"]').forEach(function (cell) {
+          if (cell.value === old) cell.value = state.entitas[idx].nama;
+        });
+      }
+    } else if (tbody.parentNode && tbody.parentNode.parentNode === $("atributRows")) {
+      var i2 = Array.prototype.indexOf.call(tbody.children, tr);
+      if (i2 < 0) return;
+      if (role === "atribut") state.atribut[i2].atribut = t.value;
+      else if (role === "pk") state.atribut[i2].pk = t.checked;
+      else if (role === "fk") state.atribut[i2].fk = t.checked;
+      else if (role === "entitas") state.atribut[i2].entitas = t.value;
+    } else if (tbody.parentNode && tbody.parentNode.parentNode === $("relasiRows")) {
+      var i3 = Array.prototype.indexOf.call(tbody.children, tr);
+      if (i3 < 0) return;
+      if (role === "entitasA") state.relasi[i3].entitasA = t.value;
+      else if (role === "entitasB") state.relasi[i3].entitasB = t.value;
+      else if (role === "kard") state.relasi[i3].relasi = t.value;
+      else if (role === "part") state.relasi[i3].partisipasi = t.value;
+    }
+    save();
+  }
+})();
+</script>

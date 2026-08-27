@@ -134,6 +134,7 @@ Otomatis menambah tombol "Salin" pada semua `<pre><code>` blocks.
 | URL | Deskripsi |
 |-----|-----------|
 | `/` | Beranda + daftar pertemuan |
+| `/praktikum` | Worksheet praktikum interaktif (isian tersimpan di localStorage) |
 | `/pertemuan/1` | Pertemuan 1: Introduction to Databases |
 | `/pertemuan/2` | Pertemuan 2: Perancangan Model Konseptual |
 | `/pertemuan/{id}` | Dynamic route untuk setiap pertemuan |

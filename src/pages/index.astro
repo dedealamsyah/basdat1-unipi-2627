@@ -40,6 +40,16 @@ const firstAvailable = sorted.find(p => !p.data.locked);
   </section>
 
   <section class="block">
+    <h2>Praktikum</h2>
+    <p>
+      Lembar kerja interaktif untuk praktikum perancangan ERD. Cocok digunakan di dalam kelas bersama dosen.
+    </p>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <a class="navBtn" href="/praktikum" style="background:#E7A83D; color:#0D1B30; font-weight:700;">🧪 Buka Worksheet Praktikum</a>
+    </div>
+  </section>
+
+  <section class="block">
     <h2>Daftar Pertemuan</h2>
     <div style="display:grid; gap:12px; margin-top:16px;">
       {sorted.map((p) => (
