@@ -54,7 +54,7 @@ import QuizCard from '../../components/QuizCard.astro';
 
 <div class="callout callout--amber">
   <span class="callout__label">Penting</span>
-  <p>Pertemuan ini adalah praktikum. Mahasiswa diharapkan membawa laptop untuk menggambar ERD menggunakan tools seperti <strong>draw.io</strong>, <strong>Lucidchart</strong>, atau <strong>dbdiagram.io</strong>.</p>
+  <p>Diagram ERD pada halaman ini <strong>interaktif</strong>: arahkan kursor ke garis relasi untuk melihat info, klik garis untuk menyematkannya. Arahkan ke kotak entitas untuk menyorot relasinya.</p>
 </div>
 
 ## D. Metodologi Perancangan ERD
@@ -99,8 +99,6 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
 
 ### Analisis
 
-**Entitas & Atribut:**
-
 <table class="dtable">
   <thead><tr><th>Entitas</th><th>Atribut</th><th>Keterangan</th></tr></thead>
   <tbody>
@@ -138,13 +136,13 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
           <marker id="cfNred" markerWidth="7" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7" fill="none" stroke="#C9584F" stroke-width="1.2"/><line x1="0" y1="0" x2="0" y2="7" stroke="#C9584F" stroke-width="1.2"/></marker>
         </defs>
 
-        <rect x="30" y="30" width="160" height="80" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <rect x="30" y="30" width="160" height="80" class="entity-box" data-entity="PROGRAM_STUDI" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
         <text x="110" y="52" text-anchor="middle" font-weight="bold" font-size="11">PROGRAM_STUDI</text>
         <line x1="30" y1="62" x2="190" y2="62" stroke="#16294A" stroke-width="1"/>
         <text x="110" y="78" text-anchor="middle" font-size="9.5" fill="#3A4A63">kode_prodi (PK)</text>
         <text x="110" y="92" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama_prodi, fakultas</text>
 
-        <rect x="310" y="30" width="160" height="95" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <rect x="310" y="30" width="160" height="95" class="entity-box" data-entity="MAHASISWA" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
         <text x="390" y="52" text-anchor="middle" font-weight="bold" font-size="11">MAHASISWA</text>
         <line x1="310" y1="62" x2="470" y2="62" stroke="#16294A" stroke-width="1"/>
         <text x="390" y="78" text-anchor="middle" font-size="9.5" fill="#3A4A63">nim (PK)</text>
@@ -152,14 +150,14 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
         <text x="390" y="106" text-anchor="middle" font-size="9.5" fill="#7A6FC9">kode_prodi (FK)</text>
         <text x="390" y="120" text-anchor="middle" font-size="9.5" fill="#3A4A63">email, tgl_lahir</text>
 
-        <rect x="620" y="30" width="160" height="80" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <rect x="620" y="30" width="160" height="80" class="entity-box" data-entity="DOSEN" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
         <text x="700" y="52" text-anchor="middle" font-weight="bold" font-size="11">DOSEN</text>
         <line x1="620" y1="62" x2="780" y2="62" stroke="#16294A" stroke-width="1"/>
         <text x="700" y="78" text-anchor="middle" font-size="9.5" fill="#3A4A63">nip (PK)</text>
         <text x="700" y="92" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama_dosen</text>
         <text x="700" y="106" text-anchor="middle" font-size="9.5" fill="#3A4A63">bidang_keahlian</text>
 
-        <rect x="460" y="240" width="160" height="95" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <rect x="460" y="240" width="160" height="95" class="entity-box" data-entity="MATAKULIAH" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
         <text x="540" y="262" text-anchor="middle" font-weight="bold" font-size="11">MATAKULIAH</text>
         <line x1="460" y1="272" x2="620" y2="272" stroke="#16294A" stroke-width="1"/>
         <text x="540" y="288" text-anchor="middle" font-size="9.5" fill="#3A4A63">kode_mk (PK)</text>
@@ -167,22 +165,22 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
         <text x="540" y="316" text-anchor="middle" font-size="9.5" fill="#7A6FC9">nip_dosen (FK)</text>
         <text x="540" y="330" text-anchor="middle" font-size="9.5" fill="#3A4A63">semester</text>
 
-        <rect x="310" y="390" width="220" height="70" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
+        <rect x="310" y="390" width="220" height="70" class="entity-box" data-entity="NILAI" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
         <text x="420" y="412" text-anchor="middle" font-weight="bold" font-size="11" fill="#C9584F">NILAI</text>
         <line x1="310" y1="422" x2="530" y2="422" stroke="#C9584F" stroke-width="1"/>
         <text x="420" y="438" text-anchor="middle" font-size="9" fill="#3A4A63">nim (PFK) + kode_mk (PFK)</text>
         <text x="420" y="452" text-anchor="middle" font-size="9" fill="#3A4A63">nilai, grade</text>
 
-        <line x1="190" y1="70" x2="310" y2="70" stroke="#16294A" stroke-width="2" marker-start="url(#cf1)" marker-end="url(#cfN)"/>
+        <line x1="190" y1="70" x2="310" y2="70" stroke="#16294A" stroke-width="2" marker-start="url(#cf1)" marker-end="url(#cfN)" class="rel-line" data-a="PROGRAM_STUDI" data-b="MAHASISWA" data-cardinality="1 : N" data-desc="Satu Program Studi memiliki banyak Mahasiswa" data-participation="Total (kedua entitas)"/>
         <rect x="218" y="56" width="55" height="16" fill="#fff" stroke="none"/>
         <text x="245" y="69" text-anchor="middle" font-size="10" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="700" y1="110" x2="620" y2="240" stroke="#16294A" stroke-width="2" marker-start="url(#cf1)" marker-end="url(#cfN)"/>
+        <line x1="700" y1="110" x2="620" y2="240" stroke="#16294A" stroke-width="2" marker-start="url(#cf1)" marker-end="url(#cfN)" class="rel-line" data-a="DOSEN" data-b="MATAKULIAH" data-cardinality="1 : N" data-desc="Satu Dosen mengampu banyak Mata Kuliah" data-participation="Total (Matakuliah), Parsial (Dosen)"/>
         <rect x="648" y="166" width="55" height="16" fill="#fff" stroke="none"/>
         <text x="675" y="179" text-anchor="middle" font-size="10" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="390" y1="125" x2="380" y2="390" stroke="#C9584F" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#cfNred)"/>
-        <line x1="540" y1="335" x2="460" y2="390" stroke="#C9584F" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#cfNred)"/>
+        <line x1="390" y1="125" x2="380" y2="390" stroke="#C9584F" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#cfNred)" class="rel-line" data-a="MAHASISWA" data-b="NILAI" data-cardinality="M : N" data-desc="Relasi via tabel penghubung NILAI (M:N dipecah)" data-participation="Total"/>
+        <line x1="540" y1="335" x2="460" y2="390" stroke="#C9584F" stroke-width="2" stroke-dasharray="8,4" marker-end="url(#cfNred)" class="rel-line" data-a="MATAKULIAH" data-b="NILAI" data-cardinality="M : N" data-desc="Relasi via tabel penghubung NILAI (M:N dipecah)" data-participation="Total"/>
 
         <rect x="348" y="362" width="84" height="16" fill="#fff" stroke="none"/>
         <text x="390" y="375" text-anchor="middle" font-size="9" fill="#C9584F" font-weight="bold">M:N dipecah</text>
@@ -230,75 +228,70 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
   </div>
   <div class="diagram-wrapper">
     <div class="diagram-inner">
-      <svg viewBox="0 0 780 420" style="width:740px;" font-family="JetBrains Mono" font-size="11">
+      <svg viewBox="0 0 780 440" style="width:740px;" font-family="JetBrains Mono" font-size="11">
         <defs>
           <marker id="cf1b" markerWidth="3" markerHeight="3" refX="0" refY="1.5" orient="auto"><circle cx="1.5" cy="1.5" r="1.5" fill="#16294A"/></marker>
           <marker id="cfNb" markerWidth="7" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7" fill="none" stroke="#16294A" stroke-width="1.2"/><line x1="0" y1="0" x2="0" y2="7" stroke="#16294A" stroke-width="1.2"/></marker>
           <marker id="cfNbred" markerWidth="7" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7" fill="none" stroke="#C9584F" stroke-width="1.2"/><line x1="0" y1="0" x2="0" y2="7" stroke="#C9584F" stroke-width="1.2"/></marker>
         </defs>
 
-        <rect x="20" y="20" width="150" height="70" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <rect x="20" y="20" width="150" height="70" class="entity-box" data-entity="KATEGORI" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
         <text x="95" y="42" text-anchor="middle" font-weight="bold" font-size="11">KATEGORI</text>
         <line x1="20" y1="52" x2="170" y2="52" stroke="#16294A" stroke-width="1"/>
         <text x="95" y="68" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_kategori (PK)</text>
         <text x="95" y="82" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama_kategori</text>
 
-        <rect x="260" y="20" width="150" height="70" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
-        <text x="335" y="42" text-anchor="middle" font-weight="bold" font-size="11">PELANGGAN</text>
-        <line x1="260" y1="52" x2="410" y2="52" stroke="#16294A" stroke-width="1"/>
-        <text x="335" y="68" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_pelanggan (PK)</text>
-        <text x="335" y="82" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama, email</text>
+        <rect x="20" y="210" width="150" height="85" class="entity-box" data-entity="PRODUK" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="95" y="232" text-anchor="middle" font-weight="bold" font-size="11">PRODUK</text>
+        <line x1="20" y1="242" x2="170" y2="242" stroke="#16294A" stroke-width="1"/>
+        <text x="95" y="258" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_produk (PK)</text>
+        <text x="95" y="272" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama, harga, stok</text>
+        <text x="95" y="286" text-anchor="middle" font-size="9.5" fill="#7A6FC9">id_kategori (FK)</text>
 
-        <rect x="550" y="20" width="150" height="70" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
-        <text x="625" y="42" text-anchor="middle" font-weight="bold" font-size="11">PEMBAYARAN</text>
-        <line x1="550" y1="52" x2="700" y2="52" stroke="#16294A" stroke-width="1"/>
-        <text x="625" y="68" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_bayar (PK)</text>
-        <text x="625" y="82" text-anchor="middle" font-size="9.5" fill="#3A4A63">tanggal, metode</text>
+        <rect x="290" y="20" width="150" height="70" class="entity-box" data-entity="PELANGGAN" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <text x="365" y="42" text-anchor="middle" font-weight="bold" font-size="11">PELANGGAN</text>
+        <line x1="290" y1="52" x2="440" y2="52" stroke="#16294A" stroke-width="1"/>
+        <text x="365" y="68" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_pelanggan (PK)</text>
+        <text x="365" y="82" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama, email</text>
 
-        <rect x="20" y="200" width="150" height="85" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
-        <text x="95" y="222" text-anchor="middle" font-weight="bold" font-size="11">PRODUK</text>
-        <line x1="20" y1="232" x2="170" y2="232" stroke="#16294A" stroke-width="1"/>
-        <text x="95" y="248" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_produk (PK)</text>
-        <text x="95" y="262" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama, harga, stok</text>
-        <text x="95" y="276" text-anchor="middle" font-size="9.5" fill="#7A6FC9">id_kategori (FK)</text>
+        <rect x="290" y="140" width="150" height="85" class="entity-box" data-entity="ORDER" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="365" y="162" text-anchor="middle" font-weight="bold" font-size="11">ORDER</text>
+        <line x1="290" y1="172" x2="440" y2="172" stroke="#16294A" stroke-width="1"/>
+        <text x="365" y="188" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_order (PK)</text>
+        <text x="365" y="202" text-anchor="middle" font-size="9.5" fill="#3A4A63">tanggal, status</text>
+        <text x="365" y="216" text-anchor="middle" font-size="9.5" fill="#7A6FC9">id_pelanggan (FK)</text>
 
-        <rect x="260" y="140" width="150" height="85" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
-        <text x="335" y="162" text-anchor="middle" font-weight="bold" font-size="11">ORDER</text>
-        <line x1="260" y1="172" x2="410" y2="172" stroke="#16294A" stroke-width="1"/>
-        <text x="335" y="188" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_order (PK)</text>
-        <text x="335" y="202" text-anchor="middle" font-size="9.5" fill="#3A4A63">tanggal, status</text>
-        <text x="335" y="216" text-anchor="middle" font-size="9.5" fill="#7A6FC9">id_pelanggan (FK)</text>
+        <rect x="290" y="300" width="150" height="70" class="entity-box" data-entity="PEMBAYARAN" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <text x="365" y="322" text-anchor="middle" font-weight="bold" font-size="11">PEMBAYARAN</text>
+        <line x1="290" y1="332" x2="440" y2="332" stroke="#16294A" stroke-width="1"/>
+        <text x="365" y="348" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_bayar (PK)</text>
+        <text x="365" y="362" text-anchor="middle" font-size="9.5" fill="#3A4A63">tanggal, metode</text>
 
-        <rect x="520" y="180" width="150" height="80" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
-        <text x="595" y="202" text-anchor="middle" font-weight="bold" font-size="11" fill="#C9584F">ORDER_DETAIL</text>
-        <line x1="520" y1="212" x2="670" y2="212" stroke="#C9584F" stroke-width="1"/>
-        <text x="595" y="228" text-anchor="middle" font-size="9" fill="#3A4A63">id_order (PFK)</text>
-        <text x="595" y="242" text-anchor="middle" font-size="9" fill="#3A4A63">id_produk (PFK), jumlah</text>
+        <rect x="560" y="180" width="150" height="80" class="entity-box" data-entity="ORDER_DETAIL" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
+        <text x="635" y="202" text-anchor="middle" font-weight="bold" font-size="10" fill="#C9584F">ORDER_DETAIL</text>
+        <line x1="560" y1="212" x2="710" y2="212" stroke="#C9584F" stroke-width="1"/>
+        <text x="635" y="228" text-anchor="middle" font-size="9" fill="#3A4A63">id_order (PFK)</text>
+        <text x="635" y="242" text-anchor="middle" font-size="9" fill="#3A4A63">id_produk (PFK), jumlah</text>
 
-        <line x1="170" y1="55" x2="260" y2="55" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1b)" marker-end="url(#cfNb)"/>
-        <rect x="190" y="38" width="50" height="14" fill="#fff" stroke="none"/>
-        <text x="215" y="50" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
+        <line x1="95" y1="90" x2="95" y2="210" stroke="#16294A" stroke-width="2" marker-start="url(#cf1b)" marker-end="url(#cfNb)" class="rel-line" data-a="KATEGORI" data-b="PRODUK" data-cardinality="1 : N" data-desc="Satu Kategori berisi banyak Produk" data-participation="Total (Produk), Parsial (Kategori)"/>
+        <rect x="60" y="140" width="70" height="16" fill="#fff" stroke="none"/>
+        <text x="95" y="152" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="335" y1="90" x2="335" y2="140" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1b)" marker-end="url(#cfNb)"/>
-        <rect x="345" y="108" width="40" height="14" fill="#fff" stroke="none"/>
-        <text x="365" y="120" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
+        <line x1="365" y1="90" x2="365" y2="140" stroke="#16294A" stroke-width="2" marker-start="url(#cf1b)" marker-end="url(#cfNb)" class="rel-line" data-a="PELANGGAN" data-b="ORDER" data-cardinality="1 : N" data-desc="Satu Pelanggan membuat banyak Order" data-participation="Total (Order), Parsial (Pelanggan)"/>
+        <rect x="380" y="108" width="40" height="14" fill="#fff" stroke="none"/>
+        <text x="400" y="120" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="170" y1="240" x2="260" y2="180" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1b)" marker-end="url(#cfNb)"/>
-        <rect x="175" y="198" width="50" height="14" fill="#fff" stroke="none"/>
-        <text x="200" y="210" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
+        <line x1="440" y1="175" x2="560" y2="205" stroke="#16294A" stroke-width="2" marker-start="url(#cf1b)" marker-end="url(#cfNb)" class="rel-line" data-a="ORDER" data-b="ORDER_DETAIL" data-cardinality="1 : N" data-desc="Satu Order memiliki banyak Order Detail" data-participation="Total (Order Detail), Parsial (Order)"/>
+        <rect x="468" y="180" width="50" height="14" fill="#fff" stroke="none"/>
+        <text x="493" y="192" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="410" y1="175" x2="520" y2="195" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1b)" marker-end="url(#cfNb)"/>
-        <rect x="430" y="176" width="50" height="14" fill="#fff" stroke="none"/>
-        <text x="455" y="188" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
+        <line x1="170" y1="260" x2="560" y2="220" stroke="#16294A" stroke-width="2" marker-start="url(#cf1b)" marker-end="url(#cfNb)" class="rel-line" data-a="PRODUK" data-b="ORDER_DETAIL" data-cardinality="1 : N" data-desc="Satu Produk dapat muncul di banyak Order Detail" data-participation="Total (Order Detail), Parsial (Produk)"/>
+        <rect x="310" y="238" width="70" height="14" fill="#fff" stroke="none"/>
+        <text x="345" y="250" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="410" y1="55" x2="550" y2="55" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1b)" marker-end="url(#cf1b)"/>
-        <rect x="455" y="38" width="40" height="14" fill="#fff" stroke="none"/>
-        <text x="475" y="50" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : 1</text>
-
-        <line x1="95" y1="285" x2="560" y2="240" stroke="#C9584F" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#cfNbred)"/>
-        <line x1="335" y1="225" x2="540" y2="230" stroke="#C9584F" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#cfNbred)"/>
-        <rect x="350" y="235" width="80" height="14" fill="#fff" stroke="none"/>
-        <text x="390" y="247" text-anchor="middle" font-size="9" fill="#C9584F" font-weight="bold">M:N dipecah</text>
+        <line x1="365" y1="225" x2="365" y2="300" stroke="#16294A" stroke-width="2" marker-start="url(#cf1b)" marker-end="url(#cf1b)" class="rel-line" data-a="ORDER" data-b="PEMBAYARAN" data-cardinality="1 : 1" data-desc="Satu Order memiliki tepat satu Pembayaran" data-participation="Total (Pembayaran), Parsial (Order)"/>
+        <rect x="380" y="255" width="40" height="14" fill="#fff" stroke="none"/>
+        <text x="400" y="267" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : 1</text>
       </svg>
     </div>
   </div>
@@ -347,26 +340,26 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
           <marker id="cfNcred" markerWidth="7" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7" fill="none" stroke="#C9584F" stroke-width="1.2"/><line x1="0" y1="0" x2="0" y2="7" stroke="#C9584F" stroke-width="1.2"/></marker>
         </defs>
 
-        <rect x="20" y="20" width="140" height="70" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <rect x="20" y="20" width="140" height="70" class="entity-box" data-entity="UNIT" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
         <text x="90" y="42" text-anchor="middle" font-weight="bold" font-size="11">UNIT</text>
         <line x1="20" y1="52" x2="160" y2="52" stroke="#16294A" stroke-width="1"/>
         <text x="90" y="68" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_unit (PK)</text>
         <text x="90" y="82" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama_unit</text>
 
-        <rect x="260" y="20" width="150" height="85" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <rect x="260" y="20" width="150" height="85" class="entity-box" data-entity="DOKTER" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
         <text x="335" y="42" text-anchor="middle" font-weight="bold" font-size="11">DOKTER</text>
         <line x1="260" y1="52" x2="410" y2="52" stroke="#16294A" stroke-width="1"/>
         <text x="335" y="68" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_dokter (PK)</text>
         <text x="335" y="82" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama, spesialisasi</text>
         <text x="335" y="96" text-anchor="middle" font-size="9.5" fill="#7A6FC9">id_unit (FK)</text>
 
-        <rect x="540" y="20" width="150" height="70" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <rect x="540" y="20" width="150" height="70" class="entity-box" data-entity="PASIEN" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
         <text x="615" y="42" text-anchor="middle" font-weight="bold" font-size="11">PASIEN</text>
         <line x1="540" y1="52" x2="690" y2="52" stroke="#16294A" stroke-width="1"/>
         <text x="615" y="68" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_pasien (PK)</text>
         <text x="615" y="82" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama, alamat</text>
 
-        <rect x="310" y="180" width="160" height="100" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <rect x="310" y="180" width="160" height="100" class="entity-box" data-entity="KUNJUNGAN" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
         <text x="390" y="202" text-anchor="middle" font-weight="bold" font-size="11">KUNJUNGAN</text>
         <line x1="310" y1="212" x2="470" y2="212" stroke="#16294A" stroke-width="1"/>
         <text x="390" y="228" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_kunjungan (PK)</text>
@@ -374,49 +367,49 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
         <text x="390" y="256" text-anchor="middle" font-size="9.5" fill="#7A6FC9">id_dokter (FK)</text>
         <text x="390" y="270" text-anchor="middle" font-size="9.5" fill="#7A6FC9">id_pasien (FK)</text>
 
-        <rect x="580" y="180" width="150" height="75" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <rect x="580" y="180" width="150" height="75" class="entity-box" data-entity="REKAM_MEDIS" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
         <text x="655" y="202" text-anchor="middle" font-weight="bold" font-size="10">REKAM_MEDIS</text>
         <line x1="580" y1="212" x2="730" y2="212" stroke="#16294A" stroke-width="1"/>
         <text x="655" y="228" text-anchor="middle" font-size="9" fill="#3A4A63">id_rekam (PK)</text>
         <text x="655" y="242" text-anchor="middle" font-size="9" fill="#3A4A63">diagnosis</text>
 
-        <rect x="160" y="380" width="140" height="70" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <rect x="160" y="380" width="140" height="70" class="entity-box" data-entity="RESEP" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
         <text x="230" y="402" text-anchor="middle" font-weight="bold" font-size="11">RESEP</text>
         <line x1="160" y1="412" x2="300" y2="412" stroke="#16294A" stroke-width="1"/>
         <text x="230" y="428" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_resep (PK)</text>
         <text x="230" y="442" text-anchor="middle" font-size="9.5" fill="#3A4A63">tanggal</text>
 
-        <rect x="540" y="380" width="140" height="70" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <rect x="540" y="380" width="140" height="70" class="entity-box" data-entity="OBAT" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
         <text x="610" y="402" text-anchor="middle" font-weight="bold" font-size="11">OBAT</text>
         <line x1="540" y1="412" x2="680" y2="412" stroke="#16294A" stroke-width="1"/>
         <text x="610" y="428" text-anchor="middle" font-size="9.5" fill="#3A4A63">id_obat (PK)</text>
         <text x="610" y="442" text-anchor="middle" font-size="9.5" fill="#3A4A63">nama_obat, harga</text>
 
-        <rect x="320" y="430" width="180" height="40" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
+        <rect x="320" y="430" width="180" height="40" class="entity-box" data-entity="RESEP_DETAIL" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
         <text x="410" y="455" text-anchor="middle" font-weight="bold" font-size="10" fill="#C9584F">RESEP_DETAIL</text>
 
-        <line x1="160" y1="55" x2="260" y2="55" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1c)" marker-end="url(#cfNc)"/>
+        <line x1="160" y1="55" x2="260" y2="55" stroke="#16294A" stroke-width="2" marker-start="url(#cf1c)" marker-end="url(#cfNc)" class="rel-line" data-a="UNIT" data-b="DOKTER" data-cardinality="1 : N" data-desc="Satu Unit memiliki banyak Dokter" data-participation="Total (Dokter), Parsial (Unit)"/>
         <rect x="185" y="38" width="50" height="14" fill="#fff" stroke="none"/>
         <text x="210" y="50" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="335" y1="105" x2="360" y2="180" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1c)" marker-end="url(#cfNc)"/>
+        <line x1="335" y1="105" x2="360" y2="180" stroke="#16294A" stroke-width="2" marker-start="url(#cf1c)" marker-end="url(#cfNc)" class="rel-line" data-a="DOKTER" data-b="KUNJUNGAN" data-cardinality="1 : N" data-desc="Satu Dokter menangani banyak Kunjungan" data-participation="Parsial (Dokter)"/>
         <rect x="310" y="135" width="50" height="14" fill="#fff" stroke="none"/>
         <text x="335" y="147" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="615" y1="90" x2="440" y2="180" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1c)" marker-end="url(#cfNc)"/>
+        <line x1="615" y1="90" x2="440" y2="180" stroke="#16294A" stroke-width="2" marker-start="url(#cf1c)" marker-end="url(#cfNc)" class="rel-line" data-a="PASIEN" data-b="KUNJUNGAN" data-cardinality="1 : N" data-desc="Satu Pasien melakukan banyak Kunjungan" data-participation="Total (Kunjungan), Parsial (Pasien)"/>
         <rect x="510" y="125" width="50" height="14" fill="#fff" stroke="none"/>
         <text x="535" y="137" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="470" y1="215" x2="580" y2="215" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1c)" marker-end="url(#cf1c)"/>
+        <line x1="470" y1="215" x2="580" y2="215" stroke="#16294A" stroke-width="2" marker-start="url(#cf1c)" marker-end="url(#cf1c)" class="rel-line" data-a="KUNJUNGAN" data-b="REKAM_MEDIS" data-cardinality="1 : 1" data-desc="Satu Kunjungan menghasilkan satu Rekam Medis" data-participation="Total (Rekam Medis), Parsial (Kunjungan)"/>
         <rect x="500" y="198" width="40" height="14" fill="#fff" stroke="none"/>
         <text x="520" y="210" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : 1</text>
 
-        <line x1="350" y1="280" x2="250" y2="380" stroke="#16294A" stroke-width="2.5" marker-start="url(#cf1c)" marker-end="url(#cfNc)"/>
+        <line x1="350" y1="280" x2="250" y2="380" stroke="#16294A" stroke-width="2" marker-start="url(#cf1c)" marker-end="url(#cfNc)" class="rel-line" data-a="KUNJUNGAN" data-b="RESEP" data-cardinality="1 : N" data-desc="Satu Kunjungan dapat menghasilkan banyak Resep" data-participation="Parsial (Kunjungan)"/>
         <rect x="260" y="318" width="50" height="14" fill="#fff" stroke="none"/>
         <text x="285" y="330" text-anchor="middle" font-size="9" fill="#16294A" font-weight="bold">1 : N</text>
 
-        <line x1="300" y1="440" x2="320" y2="440" stroke="#C9584F" stroke-width="2.5" marker-start="url(#cf1c)" marker-end="url(#cfNcred)"/>
-        <line x1="540" y1="440" x2="500" y2="440" stroke="#C9584F" stroke-width="2.5" marker-start="url(#cf1c)" marker-end="url(#cfNcred)"/>
+        <line x1="300" y1="440" x2="320" y2="440" stroke="#C9584F" stroke-width="2" stroke-dasharray="8,4" marker-start="url(#cf1c)" marker-end="url(#cfNcred)" class="rel-line" data-a="RESEP" data-b="RESEP_DETAIL" data-cardinality="M : N" data-desc="Relasi via tabel penghubung RESEP_DETAIL (M:N dipecah)" data-participation="Total"/>
+        <line x1="540" y1="440" x2="500" y2="440" stroke="#C9584F" stroke-width="2" stroke-dasharray="8,4" marker-start="url(#cf1c)" marker-end="url(#cfNcred)" class="rel-line" data-a="OBAT" data-b="RESEP_DETAIL" data-cardinality="M : N" data-desc="Relasi via tabel penghubung RESEP_DETAIL (M:N dipecah)" data-participation="Total"/>
         <rect x="375" y="425" width="70" height="14" fill="#fff" stroke="none"/>
         <text x="410" y="437" text-anchor="middle" font-size="9" fill="#C9584F" font-weight="bold">M:N dipecah</text>
       </svg>

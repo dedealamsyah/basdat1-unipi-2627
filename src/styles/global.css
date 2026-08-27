@@ -898,6 +898,53 @@ ul.refs {
   padding-left: 18px;
 }
 
+/* --- INTERACTIVE ERD DIAGRAM --- */
+.entity-box { cursor: pointer; transition: opacity 0.2s ease, stroke 0.2s ease; }
+.entity-hl { stroke: #E7A83D !important; stroke-width: 3.5 !important; }
+.entity-dim { opacity: 0.2; }
+.rel-line { transition: opacity 0.2s ease, stroke 0.2s ease; }
+.rel-hl { stroke-width: 4 !important; opacity: 1 !important; }
+
+.erd-tooltip {
+  position: absolute;
+  background: var(--navy-950);
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+  z-index: 50;
+  pointer-events: none;
+  max-width: 230px;
+  border-left: 3px solid var(--teal-500);
+}
+.erd-tooltip-pinned {
+  pointer-events: auto;
+  border-left-color: var(--amber-400);
+}
+.erd-tip-card .erd-tip-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #7FD7C4;
+  margin-bottom: 3px;
+}
+.erd-tip-card .erd-tip-desc {
+  font-size: 11px;
+  color: #DDE6F0;
+}
+.erd-tip-card .erd-tip-part {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  font-size: 10px;
+  color: #B9C6D8;
+}
+.erd-tooltip-pinned .erd-tip-title {
+  color: var(--amber-400);
+}
+
 ul.refs li {
   margin-bottom: 9px;
   line-height: 1.6;
