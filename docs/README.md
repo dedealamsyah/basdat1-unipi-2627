@@ -9,8 +9,9 @@ Portal materi interaktif untuk mata kuliah Basis Data, Program Studi S1 Informat
 | **Framework** | Astro 7.x (Static Site Generator) |
 | **Content** | MDX (Markdown + JSX) |
 | **Output** | HTML statis (~2MB) |
-| **Pertemuan** | 16 minggu (2 aktif, 14 placeholder) |
-| **Fitur** | Kuis, Game, Diagram Zoom, Dark Mode, PWA |
+| **Pertemuan** | 16 minggu (3 aktif, 13 placeholder) |
+| **Halaman** | 18 (beranda + 16 pertemuan + worksheet praktikum) |
+| **Fitur** | Kuis, Game, Diagram ERD Interaktif, Worksheet Praktikum, Dark Mode, PWA |
 
 ## Cepat Mulai
 
@@ -52,7 +53,8 @@ Lihat [Arsitektur Sistem](ARCHITECTURE.md) untuk detail lengkap.
 
 - **Kuis Interaktif** — Feedback langsung dengan penjelasan
 - **Game Edukatif** — Klasifikasi komponen, entitas, dll
-- **Diagram Zoom** — Zoom in/out, pan, double-click toggle
+- **Diagram ERD Interaktif** — Hover/klik garis relasi untuk info kardinalitas & partisipasi
+- **Worksheet Praktikum** (`/praktikum`) — Lembar kerja perancangan ERD interaktif (auto-save)
 - **Dark Mode** — Toggle tema gelap/terang
 - **Mobile Responsive** — Optimasi untuk smartphone/tablet
 - **Offline Access** — PWA dengan service worker

@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.1.0] - 2026-08-27 (Booking terakhir)
+
+### Added
+
+#### Content
+- ✅ **Pertemuan 3: Perancangan Basis Data dengan ERD (Studi Kasus)** — lengkap
+  - Metodologi perancangan ERD 5 langkah
+  - Studi kasus 1: SIAKAD (gambar ERD)
+  - Studi kasus 2: E-Commerce (gambar ERD)
+  - Studi kasus 3: Rumah Sakit (gambar ERD)
+  - Checklist validasi ERD + panduan Crow's Foot
+  - 4 kuis evaluasi + penugasan individu
+
+#### Interaktivitas ERD (baru)
+- **Diagram ERD interaktif** (`public/erd-interactive.js`)
+  - Hover garis relasi → sorot 2 entitas + tooltip kardinalitas/partisipasi
+  - Hover kotak entitas → sorot relasinya
+  - Klik garis → pin tooltip (klik lagi/klik kosong untuk lepas)
+  - CSS: `.entity-hl`, `.entity-dim`, `.rel-hl`, `.erd-tooltip`
+- Perbaiki geometri ERD E-Commerce (relasi sebelumnya salah koneksi)
+
+#### Halaman Baru
+- ✅ **`/praktikum` — Worksheet Perancangan ERD** (menu terpisah)
+  - 7 tahap: Identitas → Studi Kasus → Entitas → Atribut/Key → Relasi → Asumsi → Simpan
+  - 5 studi kasus pilihan (SIAKAD, Perpustakaan, Rumah Sakit, Parkir, Hotel)
+  - Isian auto-save di localStorage (key `basdat_wks_v1`)
+  - Unduh laporan `.txt` & cetak/PDF
+  - Item menu "🧪 Praktikum" di sidebar + tautan di beranda
+
+#### Docs (diperbarui)
+- `docs/DEVELOPMENT.md`, `docs/ARCHITECTURE.md` — routing `/praktikum`
+- Rubrik penilaian & RPS bisa dicek ulang di file `docs/*.docx`
+
+### Changed
+- Jumlah halaman: 18 (17 + `/praktikum`)
+
+---
+
 ## [1.0.0] - 2026-08-27
 
 ### Added
@@ -77,13 +115,15 @@
 
 ## Roadmap
 
-### [1.1.0] - Planned
-- [ ] Pertemuan 3: Perancangan Basis Data dengan ERD (Studi Kasus)
-- [ ] Pertemuan 4: Transformasi ERD ke Model Relasional
-- [ ] Pertemuan 5: Normalisasi Basis Data (1NF-3NF)
+### [1.2.0] - Planned (lanjutan berikutnya)
+- [ ] **Pertemuan 4: Transformasi ERD ke Model Relasional** — mapping rules ER → tabel
+- [ ] **Pertemuan 5: Normalisasi Basis Data (1NF-3NF)**
+- [ ] **Pertemuan 6: Normalisasi Lanjutan (BCNF)**
+- [ ] Perkuat worksheet: import/ekspor relasi antar kelompok, auto-check
+- [ ] Perbaiki print styles worksheet agar lebih rapi
 
-### [1.2.0] - Planned
-- [ ] Pertemuan 6-10 content
+### [1.3.0] - Planned
+- [ ] Pertemuan 7-10 content
 - [ ] SQL syntax highlighting improvement
 - [ ] Interactive SQL playground
 
@@ -93,3 +133,13 @@
 - [ ] Progress tracking per user
 - [ ] Quiz scoring system
 - [ ] Export PDF functionality
+
+---
+
+## Catatan Lanjutan (checkpoint)
+
+Untuk melanjutkan di sesi berikutnya:
+1. **Menambah materi baru**: buat `src/content/pertemuan/{id}.mdx` lalu set `locked: false`
+2. **Worksheet**: logika di `src/pages/praktikum.astro` (inline script, state di `localStorage` key `basdat_wks_v1`)
+3. **Diagram interaktif**: tambahkan `class="entity-box" data-entity=".."` pada rect, dan `class="rel-line" data-a data-b data-cardinality data-desc data-participation` pada line relasi
+4. **Pertemuan 4** paling relevan untuk dikerjakan berikutnya (mapping ERD → skema relasional dari studi kasus Pertemuan 3)
