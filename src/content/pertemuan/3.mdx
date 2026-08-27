@@ -1,12 +1,529 @@
 ---
 id: 3
 title: "Perancangan Basis Data dengan ERD (Studi Kasus)"
-locked: true
+subtitle: "Praktik Perancangan ERD dari Analisis Narasi Bisnis hingga Diagram Lengkap"
+locked: false
 order: 3
+meta:
+  subCPMK: "Mahasiswa mampu menerapkan konsep ERD pada studi kasus nyata dan menghasilkan rancangan diagram yang valid."
+  alokasi: "3 × 50 menit"
+  bobot: "5%"
+  cpmk: "CPMK-1"
 ---
 
-## Pertemuan 3: Perancangan Basis Data dengan ERD (Studi Kasus)
+import QuizCard from '../../components/QuizCard.astro';
 
-Materi pertemuan ini masih dalam proses pengembahan.
+## A. Identitas Pertemuan
 
-Silakan hubungi dosen pengampu untuk informasi lebih lanjut.
+<table class="dtable">
+  <tbody>
+    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Pertemuan / Minggu</th><td>Ke-3 dari 16 (Semester 3, TA 2026/2027)</td></tr>
+    <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur</td></tr>
+    <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
+    <tr><th>Sub-CPMK Minggu 3</th><td>Mahasiswa mampu menerapkan konsep ERD pada studi kasus nyata dan menghasilkan rancangan diagram yang valid.</td></tr>
+  </tbody>
+</table>
+
+## B. Capaian Pembelajaran (Pendekatan OBE)
+
+<table class="dtable">
+  <thead><tr><th style="width:60px">No</th><th>Indikator Capaian (Outcome yang Diukur)</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Mahasiswa dapat menganalisis narasi bisnis untuk mengidentifikasi entitas, atribut, dan relasi.</td></tr>
+    <tr><td>2</td><td>Mahasiswa dapat menentukan kardinalitas dan partisipasi yang tepat untuk setiap relasi.</td></tr>
+    <tr><td>3</td><td>Mahasiswa dapat mengonstruksi ERD lengkap untuk studi kasus sistem informasi nyata.</td></tr>
+    <tr><td>4</td><td>Mahasiswa dapat memvalidasi ERD terhadap kebutuhan bisnis (requirement validation).</td></tr>
+    <tr><td>5</td><td>Mahasiswa dapat mendokumentasikan asumsi dan keputusan perancangan dalam ERD.</td></tr>
+  </tbody>
+</table>
+
+<div class="chipRow">
+  <span class="chip">KRITERIA · Ketepatan analisis & kelengkapan diagram</span>
+  <span class="chip">BENTUK · Penugasan perancangan ERD kelompok</span>
+  <span class="chip chip--amber">BOBOT · 5%</span>
+</div>
+
+## C. Peta Konsep Pertemuan
+
+Pertemuan ini berfokus pada **praktik terapan** dari konsep ERD yang dipelajari pada Pertemuan 2. Mahasiswa akan belajar:
+
+1. Metodologi perancangan ERD (langkah demi langkah)
+2. Studi kasus 1: Sistem Informasi Akademik (SIAKAD)
+3. Studi kasus 2: Sistem E-Commerce
+4. Studi kasus 3: Sistem Manajemen Rumah Sakit
+5. Validasi dan dokumentasi ERD
+
+<div class="callout callout--amber">
+  <span class="callout__label">Penting</span>
+  <p>Pertemuan ini adalah praktikum. Mahasiswa diharapkan membawa laptop untuk menggambar ERD menggunakan tools seperti <strong>draw.io</strong>, <strong>Lucidchart</strong>, atau <strong>dbdiagram.io</strong>.</p>
+</div>
+
+## D. Metodologi Perancangan ERD
+
+Sebelum masuk ke studi kasus, pahami langkah-langkah sistematis dalam perancangan ERD:
+
+### Langkah 1: Identifikasi Entitas
+
+Baca narasi bisnis dan identifikasi **kata benda** yang merepresentasikan objek penting.
+
+<div class="callout">
+  <span class="callout__label">Tips</span>
+  <p>Tanyakan: "Objek apa yang datanya perlu disimpan?" dan "Objek apa yang berinteraksi dalam sistem?"</p>
+</div>
+
+### Langkah 2: Identifikasi Atribut
+
+Untuk setiap entitas, tentukan properti yang perlu dicatat.
+
+- **Atribut utama** → jadi kandidat Primary Key
+- **Atribut multivalued** → perlu tabel terpisah
+- **Atribut derived** → tidak perlu disimpan (dihitung dari atribut lain)
+
+### Langkah 3: Tentukan Relasi
+
+Identifikasi hubungan antar entitas dan tentukan:
+- **Nama relasi** (verba: mengajar, memesan, memiliki)
+- **Kardinalitas** (1:1, 1:N, M:N)
+- **Partisipasi** (total/parsial)
+
+### Langkah 4: Tentukan Key
+
+- **Primary Key (PK):** Identitas unik setiap entitas
+- **Foreign Key (FK):** Penunjuk ke PK entitas lain
+
+### Langkah 5: Gambar & Validasi
+
+Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi dengan:
+- Apakah semua entitas tergambar?
+- Apakah relasi sudah sesuai narasi?
+- Apakah ada entitas yang terlewat?
+
+## E. Studi Kasus 1: Sistem Informasi Akademik (SIAKAD)
+
+### Narasi Bisnis
+
+<div class="callout">
+  <p>"Universitas memiliki <strong>Mahasiswa</strong> yang terdaftar di suatu <strong>Program Studi</strong>. Setiap mahasiswa dapat mengambil banyak <strong>Mata Kuliah</strong>, dan satu mata kuliah dapat diambil oleh banyak mahasiswa. Setiap mata kuliah diasuh oleh minimal satu <strong>Dosen</strong>, dan satu dosen dapat mengampu banyak mata kuliah. Sistem mencatat <strong>Nilai</strong> setiap mahasiswa pada setiap mata kuliah yang diambil, termasuk <strong>Semester</strong> dan <strong>Tahun Akademik</strong>."</p>
+</div>
+
+### Analisis
+
+**Langkah 1: Identifikasi Entitas**
+
+| Entitas | Keterangan |
+|---------|------------|
+| MAHASISWA | Objek yang memiliki data diri mahasiswa |
+| DOSEN | Objek yang memiliki data dosen pengampu |
+| MATAKULIAH | Objek mata kuliah yang ditawarkan |
+| PROGRAM_STUDI | Objek program studi |
+| NILAI | Data nilai mahasiswa per mata kuliah |
+
+**Langkah 2: Identifikasi Atribut**
+
+<table class="dtable">
+  <thead><tr><th>Entitas</th><th>Atribut</th><th>Keterangan</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MAHASISWA</strong></td><td><code>nim (PK)</code>, nama, alamat, no_hp, email, tanggal_lahir</td><td>NIM sebagai primary key</td></tr>
+    <tr><td><strong>DOSEN</strong></td><td><code>nip (PK)</code>, nama_dosen, email, bidang_keahlian</td><td>NIP sebagai primary key</td></tr>
+    <tr><td><strong>MATAKULIAH</strong></td><td><code>kode_mk (PK)</code>, nama_mk, sks, semester</td><td>Kode MK sebagai primary key</td></tr>
+    <tr><td><strong>PROGRAM_STUDI</strong></td><td><code>kode_prodi (PK)</code>, nama_prodi, fakultas</td><td>Kode Prodi sebagai primary key</td></tr>
+    <tr><td><strong>NILAI</strong></td><td><code>nim (PFK)</code>, <code>kode_mk (PFK)</code>, <code>semester (PFK)</code>, <code>tahun_akademik (PFK)</code>, nilai, grade</td><td>Composite PK</td></tr>
+  </tbody>
+</table>
+
+**Langkah 3: Tentukan Relasi**
+
+| Relasi | Entitas A | Entitas B | Kardinalitas | Partisipasi |
+|--------|-----------|-----------|--------------|-------------|
+| Terdaftar | MAHASISWA | PROGRAM_STUDI | N:1 | Total (Mhs), Total (Prodi) |
+| Mengambil | MAHASISWA | MATAKULIAH | M:N | Parsial (Mhs), Parsial (MK) |
+| Mengajar | DOSEN | MATAKULIAH | 1:N | Total (MK), Parsial (Dosen) |
+| Memiliki Nilai | MAHASISWA + MATAKULIAH | NILAI | 1:1 (via tabel penghubung) | Total |
+
+### ERD SIAKAD
+
+<div class="diagram-container">
+  <div class="diagram-zoom-controls">
+    <button class="zoom-btn zoom-out">−</button>
+    <span class="zoom-btn zoom-level" style="background:#EEF2F5;color:#3A4A63;cursor:default;">100%</span>
+    <button class="zoom-btn zoom-in">+</button>
+    <button class="zoom-btn zoom-reset">Reset</button>
+  </div>
+  <div class="diagram-wrapper">
+    <div class="diagram-inner">
+      <svg viewBox="0 0 750 450" style="width:700px;" font-family="JetBrains Mono" font-size="11">
+        <rect x="20" y="20" width="160" height="90" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <text x="100" y="45" text-anchor="middle" font-weight="bold" font-size="12">PROGRAM_STUDI</text>
+        <line x1="20" y1="55" x2="180" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="100" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">kode_prodi (PK)</text>
+        <text x="100" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">nama_prodi</text>
+        <text x="100" y="102" text-anchor="middle" font-size="10" fill="#3A4A63">fakultas</text>
+
+        <rect x="250" y="20" width="160" height="110" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="330" y="45" text-anchor="middle" font-weight="bold" font-size="12">MAHASISWA</text>
+        <line x1="250" y1="55" x2="410" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="330" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">nim (PK)</text>
+        <text x="330" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">nama</text>
+        <text x="330" y="102" text-anchor="middle" font-size="10" fill="#3A4A63">alamat, no_hp</text>
+        <text x="330" y="117" text-anchor="middle" font-size="10" fill="#7A6FC9">kode_prodi (FK)</text>
+
+        <rect x="570" y="20" width="160" height="90" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <text x="650" y="45" text-anchor="middle" font-weight="bold" font-size="12">DOSEN</text>
+        <line x1="570" y1="55" x2="730" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="650" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">nip (PK)</text>
+        <text x="650" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">nama_dosen</text>
+        <text x="650" y="102" text-anchor="middle" font-size="10" fill="#3A4A63">bidang_keahlian</text>
+
+        <rect x="400" y="200" width="160" height="100" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="480" y="225" text-anchor="middle" font-weight="bold" font-size="12">MATAKULIAH</text>
+        <line x1="400" y1="235" x2="560" y2="235" stroke="#16294A" stroke-width="1"/>
+        <text x="480" y="252" text-anchor="middle" font-size="10" fill="#3A4A63">kode_mk (PK)</text>
+        <text x="480" y="267" text-anchor="middle" font-size="10" fill="#3A4A63">nama_mk, sks</text>
+        <text x="480" y="282" text-anchor="middle" font-size="10" fill="#3A4A63">semester</text>
+        <text x="480" y="297" text-anchor="middle" font-size="10" fill="#7A6FC9">nip_dosen (FK)</text>
+
+        <rect x="250" y="350" width="200" height="80" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
+        <text x="350" y="375" text-anchor="middle" font-weight="bold" font-size="12" fill="#C9584F">NILAI</text>
+        <line x1="250" y1="385" x2="450" y2="385" stroke="#C9584F" stroke-width="1"/>
+        <text x="350" y="402" text-anchor="middle" font-size="9" fill="#3A4A63">nim (PFK) + kode_mk (PFK)</text>
+        <text x="350" y="417" text-anchor="middle" font-size="9" fill="#3A4A63">semester, tahun_akademik, nilai</text>
+
+        <line x1="180" y1="65" x2="250" y2="65" stroke="#16294A" stroke-width="2"/>
+        <circle cx="180" cy="65" r="4" fill="#16294A"/>
+        <line x1="240" y1="55" x2="250" y2="65" stroke="#16294A" stroke-width="2"/>
+        <line x1="240" y1="75" x2="250" y2="65" stroke="#16294A" stroke-width="2"/>
+        <line x1="250" y1="55" x2="250" y2="75" stroke="#16294A" stroke-width="2"/>
+        <text x="215" y="58" font-size="10" fill="#666">1 : N</text>
+
+        <line x1="650" y1="110" x2="560" y2="200" stroke="#16294A" stroke-width="2"/>
+        <circle cx="650" cy="110" r="4" fill="#16294A"/>
+        <line x1="570" y1="190" x2="560" y2="200" stroke="#16294A" stroke-width="2"/>
+        <line x1="550" y1="210" x2="560" y2="200" stroke="#16294A" stroke-width="2"/>
+        <line x1="560" y1="190" x2="560" y2="210" stroke="#16294A" stroke-width="2"/>
+        <text x="595" y="155" font-size="10" fill="#666">1 : N</text>
+
+        <line x1="330" y1="130" x2="300" y2="350" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="480" y1="300" x2="400" y2="350" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="370" y="330" font-size="10" fill="#C9584F" font-weight="bold">M:N dipecah</text>
+        <text x="370" y="345" font-size="9" fill="#888">→ tabel penghubung NILAI</text>
+      </svg>
+    </div>
+  </div>
+  <p class="diagram-source">ERD Sistem Informasi Akademik (SIAKAD) — Studi Kasus Pertemuan 3</p>
+</div>
+
+<div class="callout callout--amber">
+  <span class="callout__label">Catatan Penting</span>
+  <p>Relasi <strong>M:N</strong> antara MAHASISWA dan MATAKULIAH dipecah menjadi tabel penghubung <strong>NILAI</strong>. Atribut seperti <code>nilai</code> dan <code>grade</code> diletakkan di tabel NILAI (bukan di MAHASISWA atau MATAKULIAH) karena merupakan atribut relasi.</p>
+</div>
+
+## F. Studi Kasus 2: Sistem E-Commerce
+
+### Narasi Bisnis
+
+<div class="callout">
+  <p>"Sebuah toko online memiliki <strong>Pelanggan</strong> yang dapat memesan banyak <strong>Produk</strong>. Satu produk dapat dipesan oleh banyak pelanggan. Setiap pesanan tercatat dalam <strong>Order</strong> yang berisi <strong>Order_Detail</strong> berupa daftar produk beserta jumlahnya. Pelanggan melakukan <strong>Pembayaran</strong> untuk setiap order. Produk dikelompokkan dalam <strong>Kategori</strong>."</p>
+</div>
+
+### Analisis
+
+**Entitas & Atribut:**
+
+<table class="dtable">
+  <thead><tr><th>Entitas</th><th>Atribut</th><th>Keterangan</th></tr></thead>
+  <tbody>
+    <tr><td><strong>PELANGGAN</strong></td><td><code>id_pelanggan (PK)</code>, nama, email, no_hp, alamat</td><td>Data pelanggan</td></tr>
+    <tr><td><strong>PRODUK</strong></td><td><code>id_produk (PK)</code>, nama_produk, harga, stok, deskripsi</td><td>Data produk</td></tr>
+    <tr><td><strong>KATEGORI</strong></td><td><code>id_kategori (PK)</code>, nama_kategori, deskripsi</td><td>Kategori produk</td></tr>
+    <tr><td><strong>ORDER</strong></td><td><code>id_order (PK)</code>, <code>id_pelanggan (FK)</code>, tanggal_order, status, total</td><td>Data pesanan</td></tr>
+    <tr><td><strong>ORDER_DETAIL</strong></td><td><code>id_order (PFK)</code>, <code>id_produk (PFK)</code>, jumlah, subtotal</td><td>Detail pesanan</td></tr>
+    <tr><td><strong>PEMBAYARAN</strong></td><td><code>id_bayar (PK)</code>, <code>id_order (FK)</code>, tanggal_bayar, metode, jumlah_bayar</td><td>Data pembayaran</td></tr>
+  </tbody>
+</table>
+
+**Relasi:**
+
+| Relasi | Kardinalitas | Penjelasan |
+|--------|--------------|------------|
+| PELANGGAN → ORDER | 1:N | Satu pelanggan bisa punya banyak order |
+| ORDER → ORDER_DETAIL | 1:N | Satu order punya banyak detail |
+| PRODUK → ORDER_DETAIL | 1:N | Satu produk bisa ada di banyak order detail |
+| KATEGORI → PRODUK | 1:N | Satu kategori punya banyak produk |
+| ORDER → PEMBAYARAN | 1:1 | Satu order punya satu pembayaran |
+
+### ERD E-Commerce
+
+<div class="diagram-container">
+  <div class="diagram-zoom-controls">
+    <button class="zoom-btn zoom-out">−</button>
+    <span class="zoom-btn zoom-level" style="background:#EEF2F5;color:#3A4A63;cursor:default;">100%</span>
+    <button class="zoom-btn zoom-in">+</button>
+    <button class="zoom-btn zoom-reset">Reset</button>
+  </div>
+  <div class="diagram-wrapper">
+    <div class="diagram-inner">
+      <svg viewBox="0 0 750 400" style="width:700px;" font-family="JetBrains Mono" font-size="11">
+        <rect x="20" y="20" width="140" height="80" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <text x="90" y="45" text-anchor="middle" font-weight="bold" font-size="12">KATEGORI</text>
+        <line x1="20" y1="55" x2="160" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="90" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">id_kategori (PK)</text>
+        <text x="90" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">nama_kategori</text>
+
+        <rect x="220" y="20" width="140" height="80" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <text x="290" y="45" text-anchor="middle" font-weight="bold" font-size="12">PELANGGAN</text>
+        <line x1="220" y1="55" x2="360" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="290" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">id_pelanggan (PK)</text>
+        <text x="290" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">nama, email</text>
+
+        <rect x="20" y="180" width="140" height="100" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="90" y="205" text-anchor="middle" font-weight="bold" font-size="12">PRODUK</text>
+        <line x1="20" y1="215" x2="160" y2="215" stroke="#16294A" stroke-width="1"/>
+        <text x="90" y="232" text-anchor="middle" font-size="10" fill="#3A4A63">id_produk (PK)</text>
+        <text x="90" y="247" text-anchor="middle" font-size="10" fill="#3A4A63">nama_produk</text>
+        <text x="90" y="262" text-anchor="middle" font-size="10" fill="#3A4A63">harga, stok</text>
+        <text x="90" y="277" text-anchor="middle" font-size="10" fill="#7A6FC9">id_kategori (FK)</text>
+
+        <rect x="220" y="140" width="140" height="100" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="290" y="165" text-anchor="middle" font-weight="bold" font-size="12">ORDER</text>
+        <line x1="220" y1="175" x2="360" y2="175" stroke="#16294A" stroke-width="1"/>
+        <text x="290" y="192" text-anchor="middle" font-size="10" fill="#3A4A63">id_order (PK)</text>
+        <text x="290" y="207" text-anchor="middle" font-size="10" fill="#3A4A63">tanggal_order</text>
+        <text x="290" y="222" text-anchor="middle" font-size="10" fill="#3A4A63">status, total</text>
+        <text x="290" y="237" text-anchor="middle" font-size="10" fill="#7A6FC9">id_pelanggan (FK)</text>
+
+        <rect x="420" y="180" width="150" height="90" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
+        <text x="495" y="205" text-anchor="middle" font-weight="bold" font-size="12" fill="#C9584F">ORDER_DETAIL</text>
+        <line x1="420" y1="215" x2="570" y2="215" stroke="#C9584F" stroke-width="1"/>
+        <text x="495" y="232" text-anchor="middle" font-size="9" fill="#3A4A63">id_order (PFK)</text>
+        <text x="495" y="247" text-anchor="middle" font-size="9" fill="#3A4A63">id_produk (PFK)</text>
+        <text x="495" y="262" text-anchor="middle" font-size="9" fill="#3A4A63">jumlah, subtotal</text>
+
+        <rect x="420" y="20" width="140" height="90" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <text x="490" y="45" text-anchor="middle" font-weight="bold" font-size="12">PEMBAYARAN</text>
+        <line x1="420" y1="55" x2="560" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="490" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">id_bayar (PK)</text>
+        <text x="490" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">tanggal_bayar</text>
+        <text x="490" y="102" text-anchor="middle" font-size="10" fill="#7A6FC9">id_order (FK)</text>
+
+        <line x1="160" y1="60" x2="220" y2="60" stroke="#16294A" stroke-width="2"/>
+        <text x="190" y="53" font-size="10" fill="#666">1:N</text>
+
+        <line x1="160" y1="230" x2="220" y2="190" stroke="#16294A" stroke-width="2"/>
+        <text x="175" y="200" font-size="10" fill="#666">1:N</text>
+
+        <line x1="290" y1="100" x2="290" y2="140" stroke="#16294A" stroke-width="2"/>
+        <text x="305" y="125" font-size="10" fill="#666">1:N</text>
+
+        <line x1="360" y1="195" x2="420" y2="210" stroke="#C9584F" stroke-width="2"/>
+        <line x1="360" y1="225" x2="420" y2="230" stroke="#C9584F" stroke-width="2"/>
+
+        <line x1="160" y1="60" x2="220" y2="60" stroke="#16294A" stroke-width="2"/>
+
+        <line x1="290" y1="240" x2="495" y2="260" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="90" y1="280" x2="495" y2="260" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+
+        <line x1="360" y1="70" x2="420" y2="70" stroke="#16294A" stroke-width="2"/>
+        <text x="390" y="63" font-size="10" fill="#666">1:1</text>
+      </svg>
+    </div>
+  </div>
+  <p class="diagram-source">ERD Sistem E-Commerce — Studi Kasus Pertemuan 3</p>
+</div>
+
+<div class="callout">
+  <span class="callout__label">Pembelajaran</span>
+  <p>Perhatikan bahwa <strong>ORDER_DETAIL</strong> adalah tabel penghubung yang memecah relasi M:N antara ORDER dan PRODUK. Atribut <code>jumlah</code> dan <code>subtotal</code> diletakkan di ORDER_DETAIL karena merupakan atribut relasi.</p>
+</div>
+
+## G. Studi Kasus 3: Sistem Manajemen Rumah Sakit
+
+### Narasi Bisnis
+
+<div class="callout">
+  <p>"Rumah sakit memiliki <strong>Dokter</strong> yang bekerja di suatu <strong>Unit</strong>. <strong>Pasien</strong> datang untuk <strong>Rawat Jalan</strong> atau <strong>Rawat Inap</strong>. Setiap kunjungan ditangani oleh satu dokter dan tercatat dalam <strong>Rekam Medis</strong>. Pasien mendapatkan <strong>Resep Obat</strong> yang berisi <strong>Daftar Obat</strong>."</p>
+</div>
+
+### Analisis
+
+**Entitas:**
+
+| Entitas | Atribut Utama |
+|---------|---------------|
+| DOKTER | `id_dokter (PK)`, nama, spesialisasi |
+| UNIT | `id_unit (PK)`, nama_unit, lokasi |
+| PASIEN | `id_pasien (PK)`, nama, alamat, no_hp |
+| KUNJUNGAN | `id_kunjungan (PK)`, tanggal, keluhan, tipe (Jalan/Inap) |
+| REKAM_MEDIS | `id_rekam (PK)`, diagnosis, catatan |
+| OBAT | `id_obat (PK)`, nama_obat, harga, stok |
+| RESEP | `id_resep (PK)`, tanggal |
+| RESEP_DETAIL | `id_resep (PFK)`, `id_obat (PFK)`, dosis, jumlah |
+
+### ERD Rumah Sakit
+
+<div class="diagram-container">
+  <div class="diagram-zoom-controls">
+    <button class="zoom-btn zoom-out">−</button>
+    <span class="zoom-btn zoom-level" style="background:#EEF2F5;color:#3A4A63;cursor:default;">100%</span>
+    <button class="zoom-btn zoom-in">+</button>
+    <button class="zoom-btn zoom-reset">Reset</button>
+  </div>
+  <div class="diagram-wrapper">
+    <div class="diagram-inner">
+      <svg viewBox="0 0 750 450" style="width:700px;" font-family="JetBrains Mono" font-size="11">
+        <rect x="20" y="20" width="130" height="70" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <text x="85" y="45" text-anchor="middle" font-weight="bold" font-size="12">UNIT</text>
+        <line x1="20" y1="55" x2="150" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="85" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">id_unit (PK)</text>
+        <text x="85" y="85" text-anchor="middle" font-size="10" fill="#3A4A63">nama_unit</text>
+
+        <rect x="220" y="20" width="140" height="85" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <text x="290" y="45" text-anchor="middle" font-weight="bold" font-size="12">DOKTER</text>
+        <line x1="220" y1="55" x2="360" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="290" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">id_dokter (PK)</text>
+        <text x="290" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">nama, spesialisasi</text>
+        <text x="290" y="102" text-anchor="middle" font-size="10" fill="#7A6FC9">id_unit (FK)</text>
+
+        <rect x="450" y="20" width="140" height="70" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="520" y="45" text-anchor="middle" font-weight="bold" font-size="12">PASIEN</text>
+        <line x1="450" y1="55" x2="590" y2="55" stroke="#16294A" stroke-width="1"/>
+        <text x="520" y="72" text-anchor="middle" font-size="10" fill="#3A4A63">id_pasien (PK)</text>
+        <text x="520" y="87" text-anchor="middle" font-size="10" fill="#3A4A63">nama, alamat</text>
+
+        <rect x="300" y="170" width="150" height="100" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="375" y="195" text-anchor="middle" font-weight="bold" font-size="12">KUNJUNGAN</text>
+        <line x1="300" y1="205" x2="450" y2="205" stroke="#16294A" stroke-width="1"/>
+        <text x="375" y="222" text-anchor="middle" font-size="10" fill="#3A4A63">id_kunjungan (PK)</text>
+        <text x="375" y="237" text-anchor="middle" font-size="10" fill="#3A4A63">tanggal, keluhan</text>
+        <text x="375" y="252" text-anchor="middle" font-size="10" fill="#7A6FC9">id_dokter (FK)</text>
+        <text x="375" y="267" text-anchor="middle" font-size="10" fill="#7A6FC9">id_pasien (FK)</text>
+
+        <rect x="520" y="170" width="140" height="85" stroke="#16294A" stroke-width="2" fill="#E9F3E9" rx="8"/>
+        <text x="590" y="195" text-anchor="middle" font-weight="bold" font-size="11">REKAM_MEDIS</text>
+        <line x1="520" y1="205" x2="660" y2="205" stroke="#16294A" stroke-width="1"/>
+        <text x="590" y="222" text-anchor="middle" font-size="10" fill="#3A4A63">id_rekam (PK)</text>
+        <text x="590" y="237" text-anchor="middle" font-size="10" fill="#3A4A63">diagnosis</text>
+        <text x="590" y="252" text-anchor="middle" font-size="10" fill="#7A6FC9">id_kunjungan (FK)</text>
+
+        <rect x="150" y="330" width="130" height="80" stroke="#16294A" stroke-width="2" fill="#E7F0F1" rx="8"/>
+        <text x="215" y="355" text-anchor="middle" font-weight="bold" font-size="12">RESEP</text>
+        <line x1="150" y1="365" x2="280" y2="365" stroke="#16294A" stroke-width="1"/>
+        <text x="215" y="382" text-anchor="middle" font-size="10" fill="#3A4A63">id_resep (PK)</text>
+        <text x="215" y="397" text-anchor="middle" font-size="10" fill="#3A4A63">tanggal</text>
+
+        <rect x="450" y="330" width="130" height="80" stroke="#16294A" stroke-width="2" fill="#FBEFDC" rx="8"/>
+        <text x="515" y="355" text-anchor="middle" font-weight="bold" font-size="12">OBAT</text>
+        <line x1="450" y1="365" x2="580" y2="365" stroke="#16294A" stroke-width="1"/>
+        <text x="515" y="382" text-anchor="middle" font-size="10" fill="#3A4A63">id_obat (PK)</text>
+        <text x="515" y="397" text-anchor="middle" font-size="10" fill="#3A4A63">nama_obat, harga</text>
+
+        <rect x="300" y="420" width="150" height="30" stroke="#C9584F" stroke-width="2" fill="#FDEAEA" rx="8"/>
+        <text x="375" y="440" text-anchor="middle" font-weight="bold" font-size="10" fill="#C9584F">RESEP_DETAIL (PFK+PFK)</text>
+
+        <line x1="150" y1="55" x2="220" y2="55" stroke="#16294A" stroke-width="2"/>
+        <text x="185" y="48" font-size="10" fill="#666">1:N</text>
+
+        <line x1="290" y1="105" x2="340" y2="170" stroke="#16294A" stroke-width="2"/>
+        <line x1="290" y1="105" x2="375" y2="170" stroke="#16294A" stroke-width="2"/>
+
+        <line x1="520" y1="90" x2="400" y2="170" stroke="#16294A" stroke-width="2"/>
+        <line x1="520" y1="90" x2="420" y2="170" stroke="#16294A" stroke-width="2"/>
+
+        <line x1="450" y1="210" x2="520" y2="210" stroke="#16294A" stroke-width="2"/>
+        <text x="485" y="203" font-size="10" fill="#666">1:1</text>
+
+        <line x1="375" y1="270" x2="215" y2="330" stroke="#16294A" stroke-width="2"/>
+
+        <line x1="300" y1="435" x2="280" y2="395" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="450" y1="435" x2="430" y2="395" stroke="#C9584F" stroke-width="2" stroke-dasharray="5,3"/>
+      </svg>
+    </div>
+  </div>
+  <p class="diagram-source">ERD Sistem Manajemen Rumah Sakit — Studi Kasus Pertemuan 3</p>
+</div>
+
+## H. Validasi ERD
+
+Setelah selesai menggambar ERD, lakukan validasi berikut:
+
+### Checklist Validasi
+
+- [ ] Semua entitas dari narasi sudah tergambar
+- [ ] Setiap entitas memiliki Primary Key
+- [ ] Atribut sudah lengkap dan sesuai
+- [ ] Relasi sudah sesuai dengan narasi
+- [ ] Kardinalitas sudah benar
+- [ ] Partisipasi sudah ditentukan
+- [ ] Relasi M:N sudah dipecah menjadi tabel penghubung
+- [ ] Foreign Key sudah ditandai dengan benar
+- [ ] Tidak ada redundansi entitas
+
+### Pertanyaan Validasi
+
+1. **Apakah semua entitas diperlukan?** — Hapus entitas yang tidak ada di narasi
+2. **Apakah semua atribut diperlukan?** — Hapus atribut yang tidak disebut
+3. **Apakah relasi sudah tepat?** — Cek kardinalitas dan partisipasi
+4. **Apakah ada entitas yang terlewat?** — Baca ulang narasi bisnis
+
+## I. Kuis Evaluasi
+
+<QuizCard question="Studi kasus SIAKAD: Relasi antara MAHASISWA dan MATAKULIAH termasuk tipe..."
+  >
+  <button class="quiz-option" data-correct="false">1:1 (One-to-One)</button>
+  <button class="quiz-option" data-correct="false">1:N (One-to-Many)</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Mahasiswa bisa mengambil banyak mata kuliah, dan satu mata kuliah bisa diambil banyak mahasiswa → M:N.">M:N (Many-to-Many)</button>
+</QuizCard>
+
+<QuizCard question="Mengapa tabel NILAI pada SIAKAD diletakkan di tengah (sebagai tabel penghubung)?"
+  >
+  <button class="quiz-option" data-correct="true" data-explanation="NILAI merupakan tabel penghubung yang memecah relasi M:N antara MAHASISWA dan MATAKULIAH.">Karena memecah relasi M:N antara MAHASISWA dan MATAKULIAH</button>
+  <button class="quiz-option" data-correct="false">Karena NILAI adalah entitas kuat</button>
+  <button class="quiz-option" data-correct="false">Karena NILAI memiliki Primary Key sendiri</button>
+</QuizCard>
+
+<QuizCard question="Pada studi kasus E-Commerce, relasi antara ORDER dan PEMBAYARAN adalah..."
+  >
+  <button class="quiz-option" data-correct="true" data-explanation="Satu order hanya memiliki satu pembayaran, dan satu pembayaran hanya untuk satu order → 1:1.">1:1 (One-to-One)</button>
+  <button class="quiz-option" data-correct="false">1:N (One-to-Many)</button>
+  <button class="quiz-option" data-correct="false">M:N (Many-to-Many)</button>
+</QuizCard>
+
+<QuizCard question="Entitas mana yang merupakan tabel penghubung (junction table)?"
+  >
+  <button class="quiz-option" data-correct="false">PELANGGAN</button>
+  <button class="quiz-option" data-correct="false">PRODUK</button>
+  <button class="quiz-option" data-correct="true" data-explanation="ORDER_DETAIL adalah tabel penghubung yang memecah relasi M:N antara ORDER dan PRODUK.">ORDER_DETAIL</button>
+</QuizCard>
+
+## J. Rangkuman
+
+- Perancangan ERD mengikuti metodologi 5 langkah: Identifikasi Entitas → Atribut → Relasi → Key → Gambar & Validasi
+- Studi kasus SIAKAD menunjukkan relasi M:N (Mahasiswa-Matakuliah) dipecah menjadi tabel penghubung (NILAI)
+- Studi kasus E-Commerce menunjukkan pola 1:N (Pelanggan-Order) dan tabel penghubung (ORDER_DETAIL)
+- Studi kasus Rumah Sakit menunjukkan relasi kompleks dengan banyak tabel penghubung
+- **Validasi ERD** sangat penting untuk memastikan diagram sesuai kebutuhan bisnis
+
+## K. Referensi
+
+<ul class="refs">
+  <li>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7th ed.). Pearson Education Limited.</li>
+  <li>Silberschatz, A., Korth, H. F., &amp; Sudarshan, S. (2020). <em>Database System Concepts</em> (7th ed.). McGraw-Hill Education.</li>
+  <li>Connolly, T. M., &amp; Begg, C. E. (2015). <em>Database Systems: A Practical Approach to Design, Implementation, and Management</em> (6th ed.). Pearson.</li>
+  <li>J Prayoga, Sinar Sinurat, Andi Rachman, dkk. (2023). <em>Sistem Basis Data</em>. Deli Serdang: Graha Mitra Edukasi.</li>
+</ul>
+
+## L. Penugasan
+
+### Tugas Individu
+
+Buat ERD untuk salah satu studi kasus berikut (pilih salah satu):
+
+1. **Sistem Perpustakaan Universitas** — Buku, Anggota, Peminjaman, Dosen Pembina
+2. **Sistem Manajemen Parkir** — Area Parkir, Kendaraan, Tiket, Pembayaran
+3. **Sistem Booking Hotel** — Kamar, Tamu, Reservasi, Fasilitas
+
+### Format Pengumpulan
+
+1. File gambar ERD (PNG/SVG/PDF)
+2. Dokumentasi: Daftar entitas, atribut, relasi, dan asumsi perancangan
+3. Deadline: 1 minggu dari pertemuan
