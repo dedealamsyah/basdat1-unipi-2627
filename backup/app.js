@@ -1,10 +1,18 @@
 /* =====================================================================
-   app.js — RENDERER. Tidak perlu diedit untuk menambah materi;
-   cukup edit content.js.
+   app.js — RENDERER & INTERAKTIVITAS PORTAL MATERI BASIS DATA
+   Tidak perlu diedit untuk menambah materi; cukup edit content.js.
 ===================================================================== */
 (function () {
+  "use strict";
+
   const sidebarList = document.getElementById("sidebarList");
   const content = document.getElementById("content");
+  const sidebar = document.getElementById("sidebar");
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+  const backToTopBtn = document.getElementById("backToTop");
+  const readingProgress = document.getElementById("readingProgress");
+  const mobileHeaderTitle = document.getElementById("mobileHeaderTitle");
 
   document.getElementById("dbNameLabel").textContent = COURSE.dbName;
   document.getElementById("courseName").textContent = COURSE.name;
@@ -548,4 +556,174 @@
 
   window.addEventListener("hashchange", route);
   route();
+
+  /* =========================================================
+     MOBILE MENU (Hamburger Toggle)
+     ========================================================= */
+  function toggleMobileMenu() {
+    const isOpen = sidebar.classList.toggle("open");
+    hamburgerBtn.classList.toggle("active", isOpen);
+    sidebarOverlay.classList.toggle("active", isOpen);
+    document.body.style.overflow = isOpen ? "hidden" : "";
+  }
+
+  function closeMobileMenu() {
+    sidebar.classList.remove("open");
+    hamburgerBtn.classList.remove("active");
+    sidebarOverlay.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+
+  hamburgerBtn.addEventListener("click", toggleMobileMenu);
+  sidebarOverlay.addEventListener("click", closeMobileMenu);
+
+  // Close sidebar when clicking a nav item on mobile
+  sidebarList.addEventListener("click", function(e) {
+    if (window.innerWidth <= 880 && e.target.closest(".row")) {
+      setTimeout(closeMobileMenu, 100);
+    }
+  });
+
+  // Close sidebar on Escape key
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeMobileMenu();
+  });
+
+  /* =========================================================
+     BACK TO TOP BUTTON
+     ========================================================= */
+  window.addEventListener("scroll", function() {
+    if (window.scrollY > 400) {
+      backToTopBtn.classList.add("visible");
+    } else {
+      backToTopBtn.classList.remove("visible");
+    }
+  }, { passive: true });
+
+  backToTopBtn.addEventListener("click", function() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  /* =========================================================
+     READING PROGRESS BAR
+     ========================================================= */
+  window.addEventListener("scroll", function() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    readingProgress.style.width = progress + "%";
+  }, { passive: true });
+
+  /* =========================================================
+     COPY CODE BUTTON
+     ========================================================= */
+  function addCopyCodeButtons() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+      // Skip if already wrapped
+      if (pre.parentElement.classList.contains("code-block-wrapper")) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "code-block-wrapper";
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+
+      const btn = document.createElement("button");
+      btn.className = "copy-code-btn";
+      btn.textContent = "Salin";
+      btn.setAttribute("aria-label", "Salin kode");
+      wrapper.appendChild(btn);
+
+      btn.addEventListener("click", function() {
+        const code = pre.querySelector("code");
+        const text = code ? code.textContent : pre.textContent;
+        navigator.clipboard.writeText(text).then(function() {
+          btn.textContent = "Tersalin!";
+          btn.classList.add("copied");
+          setTimeout(function() {
+            btn.textContent = "Salin";
+            btn.classList.remove("copied");
+          }, 2000);
+        }).catch(function() {
+          // Fallback for older browsers
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+          btn.textContent = "Tersalin!";
+          btn.classList.add("copied");
+          setTimeout(function() {
+            btn.textContent = "Salin";
+            btn.classList.remove("copied");
+          }, 2000);
+        });
+      });
+    });
+  }
+
+  // Run after route renders content
+  const originalRoute = route;
+  function routeWithCopyButtons() {
+    originalRoute();
+    addCopyCodeButtons();
+  }
+
+  // Re-run copy buttons on content change
+  const observer = new MutationObserver(function() {
+    addCopyCodeButtons();
+  });
+  observer.observe(content, { childList: true, subtree: true });
+
+  /* =========================================================
+     MOBILE HEADER TITLE UPDATE
+     ========================================================= */
+  function updateMobileHeaderTitle(pertemuan) {
+    if (mobileHeaderTitle && pertemuan) {
+      mobileHeaderTitle.textContent = "P" + pertemuan.id + " · " + pertemuan.title.substring(0, 30) + (pertemuan.title.length > 30 ? "..." : "");
+    }
+  }
+
+  // Update mobile header on route change
+  const origRenderPertemuan = renderPertemuan;
+  // We'll update via observer since renderPertemuan is internal
+
+  /* =========================================================
+     KEYBOARD SHORTCUTS
+     ========================================================= */
+  document.addEventListener("keydown", function(e) {
+    // Alt+Left/Right for prev/next navigation
+    if (e.altKey && e.key === "ArrowLeft") {
+      const prevBtn = document.querySelector(".navBtn[href]:not([disabled])");
+      if (prevBtn && prevBtn.textContent.includes("‹")) {
+        window.location.href = prevBtn.href;
+      }
+    }
+    if (e.altKey && e.key === "ArrowRight") {
+      const nextBtns = document.querySelectorAll(".navBtn[href]:not([disabled])");
+      const nextBtn = nextBtns[nextBtns.length - 1];
+      if (nextBtn && nextBtn.textContent.includes("›")) {
+        window.location.href = nextBtn.href;
+      }
+    }
+    // Alt+T for back to top
+    if (e.altKey && e.key === "t") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+
+  /* =========================================================
+     REGISTER SERVICE WORKER (PWA)
+     ========================================================= */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+      navigator.serviceWorker.register("service-worker.js").catch(function() {
+        // SW registration failed silently - OK for local file:// protocol
+      });
+    });
+  }
+
 })();

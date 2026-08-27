@@ -1,0 +1,18 @@
+{
+  "name": "portal-basis-data-unipi",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Portal Materi Interaktif Basis Data - UNIPI",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^7.2.8"
+  }
+}

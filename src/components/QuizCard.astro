@@ -1,0 +1,50 @@
+---
+interface QuizOption {
+  text: string;
+  correct: boolean;
+  explanation?: string;
+}
+
+interface Props {
+  question: string;
+  options: QuizOption[];
+}
+
+const { question, options } = Astro.props;
+---
+
+<div class="interactive-card">
+  <p><strong>{question}</strong></p>
+  {options.map((opt, i) => (
+    <button 
+      class="quiz-option" 
+      data-correct={opt.correct}
+      data-explanation={opt.explanation || ''}
+    >
+      {opt.text}
+    </button>
+  ))}
+  <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+</div>
+
+<script is:inline>
+  document.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.onclick = function() {
+      const isCorrect = this.getAttribute('data-correct') === 'true';
+      const feedback = this.parentNode.querySelector('.quiz-feedback');
+      
+      this.parentNode.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.classList.remove('correct', 'wrong');
+      });
+
+      if (isCorrect) {
+        this.classList.add('correct');
+        const explanation = this.getAttribute('data-explanation');
+        feedback.innerHTML = `<span style="color:#166534">[Benar] ${explanation}</span>`;
+      } else {
+        this.classList.add('wrong');
+        feedback.innerHTML = '<span style="color:#991b1b">[Kurang tepat] Coba perhatikan kembali konsepnya.</span>';
+      }
+    };
+  });
+</script>

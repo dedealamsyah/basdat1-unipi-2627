@@ -1,0 +1,90 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  activeId?: number;
+}
+
+const { activeId } = Astro.props;
+const allPertemuan = await getCollection('pertemuan');
+const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
+const available = sorted.filter(p => !p.data.locked).length;
+---
+
+<div class="sidebar__brand">
+  <div class="sidebar__status"><span class="dot"></span>terhubung · basis_data_db</div>
+  <p class="sidebar__title">Basis Data</p>
+  <p class="sidebar__sub">Program Studi S1 Informatika — UNIPI</p>
+</div>
+
+<div class="sidebar__progress">
+  <div class="sidebar__progress-label">
+    <span>PROGRES MATERI</span>
+    <span>{available} / {sorted.length}</span>
+  </div>
+  <div class="sidebar__progress-bar">
+    <div class="sidebar__progress-fill" style={`width: ${(available / sorted.length) * 100}%`}></div>
+  </div>
+</div>
+
+<div style="padding:8px 12px;">
+  <input 
+    type="text" 
+    id="sidebarSearch" 
+    placeholder="Cari materi..." 
+    style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#E2E8F0; font-family:var(--font-mono); font-size:12px; outline:none; transition:border-color 0.2s;"
+  />
+</div>
+
+<ul class="sidebar__list" id="sidebarList">
+  {sorted.map((p) => (
+    <li 
+      class={`row ${p.data.locked ? 'locked' : ''} ${p.data.id === activeId ? 'active' : ''}`}
+      data-id={p.data.id}
+      data-title={p.data.title.toLowerCase()}
+    >
+      <span class="row__pk">{String(p.data.id).padStart(2, '0')}</span>
+      <span class="row__text">
+        <span class="row__num">PERTEMUAN {p.data.id}</span>
+        <span class="row__title">
+          {p.data.locked ? (p.data.title || 'Belum tersedia') : p.data.title}
+        </span>
+      </span>
+    </li>
+  ))}
+</ul>
+
+<div class="sidebar__footer">
+  Portal materi — edit <code style="background:rgba(255,255,255,.08);border:none;color:#B9C6D8;">src/content/pertemuan/</code> untuk menambah materi.
+  <div style="margin-top:12px; display:flex; align-items:center; gap:8px;">
+    <button id="themeToggle" class="zoom-btn" style="width:100%; padding:8px 12px; background:#1F3864; color:#E2E8F0; border:1px solid rgba(255,255,255,.1); font-size:12px; cursor:pointer; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:6px;">
+      <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+    </button>
+  </div>
+</div>
+
+<script is:inline>
+  // Sidebar Search
+  const sidebarSearch = document.getElementById('sidebarSearch');
+  const sidebarList = document.getElementById('sidebarList');
+  
+  if (sidebarSearch && sidebarList) {
+    sidebarSearch.addEventListener('input', function() {
+      const filter = this.value.toLowerCase();
+      const rows = sidebarList.querySelectorAll('.row');
+      rows.forEach(row => {
+        const title = row.getAttribute('data-title') || '';
+        row.style.display = title.includes(filter) ? '' : 'none';
+      });
+    });
+  }
+
+  // Sidebar Navigation
+  const rows = document.querySelectorAll('.row:not(.locked)');
+  rows.forEach(row => {
+    row.addEventListener('click', function() {
+      const id = this.getAttribute('data-id');
+      window.location.href = `/pertemuan/${id}`;
+    });
+  });
+</script>

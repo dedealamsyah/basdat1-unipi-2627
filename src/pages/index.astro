@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { getCollection } from 'astro:content';
+
+const allPertemuan = await getCollection('pertemuan');
+const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
+const firstAvailable = sorted.find(p => !p.data.locked);
+---
+
+<BaseLayout title="Basis Data · Portal Materi UNIPI">
+  <Sidebar slot="sidebar" />
+  
+  <div class="contentHeader">
+    <div class="eyebrow">SELAMAT DATANG</div>
+    <h1 class="pageTitle">Portal Materi Basis Data</h1>
+    <p class="pageSubtitle">
+      Portal materi interaktif untuk mata kuliah Basis Data, Program Studi S1 Informatika, Universitas Persatuan Islam (UNIPI).
+    </p>
+    <div class="chipRow">
+      <span class="chip">Semester 3 · TA 2026/2027</span>
+      <span class="chip chip--amber">16 Pertemuan</span>
+    </div>
+  </div>
+
+  <section class="block">
+    <h2>Selamat Datang</h2>
+    <p>
+      Portal ini menyediakan materi lengkap mata kuliah Basis Data yang mencakup konsep dasar, perancangan ERD, normalisasi, hingga implementasi SQL.
+    </p>
+    <p>
+      Setiap pertemuan dilengkapi dengan:
+    </p>
+    <ul>
+      <li>Materi interaktif dengan visualisasi diagram</li>
+      <li>Simulasi dan kuis untuk memperdalam pemahaman</li>
+      <li>Studi kasus dari dunia nyata</li>
+      <li>Referensi akademik dari literatur terkemuka</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <h2>Daftar Pertemuan</h2>
+    <div style="display:grid; gap:12px; margin-top:16px;">
+      {sorted.map((p) => (
+        <a 
+          href={p.data.locked ? '#' : `/pertemuan/${p.data.id}`}
+          class={`row ${p.data.locked ? 'locked' : ''}`}
+          style={`text-decoration:none; ${p.data.locked ? 'pointer-events:none; opacity:0.5;' : ''}`}
+        >
+          <span class="row__pk">{String(p.data.id).padStart(2, '0')}</span>
+          <span class="row__text">
+            <span class="row__num">PERTEMUAN {p.data.id}</span>
+            <span class="row__title">{p.data.title}</span>
+          </span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Tentang Mata Kuliah</h2>
+    <table class="dtable">
+      <tbody>
+        <tr><th>Mata Kuliah</th><td>Basis Data</td></tr>
+        <tr><th>Program Studi</th><td>S1 Informatika — UNIPI</td></tr>
+        <tr><th>Semester</th><td>3 · Tahun Akademik 2026/2027</td></tr>
+        <tr><th>CPMK</th><td>CPMK-1: Menguasai konsep dan implementasi basis data</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="block">
+    <h2>Cara Penggunaan</h2>
+    <ol class="steps">
+      <li>Pilih pertemuan dari sidebar atau daftar di atas</li>
+      <li>Baca materi dan pelajari setiap bagian</li>
+      <li>Gunakan simulasi interaktif untuk memperdalam pemahaman</li>
+      <li>Kerjakan kuis untuk mengecek pemahaman</li>
+      <li>Konsultasikan pertanyaan dengan dosen pengampu</li>
+    </ol>
+  </section>
+
+  <section class="block">
+    <h2>Referensi Utama</h2>
+    <ul class="refs">
+      <li>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7th ed.). Pearson Education Limited.</li>
+      <li>Silberschatz, A., Korth, H. F., &amp; Sudarshan, S. (2020). <em>Database System Concepts</em> (7th ed.). McGraw-Hill Education.</li>
+      <li>J Prayoga, Sinar Sinurat, Andi Rachman, dkk. (2023). <em>Sistem Basis Data</em>. Deli Serdang: Graha Mitra Edukasi.</li>
+    </ul>
+  </section>
+</BaseLayout>

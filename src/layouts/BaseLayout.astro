@@ -1,0 +1,144 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Portal materi interaktif untuk mata kuliah Basis Data, Program Studi S1 Informatika, UNIPI" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="keywords" content="basis data, database, SQL, ERD, normalisasi, UNIPI, informatika, perkuliahan" />
+    <meta name="author" content="Program Studi S1 Informatika UNIPI" />
+    <meta name="theme-color" content="#0D1B30" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <title>{title}</title>
+    <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      "name": "Basis Data",
+      "description": "Mata kuliah Basis Data untuk Program Studi S1 Informatika UNIPI",
+      "provider": {
+        "@type": "CollegeOrUniversity",
+        "name": "Universitas Persatuan Islam (UNIPI)"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress" id="readingProgress"></div>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header" id="mobileHeader">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="mobile-header__title" id="mobileHeaderTitle">Basis Data</span>
+    </header>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Kembali ke atas">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <slot name="sidebar" />
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="content" id="content">
+        <slot />
+      </div>
+    </main>
+
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+
+    <script is:inline>
+      // Theme Toggle
+      const themeToggle = document.getElementById('themeToggle');
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      
+      if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+          const current = document.documentElement.getAttribute('data-theme');
+          const next = current === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          localStorage.setItem('theme', next);
+          const icon = document.getElementById('themeIcon');
+          const text = document.getElementById('themeText');
+          if (icon) icon.textContent = next === 'dark' ? '☀️' : '🌙';
+          if (text) text.textContent = next === 'dark' ? 'Light Mode' : 'Dark Mode';
+        });
+      }
+
+      // Mobile Menu
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      
+      function toggleMobileMenu() {
+        const isOpen = sidebar.classList.toggle('open');
+        hamburgerBtn.classList.toggle('active', isOpen);
+        sidebarOverlay.classList.toggle('active', isOpen);
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      }
+      
+      function closeMobileMenu() {
+        sidebar.classList.remove('open');
+        hamburgerBtn.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      
+      if (hamburgerBtn) hamburgerBtn.addEventListener('click', toggleMobileMenu);
+      if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileMenu);
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeMobileMenu();
+      });
+
+      // Back to Top
+      const backToTopBtn = document.getElementById('backToTop');
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 400) {
+          backToTopBtn.classList.add('visible');
+        } else {
+          backToTopBtn.classList.remove('visible');
+        }
+      }, { passive: true });
+      
+      if (backToTopBtn) {
+        backToTopBtn.addEventListener('click', function() {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      // Reading Progress
+      const readingProgress = document.getElementById('readingProgress');
+      window.addEventListener('scroll', function() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        if (readingProgress) readingProgress.style.width = progress + '%';
+      }, { passive: true });
+    </script>
+  </body>
+</html>

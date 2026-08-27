@@ -1,0 +1,66 @@
+---
+interface Props {
+  label?: string;
+  source?: string;
+}
+
+const { label = "Diagram", source } = Astro.props;
+---
+
+<div class="diagram-container">
+  <div class="diagram-zoom-controls">
+    <button class="zoom-btn zoom-out">−</button>
+    <span class="zoom-btn zoom-level" style="background:#EEF2F5;color:#3A4A63;cursor:default;">100%</span>
+    <button class="zoom-btn zoom-in">+</button>
+    <button class="zoom-btn zoom-reset">Reset</button>
+  </div>
+  <div class="diagram-wrapper">
+    <div class="diagram-inner">
+      <slot />
+    </div>
+  </div>
+  {source && <p class="diagram-source">{source}</p>}
+</div>
+
+<script is:inline>
+  document.querySelectorAll('.diagram-container').forEach(container => {
+    const inner = container.querySelector('.diagram-inner');
+    const zoomLabel = container.querySelector('.zoom-level');
+    if (!inner) return;
+    let scale = 1;
+    const minScale = 1, maxScale = 3;
+
+    function applyZoom() {
+      inner.style.transform = 'scale(' + scale + ')';
+      if (zoomLabel) zoomLabel.textContent = Math.round(scale * 100) + '%';
+    }
+
+    container.querySelectorAll('.zoom-in').forEach(b => b.onclick = function() {
+      scale = Math.min(maxScale, scale + 0.25);
+      applyZoom();
+    });
+    container.querySelectorAll('.zoom-out').forEach(b => b.onclick = function() {
+      scale = Math.max(minScale, scale - 0.25);
+      applyZoom();
+    });
+    container.querySelectorAll('.zoom-reset').forEach(b => b.onclick = function() {
+      scale = 1;
+      applyZoom();
+    });
+
+    const wrapper = container.querySelector('.diagram-wrapper');
+    if (wrapper) {
+      wrapper.addEventListener('wheel', function(e) {
+        if (!e.ctrlKey) return;
+        e.preventDefault();
+        scale = e.deltaY < 0 ? Math.min(maxScale, scale + 0.25) : Math.max(minScale, scale - 0.25);
+        applyZoom();
+      }, { passive: false });
+
+      wrapper.addEventListener('dblclick', function() {
+        scale = scale === 1 ? 2 : 1;
+        applyZoom();
+      });
+    }
+  });
+</script>

@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import QuizCard from '../../components/QuizCard.astro';
+import DiagramViewer from '../../components/DiagramViewer.astro';
+import CopyCode from '../../components/CopyCode.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allPertemuan = await getCollection('pertemuan');
+  return allPertemuan.map(p => ({
+    params: { slug: String(p.data.id) },
+    props: { pertemuan: p }
+  }));
+}
+
+const { pertemuan } = Astro.props;
+const { Content } = await render(pertemuan);
+const allPertemuan = await getCollection('pertemuan');
+const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
+const currentIndex = sorted.findIndex(p => p.data.id === pertemuan.data.id);
+const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
+const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
+---
+
+<BaseLayout title={`${pertemuan.data.title} · Basis Data UNIPI`} description={pertemuan.data.subtitle}>
+  <Sidebar slot="sidebar" activeId={pertemuan.data.id} />
+  <CopyCode />
+
+  <div class="contentHeader">
+    <div class="eyebrow">Pertemuan {String(pertemuan.data.id).padStart(2, '0')} · Basis Data</div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+      <div style="flex:1;">
+        <h1 class="pageTitle">{pertemuan.data.title}</h1>
+        {pertemuan.data.subtitle && <p class="pageSubtitle">{pertemuan.data.subtitle}</p>}
+      </div>
+    </div>
+    {pertemuan.data.meta && (
+      <div class="chipRow">
+        <span class="chip">{pertemuan.data.meta.cpmk}</span>
+        <span class="chip">⏱ {pertemuan.data.meta.alokasi}</span>
+        <span class="chip chip--amber">BOBOT {pertemuan.data.meta.bobot}</span>
+      </div>
+    )}
+  </div>
+
+  {pertemuan.data.locked ? (
+    <div class="lockedNotice">
+      <div class="bigIcon">◌</div>
+      <h2 style="font-family:var(--font-display);color:var(--navy-800);margin:0 0 8px;">
+        Pertemuan {pertemuan.data.id} belum tersedia
+      </h2>
+      <p>{pertemuan.data.title} akan ditambahkan oleh dosen pengampu.</p>
+    </div>
+  ) : (
+    <article>
+      <Content />
+    </article>
+  )}
+
+  <div class="navFooter">
+    {prev && !prev.data.locked ? (
+      <a class="navBtn" href={`/pertemuan/${prev.data.id}`}>‹ Pertemuan {prev.data.id}</a>
+    ) : (
+      <span class="navBtn" disabled>‹ Pertemuan sebelumnya</span>
+    )}
+    {next && !next.data.locked ? (
+      <a class="navBtn" href={`/pertemuan/${next.data.id}`}>Pertemuan {next.data.id} ›</a>
+    ) : (
+      <span class="navBtn" disabled>Pertemuan berikutnya ›</span>
+    )}
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  // Update mobile header title
+  document.addEventListener('DOMContentLoaded', function() {
+    const title = document.querySelector('.pageTitle');
+    const mobileTitle = document.getElementById('mobileHeaderTitle');
+    if (title && mobileTitle) {
+      mobileTitle.textContent = title.textContent.substring(0, 30) + (title.textContent.length > 30 ? '...' : '');
+    }
+  });
+</script>
