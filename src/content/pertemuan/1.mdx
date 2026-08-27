@@ -11,6 +11,8 @@ meta:
   cpmk: "CPMK-1"
 ---
 
+import QuizCard from '../../components/QuizCard.astro';
+
 ## A. Identitas Pertemuan
 
 <table class="dtable">
@@ -132,106 +134,27 @@ Sebuah sistem basis data terdiri atas lima komponen utama:
   <div id="gameFeedback" style="margin-top:10px; font-weight:600;"></div>
 </div>
 
-<script is:inline>
-  const QUESTIONS = [
-    { q: "Server dan storage yang menyimpan file basis data.", a: "HARDWARE" },
-    { q: "MySQL — perangkat lunak yang mengelola tabel dan index.", a: "SOFTWARE" },
-    { q: "SOP backup harian yang wajib dijalankan DBA.", a: "PROSEDUR" },
-    { q: "Mahasiswa yang login ke SIAKAD untuk melihat nilai.", a: "PENGGUNA" },
-    { q: "Kumpulan record nilai mahasiswa yang terintegrasi.", a: "DATA" },
-    { q: "Laptop yang dipakai end-user untuk membuka aplikasi.", a: "HARDWARE" },
-    { q: "Aturan kontrol akses: hanya dosen boleh menginput nilai.", a: "PROSEDUR" },
-    { q: "phpMyAdmin sebagai aplikasi pendukung administrasi.", a: "SOFTWARE" },
-  ];
-
-  let order = [], current = 0, score = 0;
-  const qEl = document.getElementById('gameQuestion');
-  const sEl = document.getElementById('gameScore');
-  const tEl = document.getElementById('gameTotal');
-  const fEl = document.getElementById('gameFeedback');
-  const compBtns = document.querySelectorAll('.comp-btn');
-  const gameStartBtn = document.getElementById('gameStart');
-
-  if (gameStartBtn) {
-    compBtns.forEach(b => b.disabled = true);
-
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
-    function showQuestion() {
-      if (current >= order.length) {
-        qEl.textContent = "Skor akhir: " + score + "/" + order.length;
-        fEl.innerHTML = '';
-        gameStartBtn.textContent = "Ulangi";
-        gameStartBtn.disabled = false;
-        compBtns.forEach(b => b.disabled = true);
-        return;
-      }
-      qEl.textContent = "(" + (current + 1) + "/" + order.length + ") " + order[current].q;
-      fEl.innerHTML = '';
-    }
-
-    gameStartBtn.onclick = function() {
-      order = shuffle(QUESTIONS.slice());
-      current = 0; score = 0;
-      sEl.textContent = '0';
-      tEl.textContent = order.length;
-      this.disabled = true;
-      compBtns.forEach(b => b.disabled = false);
-      showQuestion();
-    };
-
-    compBtns.forEach(btn => {
-      btn.onclick = function() {
-        if (!order.length || current >= order.length) return;
-        const correct = this.getAttribute('data-comp') === order[current].a;
-        if (correct) {
-          score++;
-          sEl.textContent = score;
-          fEl.innerHTML = '<span style="color:#166534">[Benar]</span>';
-        } else {
-          fEl.innerHTML = '<span style="color:#991b1b">[Salah] Jawaban: <strong>' + order[current].a + '</strong></span>';
-        }
-        current++;
-        setTimeout(showQuestion, 900);
-      };
-    });
-  }
-</script>
+<script is:inline src="/game-komponen.js"></script>
 
 ## E. Kuis Reflektif
 
-<QuizCard 
-  question="Manakah dari berikut ini yang merupakan contoh DBMS?"
-  options={[
-    { text: "Microsoft Excel", correct: false },
-    { text: "PostgreSQL", correct: true, explanation: "PostgreSQL adalah salah satu sistem manajemen basis data relasional (RDBMS) yang populer." },
-    { text: "Google Chrome", correct: false }
-  ]}
-/>
+<QuizCard question="Manakah dari berikut ini yang merupakan contoh DBMS?">
+  <button class="quiz-option" data-correct="false">Microsoft Excel</button>
+  <button class="quiz-option" data-correct="true" data-explanation="PostgreSQL adalah salah satu sistem manajemen basis data relasional (RDBMS) yang populer.">PostgreSQL</button>
+  <button class="quiz-option" data-correct="false">Google Chrome</button>
+</QuizCard>
 
-<QuizCard 
-  question="Arsitektur yang memisahkan pandangan pengguna dengan penyimpanan fisik disebut..."
-  options={[
-    { text: "Three-Schema Architecture", correct: true, explanation: "Three-Schema Architecture (ANSI-SPARC) membagi database menjadi External, Conceptual, dan Internal level." },
-    { text: "Client-Server Architecture", correct: false },
-    { text: "Single-Tier Architecture", correct: false }
-  ]}
-/>
+<QuizCard question="Arsitektur yang memisahkan pandangan pengguna dengan penyimpanan fisik disebut...">
+  <button class="quiz-option" data-correct="true" data-explanation="Three-Schema Architecture (ANSI-SPARC) membagi database menjadi External, Conceptual, dan Internal level.">Three-Schema Architecture</button>
+  <button class="quiz-option" data-correct="false">Client-Server Architecture</button>
+  <button class="quiz-option" data-correct="false">Single-Tier Architecture</button>
+</QuizCard>
 
-<QuizCard 
-  question="Manakah yang merupakan keunggulan utama basis data dibandingkan sistem berbasis file?"
-  options={[
-    { text: "Lebih mudah diakses tanpa software khusus", correct: false },
-    { text: "Tidak membutuhkan hardware khusus", correct: false },
-    { text: "Mengurangi redundansi data dan menjaga konsistensi", correct: true, explanation: "Basis data mengurangi duplikasi data dan menjaga konsistensi melalui mekanisme terpusat yang dikelola DBMS." }
-  ]}
-/>
+<QuizCard question="Manakah yang merupakan keunggulan utama basis data dibandingkan sistem berbasis file?">
+  <button class="quiz-option" data-correct="false">Lebih mudah diakses tanpa software khusus</button>
+  <button class="quiz-option" data-correct="false">Tidak membutuhkan hardware khusus</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Basis data mengurangi duplikasi data dan menjaga konsistensi melalui mekanisme terpusat yang dikelola DBMS.">Mengurangi redundansi data dan menjaga konsistensi</button>
+</QuizCard>
 
 ## F. Rangkuman
 

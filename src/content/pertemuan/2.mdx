@@ -11,6 +11,8 @@ meta:
   cpmk: "CPMK-1"
 ---
 
+import QuizCard from '../../components/QuizCard.astro';
+
 ## A. Identitas Pertemuan
 
 <table class="dtable">
@@ -76,67 +78,7 @@ Entitas merupakan objek atau konsep yang dapat dibedakan secara unik:
   </div>
 </div>
 
-<script is:inline>
-  const ENTITY_QS = [
-    { q: "MAHASISWA (ada NIM sendiri)", a: "KUAT" },
-    { q: "TANGGUNGAN (bergantung pada KARYAWAN)", a: "LEMAH" },
-    { q: "BUKU (ada ISBN sendiri)", a: "KUAT" },
-    { q: "DETAIL_PESANAN (bergantung pada PESANAN)", a: "LEMAH" },
-    { q: "DOSEN (ada NIP sendiri)", a: "KUAT" },
-    { q: "ITEM_TAGIHAN (bergantung pada TAGIHAN)", a: "LEMAH" },
-  ];
-
-  let entityOrder = [], entityCur = 0, entityScore = 0;
-  const entityQ = document.getElementById('entityQ');
-  const entityS = document.getElementById('entityScore');
-  const entityT = document.getElementById('entityTotal');
-  const entityF = document.getElementById('entityFeedback');
-  const entityBtns = document.querySelectorAll('.entity-btn');
-  const entityStartBtn = document.getElementById('entityStart');
-
-  if (entityStartBtn) {
-    entityBtns.forEach(b => b.disabled = true);
-    
-    function entityShow() {
-      if (entityCur >= entityOrder.length) {
-        entityQ.textContent = 'Selesai! Skor: ' + entityScore + '/' + entityOrder.length;
-        entityF.innerHTML = '';
-        entityBtns.forEach(b => b.disabled = true);
-        entityStartBtn.disabled = false;
-        return;
-      }
-      entityQ.textContent = '(' + (entityCur + 1) + '/' + entityOrder.length + ') ' + entityOrder[entityCur].q;
-      entityF.innerHTML = '';
-    }
-
-    entityStartBtn.onclick = function() {
-      entityOrder = ENTITY_QS.slice().sort(() => Math.random() - 0.5);
-      entityCur = 0;
-      entityScore = 0;
-      entityS.textContent = '0';
-      entityT.textContent = entityOrder.length;
-      this.disabled = true;
-      entityBtns.forEach(b => b.disabled = false);
-      entityShow();
-    };
-
-    entityBtns.forEach(b => {
-      b.onclick = function() {
-        if (!entityOrder.length || entityCur >= entityOrder.length) return;
-        const ok = this.getAttribute('data-type') === entityOrder[entityCur].a;
-        if (ok) {
-          entityScore++;
-          entityS.textContent = entityScore;
-          entityF.innerHTML = '<span style="color:#166534">Benar!</span>';
-        } else {
-          entityF.innerHTML = '<span style="color:#991b1b">Salah! Jawaban: <strong>' + entityOrder[entityCur].a + '</strong></span>';
-        }
-        entityCur++;
-        setTimeout(entityShow, 900);
-      };
-    });
-  }
-</script>
+<script is:inline src="/game-entitas.js"></script>
 
 ## D.3 Taksonomi Atribut
 
@@ -191,29 +133,20 @@ Atribut mendeskripsikan properti dari entitas. Klasifikasi menurut **Silberschat
 
 ## F. Kuis Evaluasi
 
-<QuizCard 
-  question="Mengapa relasi Many-to-Many (M:N) perlu perhatian khusus saat transformasi ke tabel?"
-  options={[
-    { text: "Karena memakan banyak memori server.", correct: false },
-    { text: "Untuk mencegah redundansi data yang masif.", correct: true, explanation: "Relasi M:N harus dipecah menjadi tabel penghubung untuk menghindari redundansi data." }
-  ]}
-/>
+<QuizCard question="Mengapa relasi Many-to-Many (M:N) perlu perhatian khusus saat transformasi ke tabel?">
+  <button class="quiz-option" data-correct="false">Karena memakan banyak memori server.</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Relasi M:N harus dipecah menjadi tabel penghubung untuk menghindari redundansi data.">Untuk mencegah redundansi data yang masif.</button>
+</QuizCard>
 
-<QuizCard 
-  question="Atribut 'Alamat' yang terdiri dari Jalan, Kota, dan Provinsi disebut atribut..."
-  options={[
-    { text: "Multi-valued", correct: false },
-    { text: "Composite", correct: true, explanation: "Atribut composite adalah atribut yang dapat dipecah menjadi komponen yang lebih kecil." }
-  ]}
-/>
+<QuizCard question="Atribut 'Alamat' yang terdiri dari Jalan, Kota, dan Provinsi disebut atribut...">
+  <button class="quiz-option" data-correct="false">Multi-valued</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Atribut composite adalah atribut yang dapat dipecah menjadi komponen yang lebih kecil.">Composite</button>
+</QuizCard>
 
-<QuizCard 
-  question="Entitas 'TANGGUNGAN' yang tidak memiliki PK sendiri disebut..."
-  options={[
-    { text: "Weak Entity (Entitas Lemah)", correct: true, explanation: "Entitas lemah tidak memiliki identitas mandiri dan bergantung pada entitas kuat." },
-    { text: "Strong Entity", correct: false }
-  ]}
-/>
+<QuizCard question="Entitas 'TANGGUNGAN' yang tidak memiliki PK sendiri disebut...">
+  <button class="quiz-option" data-correct="true" data-explanation="Entitas lemah tidak memiliki identitas mandiri dan bergantung pada entitas kuat.">Weak Entity (Entitas Lemah)</button>
+  <button class="quiz-option" data-correct="false">Strong Entity</button>
+</QuizCard>
 
 ## G. Rangkuman
 
