@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.6.2] - 2026-08-28
+
+### Changed
+
+- ✅ **Hilangkan seluruh em-dash (`—`) dari teks materi** (kesan hasil AI). Penggantian kontekstual:
+  - Definisi & subjudul → titik dua `:` (mis. `## D.1 Aturan 1: Entitas Kuat → Tabel`, `- **Data**: fakta mentah`)
+  - Prosa & kalimat lanjutan → koma `,` atau titik (mis. `...profesional: ada rak berlabel...`)
+  - Notasi relasi dipertahankan dengan `·` (mis. `DOSEN · MENGAJAR · KULIAH`)
+  - Cakupan: seluruh `src/content/pertemuan/*.mdx`, `Sidebar.astro`, `index/playground/praktikum`
+  - Halaman yang dirender kini bebas em-dash (terverifikasi di `dist/`)
+
+---
+
+## [1.6.1] - 2026-08-28
+
+### Added
+
+#### Content (analogi penguat pemahaman)
+- ✅ **Pertemuan 1** diperkaya dengan analogi:
+  - "Dapur & Masakan" (data vs informasi vs DBMS) di D.1
+  - "Evolusi Penyimpanan Catatan" (file → relasional → big data) di D.2
+  - "Sistem Basis Data adalah Restoran" (5 komponen) di D.3
+  - **Section baru D.4 Arsitektur Tiga Skema** + analogi "Restoran Berlapis" (sebelumnya hanya ada di kuis)
+- ✅ **Pertemuan 2** diperkaya dengan analogi:
+  - "Denah Rumah" (peran model konseptual) di D.1
+  - "Kartu Keluarga" (entitas kuat vs lemah) di D.2
+  - "Isian KTP" (taksonomi atribut) di D.3
+  - "Hubungan Antar Manusia" (kardinalitas 1:1/1:N/M:N) di D.4
+
+---
+
+## [1.6.0] - 2026-08-28
+
+### Added
+
+#### Content
+- ✅ **Pertemuan 7: Perancangan Model Fisik (PDM)** — lengkap
+  - Sub-CPMK sesuai RPS: merancang model fisik sesuai spesifikasi DBMS (bobot 5%)
+  - Jenjang pemodelan CDM → LDM → PDM + diagram original (SVG)
+  - Peta tipe data antar DBMS (MySQL/PostgreSQL/SQLite) + tips pemilihan
+  - Key & constraint (PRIMARY KEY, NOT NULL, UNIQUE, DEFAULT, CHECK, FOREIGN KEY)
+  - Studi kasus PDM SIAKAD lengkap dengan DDL MySQL + sintaks dbdiagram.io
+  - Alur menuju implementasi (P9–16) dan penugasan finalisasi proyek tahap 1 (UTS)
+  - 5 kuis evaluasi; memakai ulang er-diagram.jpg (domain publik) dengan atribusi
+
+### Changed
+- Jumlah pertemuan terbuka: 6 → **7** (P8 UTS & 9–16 masih terkunci)
+
+---
+
 ## [1.5.0] - 2026-08-28
 
 ### Added
@@ -101,8 +151,9 @@
 - Dependensi: tambah `sql.js`
 
 ### Roadmap (terbaru)
-- [ ] Pertemuan 7: Perancangan Model Fisik (PDM)
+- [ ] Pertemuan 9: Instalasi & Akses DBMS (XAMPP/MySQL/PostgreSQL)
 - [ ] Pindahkan materi pertemuan 11–13 agar memanfaatkan SQL playground
+- [ ] Pertemuan 8 (UTS) & 16 (UAS): template halaman evaluasi
 
 ---
 
@@ -248,4 +299,4 @@ Untuk melanjutkan di sesi berikutnya:
 1. **Menambah materi baru**: buat `src/content/pertemuan/{id}.mdx` lalu set `locked: false`
 2. **Worksheet**: logika di `src/pages/praktikum.astro` (inline script, state di `localStorage` key `basdat_wks_v1`)
 3. **Diagram interaktif**: tambahkan `class="entity-box" data-entity=".."` pada rect, dan `class="rel-line" data-a data-b data-cardinality data-desc data-participation` pada line relasi
-4. **Pertemuan 7** paling relevan untuk dikerjakan berikutnya (Perancangan Model Fisik PDM — dari skema relasional ke implementasi DBMS nyata, lanjutan Pertemuan 4–6)
+4. **Pertemuan 9** paling relevan untuk dikerjakan berikutnya (Instalasi & Akses DBMS — praktikum XAMPP/MySQL/PostgreSQL, dilanjutkan materi SQL P10–13)

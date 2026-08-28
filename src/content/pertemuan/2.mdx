@@ -17,7 +17,7 @@ import QuizCard from '../../components/QuizCard.astro';
 
 <table class="dtable">
   <tbody>
-    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
     <tr><th>Pertemuan / Minggu</th><td>Ke-2 dari 16 (Semester 3, TA 2026/2027)</td></tr>
     <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan</td></tr>
     <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data.</td></tr>
@@ -55,12 +55,24 @@ Pemodelan data konseptual adalah proses membangun representasi data organisasi y
   <p>Model konseptual berfungsi sebagai jembatan komunikasi antara perancang sistem dengan pemilik bisnis, memastikan kebutuhan data dipahami secara selaras sebelum masuk ke tahap teknis SQL.</p>
 </div>
 
+<div class="callout">
+  <span class="callout__label">Analogi: Denah Rumah</span>
+  <p>Model data konseptual seperti <strong>denah rumah</strong> yang digambar arsitek setelah mendengarkan keinginan pemilik: ruangan, pintu, jendela, dan posisinya digambarkan dengan jelas, <em>tanpa</em> membahas jenis bata, ukuran pipa, atau merek cat dulu.</p>
+  <p>Denah memudahkan pemilik menyepakati desain bersama arsitek, sebelum <em>tukang bangunan</em> (DBMS) mulai mengimplementasikannya. Mengganti denah di atas kertas jauh lebih murah daripada membongkar dinding yang sudah dibangun.</p>
+</div>
+
 ## D.2 Komponen: Entitas dan Set Entitas
 
 Entitas merupakan objek atau konsep yang dapat dibedakan secara unik:
 
 1. **Strong Entity (Entitas Kuat):** Memiliki identitas mandiri melalui Primary Key. Contoh: KARYAWAN (NIK), BUKU (ISBN).
 2. **Weak Entity (Entitas Lemah):** Tidak memiliki Primary Key sendiri dan bergantung pada entitas lain. Contoh: TANGGUNGAN bergantung pada KARYAWAN.
+
+<div class="callout callout--amber">
+  <span class="callout__label">Analogi: Kartu Keluarga</span>
+  <p><strong>Entitas kuat</strong> ibarat <em>kepala keluarga</em> yang punya KTP sendiri sebagai identitas mandiri, misal KARYAWAN dengan NIK.</p>
+  <p><strong>Entitas lemah</strong> ibarat <em>anak yang namanya tercantum di Kartu Keluarga</em>: ia memang ada, tetapi tidak punya identitas sendiri tanpa merujuk siapa kepala keluarganya, misal TANGGUNGAN yang identitasnya selalu menyertakan NIK karyawan pemiliknya.</p>
+</div>
 
 ### Latihan: Klasifikasi Entitas
 
@@ -94,6 +106,18 @@ Atribut mendeskripsikan properti dari entitas. Klasifikasi menurut **Silberschat
   </tbody>
 </table>
 
+<div class="callout">
+  <span class="callout__label">Analogi: Isian KTP</span>
+  <p>Anggap sebuah entitas sebagai <strong>kartu identitas</strong>, dan atribut sebagai <em>isian</em> di dalamnya:</p>
+  <ul style="margin:0; padding-left:18px;">
+    <li><strong>Simple</strong> = NIK, satu nilai tunggal.</li>
+    <li><strong>Composite</strong> = Nama (terdiri dari depan–tengah–belakang); Alamat (jalan, kota, provinsi).</li>
+    <li><strong>Multivalued</strong> = daftar nomor telepon yang bisa lebih dari satu.</li>
+    <li><strong>Derived</strong> = umur, tidak perlu dicetak di kartu karena bisa dihitung dari tanggal lahir.</li>
+  </ul>
+  <p style="margin-top:8px;">Kita mendesain <em>format kartunya</em> (skema) sekali, lalu kartu yang sama diisi oleh banyak orang (rekaman).</p>
+</div>
+
 ## D.4 Kardinalitas dan Partisipasi
 
 ### Rasio Kardinalitas
@@ -101,6 +125,14 @@ Atribut mendeskripsikan properti dari entitas. Klasifikasi menurut **Silberschat
 - **One-to-One (1:1):** Satu instansi A berelasi dengan satu instansi B
 - **One-to-Many (1:N):** Satu instansi A berelasi dengan banyak instansi B
 - **Many-to-Many (M:N):** Banyak instansi A berelasi dengan banyak instansi B
+
+<div class="callout">
+  <span class="callout__label">Analogi: Hubungan Antar Manusia</span>
+  <p><strong>1:1</strong>, satu <em>staf keamanan</em> bertugas menjaga satu pintu masuk.<br/>
+  <strong>1:N</strong>, satu <em>ibu</em> memiliki banyak anak, tetapi setiap anak hanya punya satu ibu kandung.<br/>
+  <strong>M:N</strong>, <em>mahasiswa</em> mengambil banyak mata kuliah, dan satu mata kuliah diikuti banyak mahasiswa.</p>
+  <p style="margin-top:8px;">Perhatikan relasi 1:N selalu punya arah "satu ke banyak"; sedangkan M:N menuntut catatan penghubung agar kedua sisi bisa berhubungan silang.</p>
+</div>
 
 ### Batasan Partisipasi
 
@@ -110,8 +142,8 @@ Atribut mendeskripsikan properti dari entitas. Klasifikasi menurut **Silberschat
 <table class="dtable">
   <thead><tr><th>Relasi</th><th>Tipe Partisipasi</th><th>Penjelasan</th></tr></thead>
   <tbody>
-    <tr><td>DOSEN — MENGAJAR — KULIAH</td><td><strong>Total</strong> (Dosen)</td><td>Setiap dosen WAJIB mengajar minimal satu mata kuliah.</td></tr>
-    <tr><td>PELANGGAN — MEMBERI — ULASAN</td><td><strong>Parsial</strong> (Pelanggan)</td><td>Tidak semua pelanggan memberi ulasan.</td></tr>
+    <tr><td>DOSEN · MENGAJAR · KULIAH</td><td><strong>Total</strong> (Dosen)</td><td>Setiap dosen WAJIB mengajar minimal satu mata kuliah.</td></tr>
+    <tr><td>PELANGGAN · MEMBERI · ULASAN</td><td><strong>Parsial</strong> (Pelanggan)</td><td>Tidak semua pelanggan memberi ulasan.</td></tr>
   </tbody>
 </table>
 

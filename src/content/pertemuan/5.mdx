@@ -17,7 +17,7 @@ import QuizCard from '../../components/QuizCard.astro';
 
 <table class="dtable">
   <tbody>
-    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
     <tr><th>Pertemuan / Minggu</th><td>Ke-5 dari 16 (Semester 3, TA 2026/2027)</td></tr>
     <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur</td></tr>
     <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
@@ -55,10 +55,10 @@ import QuizCard from '../../components/QuizCard.astro';
 
 <div class="callout callout--amber">
   <span class="callout__label">Penting</span>
-  <p>Normalisasi bertujuan <strong>menghindari redundansi</strong> dan <strong>menjaga integritas data</strong>. Materi ini adalah validasi "mengapa" desain skema relasional pada Pertemuan 4 memang benar — dan alat bantu jika Anda menemukan tabel hasil desain yang masih bermasalah.</p>
+  <p>Normalisasi bertujuan <strong>menghindari redundansi</strong> dan <strong>menjaga integritas data</strong>. Materi ini adalah validasi "mengapa" desain skema relasional pada Pertemuan 4 memang benar, dan alat bantu jika Anda menemukan tabel hasil desain yang masih bermasalah.</p>
 </div>
 
-## D. Anomali Data — Mengapa Normalisasi Diperlukan
+## D. Anomali Data: Mengapa Normalisasi Diperlukan
 
 Perhatikan sebuah **rancangan tabel tunggal** yang buruk berikut untuk mencatat transaksi penjualan (sengaja dibuat satu tabel agar mudah dibayangkan masalahnya):
 
@@ -86,15 +86,15 @@ Tabel ini menderita tiga **anomali**:
 
 <div class="callout">
   <span class="callout__label">3. Anomali Delete</span>
-  <p>Jika transaksi T003 (satu-satunya yang memuat produk "Monitor LG") dihapus, maka informasi <strong>harga/produk Monitor LG ikut terhapus</strong> — padahal kita masih butuh datanya.</p>
+  <p>Jika transaksi T003 (satu-satunya yang memuat produk "Monitor LG") dihapus, maka informasi <strong>harga/produk Monitor LG ikut terhapus</strong>, padahal kita masih butuh datanya.</p>
 </div>
 
 <strong>Akar masalah:</strong> terlalu banyak informasi berbeda dicampur dalam satu tabel. Normalisasi memecah tabel tersebut menjadi tabel-tabel yang masing-masing menampung **satu fakta** saja.
 
 <div class="callout callout--amber">
-  <span class="callout__label">Analogi — Satu Binder Besar</span>
+  <span class="callout__label">Analogi: Satu Binder Besar</span>
   <p>Bayangkan <strong>satu binder besar</strong> berisi semua catatan kuliah: daftar mahasiswa, nilai, jadwal, dan data dosen ditumpuk dalam satu tempat.</p>
-  <p>→ <em>Anomali insert:</em> mahasiswa baru yang belum punya nilai jadi susah dicatat — kolom nilai di setiap halamannya kosong.<br/>
+  <p>→ <em>Anomali insert:</em> mahasiswa baru yang belum punya nilai jadi susah dicatat, kolom nilai di setiap halamannya kosong.<br/>
   → <em>Anomali update:</em> ganti nama dosen harus menyobek dan menulis ulang <strong>banyak halaman</strong>; terlewat satu halaman berarti datanya jadi berbeda-beda.<br/>
   → <em>Anomali delete:</em> membuang halaman nilai bisa ikut menghilangkan data dosen yang hanya tersisa di halaman itu.</p>
   <p>Normalisasi = merapikan binder menjadi beberapa <strong>map terpisah</strong> (Mahasiswa, Dosen, Mata Kuliah, Nilai) yang antar-mapnya hanya dihubungkan lewat nomor referensi (FK).</p>
@@ -102,13 +102,13 @@ Tabel ini menderita tiga **anomali**:
 
 <div class="callout">
   <span class="callout__label">Hubungan dengan ERD (Pertemuan 2–4)</span>
-  <p>ERD adalah model <em>konseptual</em> dari kebutuhan bisnis. Tabel yang <strong>salah dirancang</strong> (seperti contoh TRANSAKSI di atas) memunculkan anomali; normalisasi memperbaikinya secara sistematis. Perhatikan contoh model ER sederhana berikut — ia menggambarkan entitas, relasi kardinalitas, dan kamus datanya, sebelum diimplementasikan sebagai tabel.</p>
+  <p>ERD adalah model <em>konseptual</em> dari kebutuhan bisnis. Tabel yang <strong>salah dirancang</strong> (seperti contoh TRANSAKSI di atas) memunculkan anomali; normalisasi memperbaikinya secara sistematis. Perhatikan contoh model ER sederhana berikut yang menggambarkan entitas, relasi kardinalitas, dan kamus datanya sebelum diimplementasikan sebagai tabel.</p>
 </div>
 
 <figure class="media-figure">
   <img src="/images/er-diagram.jpg" alt="Diagram ER yang memperlihatkan entitas, relasi kardinalitas, dan kamus data" width="520" loading="lazy" />
   <figcaption>
-    Contoh model Entity-Relationship (ER) — entitas, relasi kardinalitas, dan kamus data.
+    Contoh model Entity-Relationship (ER): entitas, relasi kardinalitas, dan kamus data.
     <span class="media-src">Sumber: "Entity Relationship Diagram.jpg", Wikimedia Commons (domain publik). <a href="https://commons.wikimedia.org/wiki/File:Entity_Relationship_Diagram.jpg">commons.wikimedia.org/wiki/File:Entity_Relationship_Diagram.jpg</a></span>
   </figcaption>
 </figure>
@@ -125,8 +125,8 @@ X disebut **determinan**; Y disebut **dependent**.
 Contoh: `no_nota → tgl` (setiap nota punya satu tanggal).
 
 <div class="callout">
-  <span class="callout__label">Analogi — Kunci Kamus & KTP</span>
-  <p>FD seperti <strong>satu kunci → satu data</strong>: <em>"no. KTP → nama &amp; alamat pemilik"</em> dan <em>"ISBN → judul buku"</em> bersifat fungsional karena identitasnya unik dan konsisten. Sebaliknya, <em>"nama → alamat"</em> <strong>bukanlah FD</strong> yang benar — dua orang berbeda bisa memiliki nama yang sama, sehingga nama tidak bisa menentukan alamat secara unik.</p>
+  <span class="callout__label">Analogi: Kunci Kamus & KTP</span>
+  <p>FD seperti <strong>satu kunci → satu data</strong>: <em>"no. KTP → nama &amp; alamat pemilik"</em> dan <em>"ISBN → judul buku"</em> bersifat fungsional karena identitasnya unik dan konsisten. Sebaliknya, <em>"nama → alamat"</em> <strong>bukanlah FD</strong> yang benar, dua orang berbeda bisa memiliki nama yang sama, sehingga nama tidak bisa menentukan alamat secara unik.</p>
   <p>Prinsip pengujian: tanya dirimu <em>"apakah mungkin dua baris berbeda memakai nilai X yang sama tetapi nilai Y-nya beda?"</em> Jika mungkin, maka <code>X → Y</code> bukan FD yang sah.</p>
 </div>
 
@@ -142,7 +142,7 @@ Contoh: `no_nota → tgl` (setiap nota punya satu tanggal).
 </table>
 
 <div class="sim-box" style="margin-top:12px;">
-  <p style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin:0 0 12px;">PETA KETERGANTUNGAN FUNGSIONAL — TABEL TRANSAKSI (PK: no_nota, id_produk)</p>
+  <p style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin:0 0 12px;">PETA KETERGANTUNGAN FUNGSIONAL: TABEL TRANSAKSI (PK: no_nota, id_produk)</p>
   <svg viewBox="0 0 760 330" style="width:100%; height:auto; font-family:'JetBrains Mono',monospace; font-size:10.5">
     <defs>
       <marker id="mkr-p5-a" markerWidth="9" markerHeight="9" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 z" fill="#C9584F"/></marker>
@@ -214,8 +214,8 @@ Contoh: `no_nota → tgl` (setiap nota punya satu tanggal).
 
 Suatu tabel berada di **1NF** jika:
 
-1. Semua nilai pada setiap kolom **atomik** (tidak dapat dipecah lagi) — tanpa tabel/kolom berulang.
-2. Tidak ada **repeating group** (grup berulang) — mis. satu sel berisi banyak produk.
+1. Semua nilai pada setiap kolom **atomik** (tidak dapat dipecah lagi): tanpa tabel/kolom berulang.
+2. Tidak ada **repeating group** (grup berulang): mis. satu sel berisi banyak produk.
 
 ### Dari UNF ke 1NF
 
@@ -235,7 +235,7 @@ TRANSAKSI(no_nota, id_produk, tgl, id_pelanggan, nama_pelanggan,
 
 <div class="callout">
   <span class="callout__label">Catatan</span>
-  <p>1NF hanya menyelesaikan <strong>struktur</strong> (atomisitas). Redundansi dan anomali <strong>belum hilang</strong> — pada 1NF, data pelanggan tetap berulang di tiap baris produknya. Itu tugas 2NF dan 3NF.</p>
+  <p>1NF hanya menyelesaikan <strong>struktur</strong> (atomisitas). Redundansi dan anomali <strong>belum hilang</strong>. Pada 1NF, data pelanggan tetap berulang di tiap baris produknya. Itu tugas 2NF dan 3NF.</p>
 </div>
 
 ## G. Normal Form 2 (2NF)
@@ -243,7 +243,7 @@ TRANSAKSI(no_nota, id_produk, tgl, id_pelanggan, nama_pelanggan,
 Suatu tabel berada di **2NF** jika:
 
 1. Tabel sudah berada di **1NF**.
-2. Tidak ada **partial dependency** — yakni tidak ada atribut non-kunci yang bergantung hanya pada *sebagian* PK gabungan.
+2. Tidak ada **partial dependency**: yakni tidak ada atribut non-kunci yang bergantung hanya pada *sebagian* PK gabungan.
 
 > Atribut yang bukan PK hanya boleh bergantung pada **seluruh** kunci, bukan sebagian.
 
@@ -255,7 +255,7 @@ Pada tabel `TRANSAKSI` (PK `no_nota, id_produk`) terdapat partial dependency:
 <figure class="media-figure">
   <img src="/images/normal-2fn.jpg" alt="Contoh pelanggaran 2NF dalam notasi generik: atribut ditentukan oleh sebagian kunci gabungan" width="480" loading="lazy" />
   <figcaption>
-    Pelanggaran 2NF dalam notasi generik — atribut non-kunci bergantung hanya pada sebagian kunci gabungan (ditandai panah).
+    Pelanggaran 2NF dalam notasi generik, atribut non-kunci bergantung hanya pada sebagian kunci gabungan (ditandai panah).
     <span class="media-src">Sumber: "2FN.jpg" oleh SQLpro, Wikimedia Commons, CC BY-SA 4.0. <a href="https://commons.wikimedia.org/wiki/File:2FN.jpg">commons.wikimedia.org/wiki/File:2FN.jpg</a></span>
   </figcaption>
 </figure>
@@ -282,19 +282,19 @@ DETAIL_TRANSAKSI(no_nota, id_produk, jumlah)                    PK: (no_nota, id
 Suatu tabel berada di **3NF** jika:
 
 1. Tabel sudah berada di **2NF**.
-2. Tidak ada **transitive dependency** — tidak ada atribut **non-kunci** yang bergantung pada atribut **non-kunci** lainnya.
+2. Tidak ada **transitive dependency**: tidak ada atribut **non-kunci** yang bergantung pada atribut **non-kunci** lainnya.
 
 Pada tabel `TRANSAKSI(no_nota, ..., id_pelanggan, nama_pelanggan, kota)` terdapat transitive dependency:
 
 ```text
 no_nota → id_pelanggan → nama_pelanggan, kota
-(id_pelanggan ditentukan no_nota, lalu nama & kota ditentukan id_pelanggan — keduanya non-kunci)
+(id_pelanggan ditentukan no_nota, lalu nama & kota ditentukan id_pelanggan, keduanya non-kunci)
 ```
 
 <figure class="media-figure">
   <img src="/images/normal-3fn.jpg" alt="Contoh pelanggaran 3NF dalam notasi generik: ketergantungan transitif antar atribut non-kunci" width="480" loading="lazy" />
   <figcaption>
-    Pelanggaran 3NF dalam notasi generik — ketergantungan antara dua atribut non-kunci (transitif).
+    Pelanggaran 3NF dalam notasi generik, ketergantungan antara dua atribut non-kunci (transitif).
     <span class="media-src">Sumber: "3FN.jpg" oleh SQLpro, Wikimedia Commons, CC BY-SA 4.0. <a href="https://commons.wikimedia.org/wiki/File:3FN.jpg">commons.wikimedia.org/wiki/File:3FN.jpg</a></span>
   </figcaption>
 </figure>
@@ -366,19 +366,19 @@ Empat transaksi pada tabel awal kini tersimpan di 4 tabel. Perhatikan **setiap f
 
 <div class="callout">
   <span class="callout__label">Bandingkan dengan data awal</span>
-  <p>Pada tabel awal, data pelanggan "Andi Pratama" tercatat <strong>3×</strong> (redundan). Setelah 3NF, hanya tersimpan <strong>1×</strong>. Datanya dikembalikan utuh saat dibutuhkan menggunakan <code>JOIN</code> berdasarkan FK — tanpa pernah menyalinnya secara fisik di tempat lain.</p>
+  <p>Pada tabel awal, data pelanggan "Andi Pratama" tercatat <strong>3×</strong> (redundan). Setelah 3NF, hanya tersimpan <strong>1×</strong>. Datanya dikembalikan utuh saat dibutuhkan menggunakan <code>JOIN</code> berdasarkan FK, tanpa pernah menyalinnya secara fisik di tempat lain.</p>
 </div>
 
 <div class="callout callout--amber">
   <span class="callout__label">Kunci Pemahaman</span>
-  <p>Perhatikan hasil akhir ini — <strong>persis sama</strong> dengan struktur tabel E-Commerce yang kita hasilkan dari transformasi ERD pada Pertemuan 3–4 (PELANGGAN, ORDER, PRODUK, ORDER_DETAIL). Artinya desain ERD yang baik <em>secara otomatis</em> menghasilkan skema yang sudah ternormalisasi; normalisasi menjadi alat untuk <strong>memeriksa ulang</strong> kualitas desain.</p>
+  <p>Perhatikan hasil akhir ini, <strong>persis sama</strong> dengan struktur tabel E-Commerce yang kita hasilkan dari transformasi ERD pada Pertemuan 3–4 (PELANGGAN, ORDER, PRODUK, ORDER_DETAIL). Artinya desain ERD yang baik <em>secara otomatis</em> menghasilkan skema yang sudah ternormalisasi; normalisasi menjadi alat untuk <strong>memeriksa ulang</strong> kualitas desain.</p>
 </div>
 
-## I. Variasi Contoh — Pola Normalisasi yang Lain
+## I. Variasi Contoh: Pola Normalisasi yang Lain
 
-Contoh TRANSAKSI di atas mencakup ketiga jenis dependency sekaligus. Agar lebih mantap, berikut **3 pola lain** yang sering muncul di dunia nyata — masing-masing menekankan pola berbeda.
+Contoh TRANSAKSI di atas mencakup ketiga jenis dependency sekaligus. Agar lebih mantap, berikut **3 pola lain** yang sering muncul di dunia nyata: masing-masing menekankan pola berbeda.
 
-### Variasi 1 — Tabel dengan Kunci Gabungan + Ketergantungan Transitif (SIAKAD)
+### Variasi 1: Tabel dengan Kunci Gabungan + Ketergantungan Transitif (SIAKAD)
 
 Rancangan jelek untuk mencatat nilai mahasiswa (semua digabung dalam satu tabel):
 
@@ -425,7 +425,7 @@ NILAI_MHS(nim, nama_mhs, kode_prodi, nama_prodi, kode_mk, nama_mk, sks, nilai)
   <p>Hasil akhirnya <strong>persis sama</strong> dengan skema SIAKAD pada Pertemuan 4 (PROGRAM_STUDI, MAHASISWA, MATAKULIAH, NILAI). Jadi: tabel curah yang ditulis sembarangan, setelah dinormalisasi, akan berakhir pada skema yang sama seperti hasil perancangan ERD yang baik.</p>
 </div>
 
-### Variasi 2 — Tabel Kunci Tunggal + Dua Ketergantungan Transitif (Rumah Sakit)
+### Variasi 2: Tabel Kunci Tunggal + Dua Ketergantungan Transitif (Rumah Sakit)
 
 Rancangan jelek untuk kunjungan pasien. Kunci hanya satu kolom (`id_kunjungan`), tetapi terdapat dua rantai transitif:
 
@@ -440,7 +440,7 @@ KUNJUNGAN(id_kunjungan, tgl, id_dokter, nama_dokter, spesialisasi,
 - `id_dokter → nama_dokter, spesialisasi` (transitif)
 - `id_pasien → nama_pasien` (transitif)
 
-> **Poin penting:** karena kunci hanya satu kolom, tabel ini tidak mungkin punya *partial dependency*. Jika sudah 1NF, ia **otomatis berada di 2NF**. Langkah yang diperlukan hanya **3NF** — buang rantai transitifnya.
+> **Poin penting:** karena kunci hanya satu kolom, tabel ini tidak mungkin punya *partial dependency*. Jika sudah 1NF, ia **otomatis berada di 2NF**. Langkah yang diperlukan hanya **3NF**: buang rantai transitifnya.
 
 ```text
 2NF   : otomatis lolos (kunci tunggal)
@@ -452,10 +452,10 @@ KUNJUNGAN(id_kunjungan, tgl, id_dokter, nama_dokter, spesialisasi,
 
 <div class="callout">
   <span class="callout__label">Aturan Emas</span>
-  <p><strong>2NF hanya relevan untuk tabel ber-PK gabungan.</strong> Untuk tabel ber-PK satu kolom, jika sudah 1NF maka langsung lolos 2NF — langkah yang biasanya tersisa hanyalah menghilangkan transitive dependency (3NF).</p>
+  <p><strong>2NF hanya relevan untuk tabel ber-PK gabungan.</strong> Untuk tabel ber-PK satu kolom, jika sudah 1NF maka langsung lolos 2NF, langkah yang biasanya tersisa hanyalah menghilangkan transitive dependency (3NF).</p>
 </div>
 
-### Variasi 3 — Atribut Multivalued (melanggar 1NF)
+### Variasi 3: Atribut Multivalued (melanggar 1NF)
 
 Kadang masalahnya bukan di kunci, melainkan satu sel berisi **banyak nilai**. Contoh: karyawan dengan beberapa nomor telepon.
 
@@ -464,7 +464,7 @@ KARYAWAN(nik, nama, no_telp1, no_telp2, no_telp3)      ← BURUK: kolom menyatu
 KARYAWAN(nik, nama, no_telp = "0812..., 0813...")      ← BURUK: grup berulang
 ```
 
-**Solusi 1NF — pisahkan ke tabel terpisah** (sama seperti Aturan 6 di Pertemuan 4):
+**Solusi 1NF: pisahkan ke tabel terpisah** (sama seperti Aturan 6 di Pertemuan 4):
 
 ```text
 KARYAWAN(nik PK, nama)
@@ -520,7 +520,7 @@ KARYAWAN_TELP(nik FK→KARYAWAN, no_telp)   PK: (nik, no_telp)
   </svg>
 </div>
 
-## K. Cheat Sheet — Rangkuman NF
+## K. Cheat Sheet: Rangkuman NF
 
 <table class="dtable">
   <thead><tr><th>Normal Form</th><th>Syarat</th><th>Masalah yang Dihilangkan</th></tr></thead>
@@ -534,7 +534,7 @@ KARYAWAN_TELP(nik FK→KARYAWAN, no_telp)   PK: (nik, no_telp)
 <figure class="media-figure">
   <img src="/images/database-normalization.svg" alt="Diagram hirarki normal form: 1NF hingga 5NF" width="320" loading="lazy" />
   <figcaption>
-    Hirarki normal form — setiap tingkat normal adalah <strong>subset</strong> dari tingkat sebelumnya (1NF ⊃ 2NF ⊃ 3NF ⊃ BCNF ⊃ 4NF ⊃ 5NF). Tabel 3NF otomatis berada di 2NF dan 1NF.
+    Hirarki normal form, setiap tingkat normal adalah <strong>subset</strong> dari tingkat sebelumnya (1NF ⊃ 2NF ⊃ 3NF ⊃ BCNF ⊃ 4NF ⊃ 5NF). Tabel 3NF otomatis berada di 2NF dan 1NF.
     <span class="media-src">Sumber: "Database normalization.svg" oleh LimoWreck (Wikipedia Belanda), vektorisasi oleh Beao. Wikimedia Commons, lisensi CC BY-SA 3.0. <a href="https://commons.wikimedia.org/wiki/File:Database_normalization.svg">commons.wikimedia.org/wiki/File:Database_normalization.svg</a></span>
   </figcaption>
 </figure>
@@ -587,17 +587,17 @@ KARYAWAN_TELP(nik FK→KARYAWAN, no_telp)   PK: (nik, no_telp)
 </QuizCard>
 
 <QuizCard question="Data mahasiswa 'Andi' pada Variasi 1 (tabel NILAI_MHS) muncul berulang di banyak baris. Setelah normalisasi, data itu cukup disimpan di...">
-  <button class="quiz-option" data-correct="true" data-explanation="nama_mhs tergantung partial pada nim, sehingga dipindah ke tabel MAHASISWA — cukup satu baris per mahasiswa.">Tabel MAHASISWA (satu baris per mahasiswa)</button>
+  <button class="quiz-option" data-correct="true" data-explanation="nama_mhs tergantung partial pada nim, sehingga dipindah ke tabel MAHASISWA, cukup satu baris per mahasiswa.">Tabel MAHASISWA (satu baris per mahasiswa)</button>
   <button class="quiz-option" data-correct="false">Tabel NILAI</button>
   <button class="quiz-option" data-correct="false">Tabel PROGRAM_STUDI</button>
 </QuizCard>
 
 ## M. Rangkuman
 
-- Tabel yang mencampur banyak fakta memunculkan **anomali insert, update, delete** — seperti buku catatan yang semua informasi ditumpuk dalam satu binder
-- **Functional Dependency** (X → Y) adalah fondasi analisis normalisasi — analoginya *satu kunci → satu data*
+- Tabel yang mencampur banyak fakta memunculkan **anomali insert, update, delete**: seperti buku catatan yang semua informasi ditumpuk dalam satu binder
+- **Functional Dependency** (X → Y) adalah fondasi analisis normalisasi: analoginya *satu kunci → satu data*
 - **1NF**: nilai atomik, tanpa grup berulang; atribut multivalued dipisah ke tabel sendiri
-- **2NF**: buang partial dependency (atribut bergantung sebagian PK) — hanya relevan untuk PK gabungan
+- **2NF**: buang partial dependency (atribut bergantung sebagian PK): hanya relevan untuk PK gabungan
 - **3NF**: buang transitive dependency (non-kunci → non-kunci)
 - Tabel ber-PK satu kolom yang sudah 1NF **otomatis lolos 2NF**
 - Hasil normalisasi selalu mengonfirmasi **ERD yang baik = skema ternormalisasi** (bukti: SIAKAD & E-Commerce Pertemuan 3–4)

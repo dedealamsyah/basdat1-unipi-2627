@@ -17,7 +17,7 @@ import QuizCard from '../../components/QuizCard.astro';
 
 <table class="dtable">
   <tbody>
-    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
     <tr><th>Pertemuan / Minggu</th><td>Ke-4 dari 16 (Semester 3, TA 2026/2027)</td></tr>
     <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur</td></tr>
     <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
@@ -59,67 +59,67 @@ import QuizCard from '../../components/QuizCard.astro';
 
 ## D. Mengapa ERD Perlu Ditransformasi?
 
-ERD adalah model **konseptual** yang dirancang untuk komunikasi dengan pemilik bisnis. Namun DBMS relasional (MySQL, PostgreSQL, SQLite) hanya memahami **tabel**, bukan diagram. Oleh karena itu setiap komponen ERD — entitas, atribut, dan relasi — harus dipetakan menjadi struktur tabel melalui aturan yang sistematis (*mapping rules*).
+ERD adalah model **konseptual** yang dirancang untuk komunikasi dengan pemilik bisnis. Namun DBMS relasional (MySQL, PostgreSQL, SQLite) hanya memahami **tabel**, bukan diagram. Oleh karena itu setiap komponen ERD (entitas, atribut, dan relasi) harus dipetakan menjadi struktur tabel melalui aturan yang sistematis (*mapping rules*).
 
 Algoritma pemetaan baku dirumuskan oleh **Elmasri & Navathe (2016)** dan menjadi landasan materi ini.
 
-## D.1 Aturan 1 — Entitas Kuat → Tabel
+## D.1 Aturan 1: Entitas Kuat → Tabel
 
 Setiap **entitas kuat** menjadi sebuah tabel. Semua atribut sederhana entitas menjadi kolom, dan atribut Primary Key entitas menjadi Primary Key tabel.
 
 <table class="dtable">
   <thead><tr><th>ERD</th><th>Skema Relasional</th></tr></thead>
   <tbody>
-    <tr><td>Entitas <code>MAHASISWA</code> dengan atribut <code>nim</code> (PK), <code>nama</code></td><td><code>MAHASISWA(nim, nama)</code> — PK: <code>nim</code></td></tr>
+    <tr><td>Entitas <code>MAHASISWA</code> dengan atribut <code>nim</code> (PK), <code>nama</code></td><td><code>MAHASISWA(nim, nama)</code>, PK: <code>nim</code></td></tr>
   </tbody>
 </table>
 
 <div class="callout">
   <span class="callout__label">Tips</span>
-  <p>Atribut <strong>composite</strong> (mis. Alamat = Jalan + Kota) dipecah menjadi kolom-kolom tersendiri. Atribut <strong>derived</strong> (mis. Usia) tidak disimpan di tabel — cukup dihitung saat diperlukan.</p>
+  <p>Atribut <strong>composite</strong> (mis. Alamat = Jalan + Kota) dipecah menjadi kolom-kolom tersendiri. Atribut <strong>derived</strong> (mis. Usia) tidak disimpan di tabel, cukup dihitung saat diperlukan.</p>
 </div>
 
-## D.2 Aturan 2 — Entitas Lemah → Tabel + FK
+## D.2 Aturan 2: Entitas Lemah → Tabel + FK
 
 **Entitas lemah** (tidak punya identitas mandiri) diubah menjadi tabel yang Primary Key-nya adalah gabungan **partial key** miliknya dengan **Primary Key entitas kuat yang menaunginya** (owner). Foreign Key ke owner ikut disertakan.
 
 <table class="dtable">
   <thead><tr><th>ERD</th><th>Skema Relasional</th></tr></thead>
   <tbody>
-    <tr><td>Entitas lemah <code>TANGGUNGAN</code> (partial key: <code>nama</code>) milik <code>KARYAWAN</code></td><td><code>TANGGUNGAN(nik, nama)</code> — PK gabungan: <code>(nik, nama)</code>, FK: <code>nik → KARYAWAN</code></td></tr>
+    <tr><td>Entitas lemah <code>TANGGUNGAN</code> (partial key: <code>nama</code>) milik <code>KARYAWAN</code></td><td><code>TANGGUNGAN(nik, nama)</code>, PK gabungan: <code>(nik, nama)</code>, FK: <code>nik → KARYAWAN</code></td></tr>
   </tbody>
 </table>
 
-## D.3 Aturan 3 — Relasi 1:1 → Gabungkan FK di Salah Satu Sisi
+## D.3 Aturan 3: Relasi 1:1 → Gabungkan FK di Salah Satu Sisi
 
 Relasi <strong>one-to-one</strong> dipetakan dengan meletakkan **Foreign Key** pada salah satu tabel (biasanya sisi yang berpartisipasi **total**). Kolom FK diberi **UNIQUE** agar tidak ada duplikasi (menjamin maksimal satu pasangan).
 
 <table class="dtable">
   <thead><tr><th>ERD</th><th>Skema Relasional</th></tr></thead>
   <tbody>
-    <tr><td><code>ORDER</code> (1:1) <code>PEMBAYARAN</code> — Pembayaran wajib untuk tiap order</td><td><code>ORDER(id_order, ...)</code> dan <code>PEMBAYARAN(id_bayar, id_order UNIQUE FK→ORDER, ...)</code></td></tr>
+    <tr><td><code>ORDER</code> (1:1) <code>PEMBAYARAN</code>, Pembayaran wajib untuk tiap order</td><td><code>ORDER(id_order, ...)</code> dan <code>PEMBAYARAN(id_bayar, id_order UNIQUE FK→ORDER, ...)</code></td></tr>
   </tbody>
 </table>
 
-## D.4 Aturan 4 — Relasi 1:N → FK di Sisi Banyak
+## D.4 Aturan 4: Relasi 1:N → FK di Sisi Banyak
 
 Relasi <strong>one-to-many</strong> dipetakan dengan menaruh **Foreign Key di tabel sisi "banyak" (N)**. Contoh: satu DOSEN mengampu banyak MATAKULIAH → kolom `nip_dosen` diletakkan di tabel `MATAKULIAH`. Atribut relasi (jika ada) ikut diletakkan di tabel sisi N.
 
 <table class="dtable">
   <thead><tr><th>ERD</th><th>Skema Relasional</th></tr></thead>
   <tbody>
-    <tr><td>DOSEN (1) → (N) MATAKULIAH</td><td><code>DOSEN(nip, ...)</code> — PK: <code>nip</code><br/><code>MATAKULIAH(kode_mk, nip_dosen FK→DOSEN, ...)</code></td></tr>
+    <tr><td>DOSEN (1) → (N) MATAKULIAH</td><td><code>DOSEN(nip, ...)</code>, PK: <code>nip</code><br/><code>MATAKULIAH(kode_mk, nip_dosen FK→DOSEN, ...)</code></td></tr>
   </tbody>
 </table>
 
-## D.5 Aturan 5 — Relasi M:N → Tabel Penghubung
+## D.5 Aturan 5: Relasi M:N → Tabel Penghubung
 
 Relasi <strong>many-to-many</strong> tidak bisa direpresentasikan langsung dengan satu kolom FK. Relasi ini dipecah menjadi **tabel penghubung (junction / associative table)** dengan **Primary Key gabungan** dari kedua Foreign Key. Atribut relasi diletakkan pada tabel penghubung ini.
 
 <table class="dtable">
   <thead><tr><th>ERD</th><th>Skema Relasional</th></tr></thead>
   <tbody>
-    <tr><td>MAHASISWA (M) ↔ (N) MATAKULIAH</td><td><code>NILAI(nim FK→MAHASISWA, kode_mk FK→MATAKULIAH, nilai, grade)</code> — PK gabungan: <code>(nim, kode_mk)</code></td></tr>
+    <tr><td>MAHASISWA (M) ↔ (N) MATAKULIAH</td><td><code>NILAI(nim FK→MAHASISWA, kode_mk FK→MATAKULIAH, nilai, grade)</code>, PK gabungan: <code>(nim, kode_mk)</code></td></tr>
   </tbody>
 </table>
 
@@ -128,14 +128,14 @@ Relasi <strong>many-to-many</strong> tidak bisa direpresentasikan langsung denga
   <p>Atribut <code>nilai</code> dan <code>grade</code> pada contoh di atas adalah <strong>atribut relasi</strong> (deskriptor yang hanya bermakna pada pasangan mahasiswa–matakuliah), sehingga diletakkan di tabel penghubung <code>NILAI</code>, bukan di tabel <code>MAHASISWA</code> maupun <code>MATAKULIAH</code>.</p>
 </div>
 
-## D.6 Aturan 6 — Atribut Multivalued → Tabel Terpisah
+## D.6 Aturan 6: Atribut Multivalued → Tabel Terpisah
 
 Atribut yang bisa bernilai banyak (mis. `no_telp`) dipisah menjadi **tabel baru** yang berisi Foreign Key ke entitas pemilik ditambah atribut tersebut. Primary Key-nya gabungan (FK + atribut) atau menggunakan kolom id buatan (surrogate key).
 
 <table class="dtable">
   <thead><tr><th>ERD</th><th>Skema Relasional</th></tr></thead>
   <tbody>
-    <tr><td><code>MAHASISWA</code> dengan atribut multivalued <code>no_telp</code></td><td><code>MAHASISWA(nim, nama, ...)</code><br/><code>MHS_TELP(nim FK→MAHASISWA, no_telp)</code> — PK: <code>(nim, no_telp)</code></td></tr>
+    <tr><td><code>MAHASISWA</code> dengan atribut multivalued <code>no_telp</code></td><td><code>MAHASISWA(nim, nama, ...)</code><br/><code>MHS_TELP(nim FK→MAHASISWA, no_telp)</code>, PK: <code>(nim, no_telp)</code></td></tr>
   </tbody>
 </table>
 
@@ -214,7 +214,7 @@ Untuk tabel penghubung, Primary Key gabungan ditulis sebagai satu kesatuan:
 NILAI(nim PK,FK→MAHASISWA, kode_mk PK,FK→MATAKULIAH, nilai, grade)
 ```
 
-## G. Contoh 1 — SIAKAD (studi kasus Pertemuan 3)
+## G. Contoh 1: SIAKAD (studi kasus Pertemuan 3)
 
 Ingat kembali ERD SIAKAD yang kita rancang pada Pertemuan 3. Berikut langkah transformasinya.
 
@@ -250,7 +250,7 @@ MATAKULIAH(kode_mk PK, nama_mk, sks, semester,
 NILAI(nim PK,FK→MAHASISWA, kode_mk PK,FK→MATAKULIAH, nilai, grade)
 ```
 
-### G.5 DDL SQL — `CREATE TABLE`
+### G.5 DDL SQL: `CREATE TABLE`
 
 Jumlah tabel hasil transformasi **selalu sama dengan jumlah skema relasi** (di sini 5 tabel). Berikut penulisannya dalam SQL:
 
@@ -295,10 +295,10 @@ CREATE TABLE nilai (
 
 <div class="callout">
   <span class="callout__label">Kunci Pemahaman</span>
-  <p>Perhatikan bahwa jumlah <strong>tabel = jumlah entitas + jumlah relasi M:N</strong>. Pada SIAKAD: 4 entitas kuat + 1 relasi M:N = <strong>5 tabel</strong>. Relasi 1:N tidak membuat tabel baru — cukup menambahkan kolom FK.</p>
+  <p>Perhatikan bahwa jumlah <strong>tabel = jumlah entitas + jumlah relasi M:N</strong>. Pada SIAKAD: 4 entitas kuat + 1 relasi M:N = <strong>5 tabel</strong>. Relasi 1:N tidak membuat tabel baru: cukup menambahkan kolom FK.</p>
 </div>
 
-## H. Contoh 2 — E-Commerce (studi kasus Pertemuan 3)
+## H. Contoh 2: E-Commerce (studi kasus Pertemuan 3)
 
 ### H.1 Skema Relasional Lengkap
 
@@ -369,10 +369,10 @@ CREATE TABLE pembayaran (
 
 <div class="callout callout--amber">
   <span class="callout__label">Catatan Penting</span>
-  <p>Kolom FK ber-<strong>UNIQUE</strong> pada tabel <code>PEMBAYARAN</code> adalah implementasi SQL dari relasi <strong>1:1</strong>. Tanpa UNIQUE, tabel pembayaran bisa menyimpan banyak baris untuk order yang sama — yang berarti relasinya menjadi 1:N.</p>
+  <p>Kolom FK ber-<strong>UNIQUE</strong> pada tabel <code>PEMBAYARAN</code> adalah implementasi SQL dari relasi <strong>1:1</strong>. Tanpa UNIQUE, tabel pembayaran bisa menyimpan banyak baris untuk order yang sama, yang berarti relasinya menjadi 1:N.</p>
 </div>
 
-## I. Contoh 3 — Rumah Sakit (studi kasus Pertemuan 3)
+## I. Contoh 3: Rumah Sakit (studi kasus Pertemuan 3)
 
 ### I.1 Skema Relasional Lengkap
 
@@ -414,7 +414,7 @@ CREATE TABLE resep_detail (
 );
 ```
 
-## J. Cheat Sheet — Rangkuman 6 Aturan
+## J. Cheat Sheet: Rangkuman 6 Aturan
 
 <table class="dtable">
   <thead><tr><th>#</th><th>Komponen ERD</th><th>Aturan Transformasi</th></tr></thead>

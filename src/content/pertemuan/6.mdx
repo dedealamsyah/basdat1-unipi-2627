@@ -17,7 +17,7 @@ import QuizCard from '../../components/QuizCard.astro';
 
 <table class="dtable">
   <tbody>
-    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
     <tr><th>Pertemuan / Minggu</th><td>Ke-6 dari 16 (Semester 3, TA 2026/2027)</td></tr>
     <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur</td></tr>
     <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
@@ -47,7 +47,7 @@ import QuizCard from '../../components/QuizCard.astro';
 1. Keterbatasan 3NF: kasus di mana 3NF lolos tetapi masih terjadi redundansi
 2. Definisi formal **BCNF** (Boyce-Codd Normal Form)
 3. Prosedur menguji apakah sebuah tabel sudah BCNF
-4. Studi kasus: tabel `PENGAMPUAN` — 3NF namun belum BCNF
+4. Studi kasus: tabel `PENGAMPUAN` (3NF namun belum BCNF)
 5. Dekomposisi BCNF: *lossless-join* dan *dependency preservation*
 6. Keputusan praktis: kapan berhenti di 3NF dan kapan perlu BCNF
 
@@ -60,7 +60,7 @@ import QuizCard from '../../components/QuizCard.astro';
 
 3NF mensyaratkan: untuk setiap FD `X → A`, **X harus superkey ATAU A adalah atribut prime** (anggota dari salah satu candidate key).
 
-Celanya ada pada kata <strong>"ATAU"</strong>. Sebuah tabel bisa lolos 3NF hanya karena atribut dependennya kebetulan *prime* — padahal determinannya **bukan superkey**. Akibatnya, pasangan (determinan → dependen) tetap berulang di banyak baris.
+Celanya ada pada kata <strong>"ATAU"</strong>. Sebuah tabel bisa lolos 3NF hanya karena atribut dependennya kebetulan *prime*, padahal determinannya **bukan superkey**. Akibatnya, pasangan (determinan → dependen) tetap berulang di banyak baris.
 
 <div class="callout">
   <span class="callout__label">Analogi</span>
@@ -73,7 +73,7 @@ Suatu relasi berada di **Boyce-Codd Normal Form (BCNF)** jika:
 
 > Untuk **setiap** ketergantungan fungsional `X → A` (A ∉ X), maka **X haruslah sebuah superkey**.
 
-Tidak ada klausul "ATAU" — determinan **wajib** superkey, apa pun status atribut dependennya.
+Tidak ada klausul "ATAU", determinan **wajib** superkey, apa pun status atribut dependennya.
 
 **Akibat:** BCNF ⊂ 3NF. Setiap tabel BCNF pasti 3NF, tetapi **tidak semua tabel 3NF adalah BCNF**.
 
@@ -147,11 +147,11 @@ Periksa setiap FD terhadap syarat 3NF dan BCNF sekaligus:
 
 **Kesimpulan:** FD `nip → kode_mk` **lolos 3NF** (karena `kode_mk` adalah atribut prime) tetapi **gagal BCNF** (karena determinan `nip` bukan superkey). Di sinilah 3NF masih menyisakan celah.
 
-Tabel ini **3NF**, tetapi masih **terlihat redundan**: pasangan `(D001, BD01)` tertulis berulang 3 kali, dan `(D002, ALGO)` 2 kali — sama banyaknya dengan jumlah mahasiswa.
+Tabel ini **3NF**, tetapi masih **terlihat redundan**: pasangan `(D001, BD01)` tertulis berulang 3 kali, dan `(D002, ALGO)` 2 kali: sama banyaknya dengan jumlah mahasiswa.
 
 ### Mengapa Belum BCNF?
 
-FD `nip → kode_mk`: determinan `nip` **bukan superkey** (nip saja tidak menentukan `nim`). Menurut definisi BCNF, ini **pelanggaran** — apa pun status `kode_mk`.
+FD `nip → kode_mk`: determinan `nip` **bukan superkey** (nip saja tidak menentukan `nim`). Menurut definisi BCNF, ini **pelanggaran**: apa pun status `kode_mk`.
 
 <figure class="media-figure">
   <img src="/images/database-normalization.svg" alt="Hirarki normal form termasuk BCNF di bawah 3NF" width="300" loading="lazy" />
@@ -211,7 +211,7 @@ Pada contoh ini, FD `(nim, kode_mk) → nip` **tidak tersimpan eksplisit** di de
 
 <div class="callout callout--amber">
   <span class="callout__label">Keputusan Praktis</span>
-  <p>Jika dekomposisi BCNF kehilangan ketergantungan penting, desainer biasa memilih: (1) tetap 3NF yang <strong>dependency-preserving</strong> dan menambahkan constraint/business rule di aplikasi, atau (2) menerima BCNF dan menegakkan aturan lewat <code>CHECK</code>/triger/validasi aplikasi. Tidak ada jawaban tunggal — ini keputusan rekayasa.</p>
+  <p>Jika dekomposisi BCNF kehilangan ketergantungan penting, desainer biasa memilih: (1) tetap 3NF yang <strong>dependency-preserving</strong> dan menambahkan constraint/business rule di aplikasi, atau (2) menerima BCNF dan menegakkan aturan lewat <code>CHECK</code>/triger/validasi aplikasi. Tidak ada jawaban tunggal. Ini keputusan rekayasa.</p>
 </div>
 
 ## H. Kapan Harus Melanjutkan ke BCNF?
@@ -220,9 +220,9 @@ Gunakan poin-poin berikut untuk memutuskan:
 
 - **Lanjut ke BCNF jika** tabel 3NF masih memuat redundansi yang jelas (pasangan determinan–dependen berulang) dan Anda tidak keberatan menangani aturan bisnis di aplikasi.
 - **Berhenti di 3NF jika** tidak ada FD dengan determinan non-superkey, atau dekomposisi BCNF justru memutus ketergantungan bisnis yang penting.
-- Normal form di atas BCNF (4NF, 5NF) membahas **multivalued dependency** — di luar lingkup mata kuliah ini.
+- Normal form di atas BCNF (4NF, 5NF) membahas **multivalued dependency**: di luar lingkup mata kuliah ini.
 
-## I. Cheat Sheet — 3NF vs BCNF
+## I. Cheat Sheet: 3NF vs BCNF
 
 <table class="dtable">
   <thead><tr><th>Kriteria</th><th>3NF</th><th>BCNF</th></tr></thead>
@@ -258,7 +258,7 @@ Gunakan poin-poin berikut untuk memutuskan:
 
 <QuizCard question="Tabel yang sudah 3NF dan memiliki FD dengan determinan non-superkey yang dependennya atribut prime…">
   <button class="quiz-option" data-correct="false">Pasti sudah BCNF</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Nilai prime pada dependen membuat tabel lolos 3NF, tetapi bukan jaminan BCNF — itulah celah yang ditutup BCNF.">Lolos 3NF namun belum tentu BCNF</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Nilai prime pada dependen membuat tabel lolos 3NF, tetapi bukan jaminan BCNF; itulah celah yang ditutup BCNF.">Lolos 3NF namun belum tentu BCNF</button>
   <button class="quiz-option" data-correct="false">Tidak memenuhi syarat 2NF</button>
 </QuizCard>
 
@@ -270,7 +270,7 @@ Gunakan poin-poin berikut untuk memutuskan:
 
 ## K. Rangkuman
 
-- **BCNF**: untuk setiap FD, determinan **wajib superkey** — lebih ketat dari 3NF
+- **BCNF**: untuk setiap FD, determinan **wajib superkey**: lebih ketat dari 3NF
 - Selisih 3NF vs BCNF terletak pada klausul "atau dependennya prime"
 - Tabel 3NF bisa tetap redundan bila ada FD `X → A` dengan X bukan superkey dan A prime
 - **Dekomposisi BCNF** berdasar FD pelanggar: `(X, A)` dan `(selebihnya, X)`

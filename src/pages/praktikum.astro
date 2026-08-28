@@ -31,7 +31,7 @@ const studyCases = [
 ];
 ---
 
-<BaseLayout title="Worksheet Praktikum · Perancangan ERD" description="Worksheet interaktif praktikum perancangan ERD — UNIPI">
+<BaseLayout title="Worksheet Praktikum · Perancangan ERD" description="Worksheet interaktif praktikum perancangan ERD · UNIPI">
   <Sidebar slot="sidebar" />
 
   <div class="contentHeader">
@@ -410,7 +410,7 @@ const studyCases = [
     var score = Math.round((okCount / totalChecks) * 100);
 
     var html = "";
-    html += '<div class="v-item __label">HASIL VALIDASI — SKOR KELENGKAPAN: <span class="v-score">' + score + '%</span></div>';
+    html += '<div class="v-item __label">HASIL VALIDASI: SKOR KELENGKAPAN: <span class="v-score">' + score + '%</span></div>';
     if (issues.length) {
       html += '<div class="v-item err"><strong>Perlu diperbaiki (' + issues.length + '):</strong><ul style="margin:6px 0 0 18px;padding:0;">' +
         issues.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul></div>";
@@ -427,7 +427,7 @@ const studyCases = [
   function generateReport() {
     var L = [];
     L.push("=============================================");
-    L.push("LAPORAN WORKSHEET PERANCANGAN ERD — BASIS DATA");
+    L.push("LAPORAN WORKSHEET PERANCANGAN ERD - BASIS DATA");
     L.push("Program Studi S1 Informatika, UNIPI");
     L.push("=============================================");
     L.push("");
@@ -442,7 +442,7 @@ const studyCases = [
     L.push("");
     L.push("C. ENTITAS");
     state.entitas.forEach(function (e, i) {
-      L.push("   " + (i + 1) + ". " + (e.nama || "-") + " — " + (e.desk || ""));
+      L.push("   " + (i + 1) + ". " + (e.nama || "-") + " - " + (e.desk || ""));
     });
     L.push("");
     L.push("D. ATRIBUT & KEY");

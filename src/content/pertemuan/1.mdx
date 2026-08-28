@@ -17,7 +17,7 @@ import QuizCard from '../../components/QuizCard.astro';
 
 <table class="dtable">
   <tbody>
-    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
     <tr><th>Pertemuan / Minggu</th><td>Ke-1 dari 16 (Semester 3, TA 2026/2027)</td></tr>
     <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur/Mandiri</td></tr>
     <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
@@ -62,14 +62,20 @@ Basis data (*database*) adalah kumpulan data yang saling berkaitan dan terorgani
 
 Beberapa istilah kunci:
 
-- **Data** — fakta mentah yang belum diolah
-- **Basis Data (Database)** — kumpulan data yang terorganisasi dan saling berelasi
-- **DBMS** — perangkat lunak untuk mengelola basis data (contoh: MySQL, PostgreSQL, SQLite)
-- **Sistem Basis Data** — gabungan basis data dan DBMS beserta aplikasi yang terkait
+- **Data**: fakta mentah yang belum diolah
+- **Basis Data (Database)**: kumpulan data yang terorganisasi dan saling berelasi
+- **DBMS**: perangkat lunak untuk mengelola basis data (contoh: MySQL, PostgreSQL, SQLite)
+- **Sistem Basis Data**: gabungan basis data dan DBMS beserta aplikasi yang terkait
 
 <div class="callout">
   <span class="callout__label">Ilustrasi Sederhana</span>
   <p>Buku telepon manual berisi ratusan nomor kontak adalah kumpulan data. Jika buku itu dikelola dengan aplikasi kontak di smartphone yang memungkinkan pencarian dan penyortiran, maka aplikasi tersebut berperan sebagai DBMS sederhana.</p>
+</div>
+
+<div class="callout callout--amber">
+  <span class="callout__label">Analogi: Dapur & Masakan</span>
+  <p>Bayangkan <strong>data</strong> sebagai <em>bahan mentah</em> (tepung, telur, gula) dan <strong>informasi</strong> sebagai <em>masakan jadi</em> (kue). Bahan yang bertumpuk begitu saja belum berarti apa-apa; ia harus diorganisasikan dan diolah agar menjadi sesuatu yang berguna.</p>
+  <p>Tanpa pengelolaan, bahan berserakan di <em>kardus-kardus biasa</em> (ini analogi sistem berbasis file). Dengan <strong>DBMS</strong>, semua bahan tersimpan rapi di satu dapur profesional: ada rak berlabel, resep standar, dan aturan jelas tentang siapa boleh mengambil bahan apa.</p>
 </div>
 
 ### Jenis-Jenis Basis Data
@@ -104,15 +110,39 @@ Beberapa istilah kunci:
   </tbody>
 </table>
 
+<div class="callout">
+  <span class="callout__label">Analogi: Evolusi Penyimpanan Catatan</span>
+  <p><strong>Sistem berbasis file</strong> ibarat laci berisi tumpukan kertas yang hanya bisa dibuka oleh satu orang pada satu waktu, catatan yang sama sering ditulis ganda di beberapa tempat.</p>
+  <p><strong>Model relasional</strong> ibarat <em>perpustakaan modern</em>: setiap buku (rekaman) punya nomor unik, tersimpan di rak sesuai kategori, dan bisa dipinjam banyak orang secara bergantian tanpa saling menimpa.</p>
+  <p><strong>Basis data era big data</strong> ibarat <em>gudang logistik raksasa</em>: miliaran paket beragam ukuran masuk setiap detik, sehingga butuh cara penyimpanan fleksibel (NoSQL) di samping rak-rak klasik yang tetap ada, keduanya kini berdampingan.</p>
+</div>
+
 ## D.3 Komponen Penyusun Sistem Basis Data
 
 Sebuah sistem basis data terdiri atas lima komponen utama:
 
-1. **Data** — inti dari sistem, harus terintegrasi dan dapat dipakai bersama
-2. **Hardware** — perangkat fisik: server, storage, jaringan, laptop/smartphone
-3. **Software** — DBMS itu sendiri beserta aplikasi pendukung
-4. **Prosedur** — aturan dan SOP dalam mengelola basis data
-5. **Pengguna (Users)** — DBA, programmer, end-user
+1. **Data**: inti dari sistem, harus terintegrasi dan dapat dipakai bersama
+2. **Hardware**: perangkat fisik: server, storage, jaringan, laptop/smartphone
+3. **Software**: DBMS itu sendiri beserta aplikasi pendukung
+4. **Prosedur**: aturan dan SOP dalam mengelola basis data
+5. **Pengguna (Users)**: DBA, programmer, end-user
+
+### Analogi: Sistem Basis Data adalah "Restoran"
+
+Agar mudah diingat, bayangkan sistem basis data sebagai sebuah **restoran**:
+
+<table class="dtable">
+  <thead><tr><th style="width:120px">Komponen</th><th>Peran di Restoran</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Data</strong></td><td>Bahan-bahan mentah yang tersimpan di dapur</td></tr>
+    <tr><td><strong>Hardware</strong></td><td>Kompor, kulkas, meja, dan peralatan masak</td></tr>
+    <tr><td><strong>Software</strong></td><td>Juru masak, pelayan, dan aplikasi kasir yang "mengolah" semuanya</td></tr>
+    <tr><td><strong>Prosedur</strong></td><td>Resep standar dan SOP layanan agar hasilnya konsisten</td></tr>
+    <tr><td><strong>Pengguna</strong></td><td>Pelanggan, staf dapur, kasir, dan pemilik restoran</td></tr>
+  </tbody>
+</table>
+
+<p class="muted" style="margin-top:8px;">Bahan tanpa dapur, dapur tanpa juru masak, atau restoran tanpa pelanggan, semuanya tidak berjalan. Lima komponen harus ada dan bekerja sama.</p>
 
 <div class="interactive-card">
   <p><strong>Latihan: Klasifikasi Komponen Sistem</strong></p>
@@ -135,6 +165,30 @@ Sebuah sistem basis data terdiri atas lima komponen utama:
 </div>
 
 <script is:inline src="/game-komponen.js"></script>
+
+## D.4 Arsitektur Tiga Skema (Three-Schema Architecture)
+
+Standar ANSI-SPARC membagi arsitektur basis data menjadi tiga tingkat pandangan:
+
+<table class="dtable">
+  <thead><tr><th style="width:150px">Level</th><th>Fungsi</th><th>Contoh</th></tr></thead>
+  <tbody>
+    <tr><td><strong>External</strong></td><td>Pandangan (view) per pengguna/aplikasi; bisa dipersonalisasi</td><td>Form nilai yang dilihat mahasiswa berbeda dari form yang dilihat dosen</td></tr>
+    <tr><td><strong>Conceptual</strong></td><td>Struktur logis <em>seluruh</em> basis data tanpa detail penyimpanan</td><td>Skema relasional SIAKAD (tabel, PK/FK, relasi)</td></tr>
+    <tr><td><strong>Internal</strong></td><td>Penyimpanan fisik: file, indeks, blok di disk</td><td>Bagaimana data disusun di media penyimpanan</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="callout__label">Analogi: Restoran Berlapis</span>
+  <p>Kembali ke restoran, tiga lapisan arsitektur seperti tiga "tampilan" yang berbeda terhadap satu dapur:</p>
+  <ul style="margin:0; padding-left:18px;">
+    <li><strong>External</strong> = <em>menu yang dilihat pelanggan</em>, disajikan berbeda untuk pelanggan, staf dapur, hingga pemilik.</li>
+    <li><strong>Conceptual</strong> = <em>daftar hidangan & resep standar</em>, menggambarkan "apa saja yang bisa dibuat", tanpa peduli di mana bahannya disimpan.</li>
+    <li><strong>Internal</strong> = <em>tata letak gudang dapur</em>, di rak mana, di kulkas mana, suhu berapa; detail fisik penyimpanan.</li>
+  </ul>
+  <p style="margin-top:8px;">Pelanggan tidak perlu tahu di rak mana tepung diletakkan. Saat gudang ditata ulang, menu tidak berubah, inilah yang disebut <strong>data independence</strong>.</p>
+</div>
 
 ## E. Kuis Reflektif
 

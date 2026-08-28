@@ -1,12 +1,356 @@
 ---
 id: 7
 title: "Perancangan Model Fisik (PDM)"
-locked: true
+subtitle: "Dari Skema Relasional ke Tipe Data, Constraint, dan DDL sesuai DBMS"
+locked: false
 order: 7
+meta:
+  subCPMK: "Mahasiswa mampu merancang model fisik basis data (PDM) sesuai spesifikasi DBMS."
+  alokasi: "3 × 50 menit"
+  bobot: "5%"
+  cpmk: "CPMK-1"
 ---
 
-## Pertemuan 7: Perancangan Model Fisik (PDM)
+import QuizCard from '../../components/QuizCard.astro';
 
-Materi pertemuan ini masih dalam proses pengembahan.
+## A. Identitas Pertemuan
 
-Silakan hubungi dosen pengampu untuk informasi lebih lanjut.
+<table class="dtable">
+  <tbody>
+    <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Pertemuan / Minggu</th><td>Ke-7 dari 16 (Semester 3, TA 2026/2027)</td></tr>
+    <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur</td></tr>
+    <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
+    <tr><th>Sub-CPMK Minggu 7</th><td>Mahasiswa mampu merancang model fisik basis data (PDM) sesuai spesifikasi DBMS.</td></tr>
+  </tbody>
+</table>
+
+## B. Capaian Pembelajaran (Pendekatan OBE)
+
+<table class="dtable">
+  <thead><tr><th style="width:60px">No</th><th>Indikator Capaian (Outcome yang Diukur)</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Mahasiswa dapat menentukan tipe data yang sesuai untuk setiap atribut.</td></tr>
+    <tr><td>2</td><td>Mahasiswa dapat menetapkan primary/foreign key dan constraint yang tepat.</td></tr>
+    <tr><td>3</td><td>Mahasiswa dapat merancang PDM dari CDM/ERD studi kasus.</td></tr>
+  </tbody>
+</table>
+
+<div class="chipRow">
+  <span class="chip">KRITERIA · Partisipasi & laporan perancangan PDM</span>
+  <span class="chip">BENTUK · Aktivitas partisipatif, penilaian produk</span>
+  <span class="chip chip--amber">BOBOT · 5%</span>
+</div>
+
+## C. Peta Konsep Pertemuan
+
+1. Tiga jenjang pemodelan data: CDM → LDM → PDM
+2. Menerjemahkan atribut logis menjadi **tipe data** sesuai DBMS
+3. Menetapkan **primary/foreign key** dan **constraint** (NOT NULL, UNIQUE, DEFAULT, CHECK)
+4. Studi kasus: PDM SIAKAD dari ERD dan skema relasional yang sudah kita buat
+5. Praktik perancangan PDM dengan dbdiagram.io / draw.io
+6. Persiapan implementasi di DBMS nyata (XAMPP/MySQL/PostgreSQL) pada pertemuan berikutnya
+
+<div class="callout callout--amber">
+  <span class="callout__label">Penting</span>
+  <p>Pertemuan ini adalah <strong>puncak dari mata kuliah tahap perancangan</strong>. Pertemuan 8 adalah UTS (milestone proyek tahap 1), pastikan PDM proyek kelompok Anda selesai di pertemuan ini karena akan dinilai sebagai bagian laporan UTS.</p>
+</div>
+
+## D. Tiga Jenjang Pemodelan Data
+
+Perancangan basis data berjalan melalui tiga jenjang model dengan tingkat abstraksi yang berbeda:
+
+- **CDM (Conceptual Data Model)**: sepenuhnya bebas DBMS: *apa* datanya (ERD, Pertemuan 2–3)
+- **LDM (Logical Data Model)**: bebas DBMS, tetapi sudah berupa tabel + normalisasi (Pertemuan 4–6)
+- **PDM (Physical Data Model)**: menyesuaikan dengan **spesifikasi DBMS nyata** (tipe data, constraint, DDL)
+
+<div class="sim-box" style="margin-top:12px;">
+  <p style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin:0 0 12px;">JENJANG PEMODELAN DATA</p>
+  <svg viewBox="0 0 760 250" style="width:100%; height:auto; font-family:'JetBrains Mono',monospace; font-size:10">
+    <defs>
+      <marker id="mkr-p7" markerWidth="10" markerHeight="10" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 z" fill="#16294A"/></marker>
+    </defs>
+
+    <rect x="30" y="30" width="200" height="195" rx="10" fill="#FBEFDC" stroke="#16294A" stroke-width="2"/>
+    <text x="130" y="60" text-anchor="middle" font-weight="bold" font-size="13" fill="#16294A">CDM</text>
+    <text x="130" y="78" text-anchor="middle" font-size="10" fill="#3A4A63">Conceptual · ERD</text>
+    <line x1="40" y1="90" x2="220" y2="90" stroke="#16294A" stroke-width="1"/>
+    <text x="130" y="112" text-anchor="middle" font-size="9.5" fill="#3A4A63">Entitas, atribut, relasi</text>
+    <text x="130" y="128" text-anchor="middle" font-size="9.5" fill="#3A4A63">Kardinalitas & partisipasi</text>
+    <text x="130" y="144" text-anchor="middle" font-size="9.5" fill="#3A4A63">Bebas DBMS · "Apa?"</text>
+    <text x="130" y="180" text-anchor="middle" font-size="9.5" fill="#7A6FC9">Pertemuan 2–3</text>
+
+    <line x1="230" y1="128" x2="298" y2="128" stroke="#16294A" stroke-width="2" marker-end="url(#mkr-p7)"/>
+
+    <rect x="300" y="30" width="200" height="195" rx="10" fill="#E7F0F1" stroke="#16294A" stroke-width="2"/>
+    <text x="400" y="60" text-anchor="middle" font-weight="bold" font-size="13" fill="#16294A">LDM</text>
+    <text x="400" y="78" text-anchor="middle" font-size="10" fill="#3A4A63">Logical · Tabel</text>
+    <line x1="310" y1="90" x2="490" y2="90" stroke="#16294A" stroke-width="1"/>
+    <text x="400" y="112" text-anchor="middle" font-size="9.5" fill="#3A4A63">Skema relasi & PK/FK</text>
+    <text x="400" y="128" text-anchor="middle" font-size="9.5" fill="#3A4A63">Normalisasi 3NF/BCNF</text>
+    <text x="400" y="144" text-anchor="middle" font-size="9.5" fill="#3A4A63">Bebas DBMS · "Bentuk?"</text>
+    <text x="400" y="180" text-anchor="middle" font-size="9.5" fill="#7A6FC9">Pertemuan 4–6</text>
+
+    <line x1="500" y1="128" x2="568" y2="128" stroke="#16294A" stroke-width="2" marker-end="url(#mkr-p7)"/>
+
+    <rect x="570" y="30" width="200" height="195" rx="10" fill="#FDEAEA" stroke="#C9584F" stroke-width="2"/>
+    <text x="670" y="60" text-anchor="middle" font-weight="bold" font-size="13" fill="#C9584F">PDM</text>
+    <text x="670" y="78" text-anchor="middle" font-size="10" fill="#3A4A63">Physical · DBMS</text>
+    <line x1="580" y1="90" x2="760" y2="90" stroke="#C9584F" stroke-width="1"/>
+    <text x="670" y="112" text-anchor="middle" font-size="9.5" fill="#3A4A63">Tipe data per DBMS</text>
+    <text x="670" y="128" text-anchor="middle" font-size="9.5" fill="#3A4A63">Constraint → DDL</text>
+    <text x="670" y="144" text-anchor="middle" font-size="9.5" fill="#3A4A63">Spesifik · "Bagaimana?"</text>
+    <text x="670" y="180" text-anchor="middle" font-size="9.5" fill="#7A6FC9">Pertemuan 7–13</text>
+  </svg>
+  <p class="muted" style="margin:8px 0 0; font-size:11px;">Gambar asli dibuat untuk Portal Basis Data UNIPI.</p>
+</div>
+
+Contoh CDM pada jenjang konseptual (titik awal dari Pertemuan 2–3):
+
+<figure class="media-figure">
+  <img src="/images/er-diagram.jpg" alt="Contoh CDM: diagram ER yang memperlihatkan entitas, relasi kardinalitas, dan kamus data" width="520" loading="lazy" />
+  <figcaption>
+    Contoh jenjang CDM (konseptual): entitas, relasi kardinalitas, dan kamus data.
+    <span class="media-src">Sumber: "Entity Relationship Diagram.jpg", Wikimedia Commons (domain publik). <a href="https://commons.wikimedia.org/wiki/File:Entity_Relationship_Diagram.jpg">commons.wikimedia.org/wiki/File:Entity_Relationship_Diagram.jpg</a></span>
+  </figcaption>
+</figure>
+
+## E. Menentukan Tipe Data
+
+Setiap atribut pada LDM harus dipetakan ke **tipe data** yang tersedia di DBMS target. Pemilihan tipe data yang tepat menjaga efisiensi penyimpanan dan integritas nilai.
+
+### Peta Tipe Data Antar DBMS
+
+| Kebutuhan Data | MySQL | PostgreSQL | SQLite |
+|---|---|---|---|
+| Bilangan bulat kecil | `SMALLINT` | `SMALLINT` | `INTEGER` |
+| Bilangan bulat | `INT` | `INTEGER` | `INTEGER` |
+| Bilangan besar | `BIGINT` | `BIGINT` | `INTEGER` |
+| Teks pendek | `VARCHAR(n)` | `VARCHAR(n)` | `TEXT` |
+| Teks panjang | `TEXT` | `TEXT` | `TEXT` |
+| Angka desimal | `DECIMAL(p,s)` | `NUMERIC(p,s)` | `NUMERIC` |
+| Tanggal | `DATE` | `DATE` | `TEXT` (ISO) |
+| Waktu + tanggal | `DATETIME` / `TIMESTAMP` | `TIMESTAMP` | `TEXT` (ISO) |
+| Logika benar/salah | `BOOLEAN` (alias `TINYINT(1)`) | `BOOLEAN` | `INTEGER` 0/1 |
+| Kunci otomatis | `INT AUTO_INCREMENT` | `SERIAL` / `BIGSERIAL` | `INTEGER PRIMARY KEY AUTOINCREMENT` |
+
+<div class="callout">
+  <span class="callout__label">Tips Memilih</span>
+  <p><strong>Atribut kode</strong> (nim, kode_mk) → teks pendek <code>VARCHAR(n)</code>. <strong>Umur/jumlah</strong> → bilangan bulat. <strong>Harga/SKS/bobot</strong> → desimal dengan presisi. <strong>Tanggal</strong> → tipe tanggal (bukan teks bebas agar bisa diurutkan/dirrentang). Pilih ukuran kolom <em>secukupnya</em>, terlalu besar membuang ruang, terlalu kecil membuat data terpotong.</p>
+</div>
+
+## F. Menetapkan Key dan Constraint
+
+**Constraint** adalah aturan yang dipaksakan DBMS untuk menjaga integritas data:
+
+<table class="dtable">
+  <thead><tr><th>Constraint</th><th>Contoh DDL</th><th>Fungsi</th></tr></thead>
+  <tbody>
+    <tr><td><code>PRIMARY KEY</code></td><td><code>nim VARCHAR(10) PRIMARY KEY</code></td><td>Identitas unik & wajib</td></tr>
+    <tr><td><code>NOT NULL</code></td><td><code>nama VARCHAR(50) NOT NULL</code></td><td>Kolom tidak boleh kosong</td></tr>
+    <tr><td><code>UNIQUE</code></td><td><code>email VARCHAR(80) UNIQUE</code></td><td>Nilai unik, boleh kosong</td></tr>
+    <tr><td><code>DEFAULT</code></td><td><code>sks SMALLINT DEFAULT 3</code></td><td>Nilai bawaan bila tidak diisi</td></tr>
+    <tr><td><code>CHECK</code></td><td><code>sks SMALLINT CHECK (sks BETWEEN 1 AND 6)</code></td><td>Validasi nilai pada range</td></tr>
+    <tr><td><code>FOREIGN KEY</code></td><td><code>CONSTRAINT fk ... FOREIGN KEY (kode_prodi) REFERENCES program_studi(kode_prodi)</code></td><td>Integritas referensial antar tabel</td></tr>
+  </tbody>
+</table>
+
+## G. Studi Kasus: PDM SIAKAD
+
+Transformasikan skema relasional SIAKAD (Pertemuan 4) menjadi **PDM** dengan tipe data MySQL:
+
+### G.1 Pengecekan Atribut → Tipe Data
+
+| Atribut | Kebutuhan Nilai | Tipe Data MySQL |
+|---|---|---|
+| `kode_prodi`, `kode_mk` | kode singkat | `VARCHAR(10)` |
+| `nim`, `nip` | kode panjang maks. 12 | `VARCHAR(12)` |
+| `nama`, `nama_prodi` | teks pendek | `VARCHAR(50–60)` |
+| `alamat`, `bidang_keahlian` | teks lebih panjang | `VARCHAR(120)` |
+| `email` | teks unik | `VARCHAR(80) UNIQUE` |
+| `tgl_lahir` | tanggal | `DATE` |
+| `sks` | 1–6 | `SMALLINT CHECK (sks BETWEEN 1 AND 6)` |
+| `nilai`, `grade` | 1–2 karakter | `CHAR(2)` |
+
+### G.2 DDL PDM (MySQL)
+
+```sql
+CREATE TABLE program_studi (
+  kode_prodi VARCHAR(10) PRIMARY KEY,
+  nama_prodi VARCHAR(60) NOT NULL,
+  fakultas   VARCHAR(60)
+);
+
+CREATE TABLE mahasiswa (
+  nim        VARCHAR(12) PRIMARY KEY,
+  nama       VARCHAR(50) NOT NULL,
+  alamat     VARCHAR(120),
+  email      VARCHAR(80) UNIQUE,
+  tgl_lahir  DATE,
+  kode_prodi VARCHAR(10) NOT NULL,
+  CONSTRAINT fk_mhs_prodi FOREIGN KEY (kode_prodi)
+    REFERENCES program_studi(kode_prodi)
+);
+
+CREATE TABLE dosen (
+  nip             VARCHAR(12) PRIMARY KEY,
+  nama_dosen      VARCHAR(50) NOT NULL,
+  bidang_keahlian VARCHAR(60)
+);
+
+CREATE TABLE matakuliah (
+  kode_mk   VARCHAR(10) PRIMARY KEY,
+  nama_mk   VARCHAR(60) NOT NULL,
+  sks       SMALLINT DEFAULT 3 CHECK (sks BETWEEN 1 AND 6),
+  semester  VARCHAR(6),
+  nip_dosen VARCHAR(12),
+  CONSTRAINT fk_mk_dosen FOREIGN KEY (nip_dosen)
+    REFERENCES dosen(nip)
+);
+
+CREATE TABLE nilai (
+  nim     VARCHAR(12) NOT NULL,
+  kode_mk VARCHAR(10) NOT NULL,
+  nilai   CHAR(2),
+  grade   CHAR(2),
+  PRIMARY KEY (nim, kode_mk),
+  CONSTRAINT fk_n_mhs FOREIGN KEY (nim) REFERENCES mahasiswa(nim),
+  CONSTRAINT fk_n_mk  FOREIGN KEY (kode_mk) REFERENCES matakuliah(kode_mk)
+);
+```
+
+<div class="callout">
+  <span class="callout__label">Perhatikan</span>
+  <p>Jumlah & nama tabel <strong>persis sama</strong> dengan hasil LDM/normalisasi (Pertemuan 4–6). Yang berubah hanya detail <em>fisik</em>: tipe data, ukuran kolom, dan constraint. Itulah esensi PDM.</p>
+</div>
+
+## H. Praktik PDM dengan dbdiagram.io / draw.io
+
+PDM juga bisa dirancang dan divisualisasikan dengan tool, sesuai rekomendasi RPS.
+
+### Sintaks dbdiagram.io (contoh subset SIAKAD)
+
+```text
+Table program_studi {
+  kode_prodi varchar(10) [pk]
+  nama_prodi varchar(60) [not null]
+  fakultas varchar(60)
+}
+
+Table mahasiswa {
+  nim varchar(12) [pk]
+  nama varchar(50) [not null]
+  email varchar(80) [unique]
+  tgl_lahir date
+  kode_prodi varchar(10) [ref: > program_studi.kode_prodi]
+}
+
+Table matakuliah {
+  kode_mk varchar(10) [pk]
+  nama_mk varchar(60) [not null]
+  sks smallint [default: 3]
+  nip_dosen varchar(12) [ref: > dosen.nip]
+}
+
+Table nilai {
+  nim varchar(12)
+  kode_mk varchar(10)
+  nilai char(2)
+  grade char(2)
+  indexes { (nim, kode_mk) [pk] }
+  refs {
+    > mahasiswa.nim
+    > matakuliah.kode_mk
+  }
+}
+```
+
+<ol class="steps">
+  <li>Buka <strong>dbdiagram.io</strong> (browser, bisa dari smartphone) atau <strong>draw.io</strong>.</li>
+  <li>Tulis skema PDM seperti sintak di atas, atau gambar kotak tabel secara visual.</li>
+  <li>Hubungkan antartabel dengan garis relasi (kardinalitas).</li>
+  <li>Ekspor DDL (dbdiagram.io menyediakan tombol <em>Export → SQL</em>) untuk dipakai pada Pertemuan 11–13.</li>
+</ol>
+
+## I. Dari PDM ke DBMS Nyata (Proyek)
+
+PDM adalah jembatan menuju implementasi. Rangkaian praktikum berikutnya mengikuti alur ini:
+
+| Tahap | Aktivitas | Pertemuan |
+|---|---|---|
+| 1 | Instalasi & akses DBMS (XAMPP/MySQL/PostgreSQL) | 9 |
+| 2 | Eksekusi DDL hasil PDM → buat tabel nyata | 11–13 |
+| 3 | Form, report, dan switchboard aplikasi basis data | 14–15 |
+| 4 | UAS, demo proyek akhir (capstone) | 16 |
+
+<div class="callout callout--amber">
+  <span class="callout__label">Catatan Perangkat (sesuai RPS)</span>
+  <p>Implementasi RDBMS penuh direkomendasikan di <strong>laptop</strong> (XAMPP, MySQL Workbench, pgAdmin). Untuk latihan mandiri, gunakan <strong>SQL Playground</strong> portal ini (SQLite di browser) atau SQL online editor, sintaks DDL-nya hampir sama, hanya menyesuaikan tipe data (mis. <code>TEXT</code> menggantikan <code>VARCHAR</code> di SQLite).</p>
+</div>
+
+## J. Kuis Evaluasi
+
+<QuizCard question="Urutan jenjang pemodelan data yang benar adalah...">
+  <button class="quiz-option" data-correct="true" data-explanation="Pemodelan beranjak dari abstrak ke konkret: CDM (konseptual) → LDM (logis) → PDM (fisik).">CDM → LDM → PDM</button>
+  <button class="quiz-option" data-correct="false">PDM → LDM → CDM</button>
+  <button class="quiz-option" data-correct="false">LDM → CDM → PDM</button>
+</QuizCard>
+
+<QuizCard question="Perbedaan utama PDM dari LDM adalah...">
+  <button class="quiz-option" data-correct="true" data-explanation="PDM menambahkan detail fisik yang spesifik DBMS: tipe data, ukuran kolom, dan constraint; struktur tabelnya sudah ditentukan LDM.">PDM menambahkan tipe data & constraint spesifik DBMS</button>
+  <button class="quiz-option" data-correct="false">PDM menghapus primary key dari tabel</button>
+  <button class="quiz-option" data-correct="false">PDM tidak berhubungan dengan normalisasi</button>
+</QuizCard>
+
+<QuizCard question="Atribut email VARCHAR(80) UNIQUE berarti...">
+  <button class="quiz-option" data-correct="true" data-explanation="UNIQUE menjamin tidak ada dua baris dengan nilai sama, tetapi tetap memperbolehkan NULL.">Nilai email harus selalu berbeda pada tiap baris</button>
+  <button class="quiz-option" data-correct="false">Email boleh kosong pada semua baris</button>
+  <button class="quiz-option" data-correct="false">Email menjadi primary key tabel</button>
+</QuizCard>
+
+<QuizCard question="Constraint yang paling tepat untuk memastikan SKS hanya bernilai 1–6 adalah...">
+  <button class="quiz-option" data-correct="false">NOT NULL</button>
+  <button class="quiz-option" data-correct="false">UNIQUE</button>
+  <button class="quiz-option" data-correct="true" data-explanation="CHECK memvalidasi nilai pada rentang yang ditentukan (BETWEEN 1 AND 6).">CHECK (sks BETWEEN 1 AND 6)</button>
+</QuizCard>
+
+<QuizCard question="Pada tabel nilai dengan PK gabungan (nim, kode_mk), dua FK ditulis dengan...">
+  <button class="quiz-option" data-correct="false">Cukup satu baris PRIMARY KEY saja</button>
+  <button class="quiz-option" data-correct="true" data-explanation="PK gabungan dinyatakan PRIMARY KEY (nim, kode_mk), dan masing-masing FK menunjuk ke tabel induknya lewat REFERENCES.">PRIMARY KEY (nim, kode_mk) + dua REFERENCES ke tabel mahasiswa & matakuliah</button>
+  <button class="quiz-option" data-correct="false">Menambahkan kolom id_nilai sebagai PK tunggal</button>
+</QuizCard>
+
+## K. Rangkuman
+
+- Perancangan berjenjang: **CDM → LDM → PDM**, dari abstrak menuju spesifik DBMS
+- **PDM** menentukan tipe data, ukuran kolom, key, dan constraint
+- Pemilihan tipe data menyesuaikan DBMS target (MySQL vs PostgreSQL vs SQLite)
+- Constraint (PRIMARY KEY, NOT NULL, UNIQUE, DEFAULT, CHECK, FOREIGN KEY) menjaga integritas
+- Struktur tabel PDM **sama** dengan LDM hasil normalisasi: hanya detail fisiknya yang ditambahkan
+- PDM siap dieksekusi menjadi DDL pada praktikum DBMS (Pertemuan 9–15) dan dinilai pada UTS (proyek tahap 1)
+
+## L. Referensi
+
+<ul class="refs">
+  <li>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7th ed.). Pearson Education Limited.</li>
+  <li>Silberschatz, A., Korth, H. F., &amp; Sudarshan, S. (2020). <em>Database System Concepts</em> (7th ed.). McGraw-Hill Education.</li>
+  <li>Connolly, T. M., &amp; Begg, C. E. (2015). <em>Database Systems: A Practical Approach</em> (6th ed.). Pearson.</li>
+  <li>Dokumentasi resmi MySQL &amp; PostgreSQL (panduan tipe data & constraint).</li>
+</ul>
+
+## M. Penugasan: Finalisasi Proyek Tahap 1 (UTS)
+
+Pertemuan 8 adalah **UTS (milestone proyek tahap 1)**. Gunakan penugasan ini untuk menyelesaikan laporan proyek kelompok:
+
+1. Ambil studi kasus proyek kelompok (boleh salah satu dari worksheet: Perpustakaan, Parkir, Hotel, atau kasus lain yang disetujui dosen).
+2. Selesaikan jenjang model lengkap:
+   - **CDM**: ERD final dengan validasi (Pertemuan 2–3)
+   - **LDM**: skema relasi ternormalisasi minimal 3NF (Pertemuan 4–6)
+   - **PDM**: tipe data, key, dan constraint untuk DBMS target (pilih MySQL atau PostgreSQL)
+3. Tulis DDL SQL `CREATE TABLE` lengkap untuk seluruh tabel PDM.
+4. Buat diagram PDM di dbdiagram.io / draw.io dan lampirkan screenshot-nya.
+
+### Format Pengumpulan (sesuai RPS UTS)
+
+1. Laporan proyek tahap 1 (dokumen digital, boleh foto/scan dari smartphone)
+2. Berisi: CDM → LDM → PDM, DDL SQL, dan bukti penggunaan software perancangan
