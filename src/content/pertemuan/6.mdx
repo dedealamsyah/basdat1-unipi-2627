@@ -1,12 +1,300 @@
 ---
 id: 6
 title: "Normalisasi Lanjutan (BCNF)"
-locked: true
+subtitle: "Boyce-Codd Normal Form: Menutup Celah 3NF dan Teknik Dekomposisi"
+locked: false
 order: 6
+meta:
+  subCPMK: "Mahasiswa mampu memecahkan masalah perancangan basis data dengan teknik normalisasi lanjutan."
+  alokasi: "3 × 50 menit"
+  bobot: "5%"
+  cpmk: "CPMK-1"
 ---
 
-## Pertemuan 6: Normalisasi Lanjutan (BCNF)
+import QuizCard from '../../components/QuizCard.astro';
 
-Materi pertemuan ini masih dalam proses pengembahan.
+## A. Identitas Pertemuan
 
-Silakan hubungi dosen pengampu untuk informasi lebih lanjut.
+<table class="dtable">
+  <tbody>
+    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Pertemuan / Minggu</th><td>Ke-6 dari 16 (Semester 3, TA 2026/2027)</td></tr>
+    <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur</td></tr>
+    <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
+    <tr><th>Sub-CPMK Minggu 6</th><td>Mahasiswa mampu memecahkan masalah perancangan basis data dengan teknik normalisasi lanjutan.</td></tr>
+  </tbody>
+</table>
+
+## B. Capaian Pembelajaran (Pendekatan OBE)
+
+<table class="dtable">
+  <thead><tr><th style="width:60px">No</th><th>Indikator Capaian (Outcome yang Diukur)</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Mahasiswa dapat membedakan kondisi kenormalan sebuah tabel (3NF vs BCNF).</td></tr>
+    <tr><td>2</td><td>Mahasiswa dapat menggambar skema relasi hasil normalisasi lanjutan.</td></tr>
+    <tr><td>3</td><td>Mahasiswa dapat menghasilkan tabel normalisasi yang bebas anomali.</td></tr>
+  </tbody>
+</table>
+
+<div class="chipRow">
+  <span class="chip">KRITERIA · Partisipasi & laporan hasil normalisasi</span>
+  <span class="chip">BENTUK · Penilaian produk</span>
+  <span class="chip chip--amber">BOBOT · 5%</span>
+</div>
+
+## C. Peta Konsep Pertemuan
+
+1. Keterbatasan 3NF: kasus di mana 3NF lolos tetapi masih terjadi redundansi
+2. Definisi formal **BCNF** (Boyce-Codd Normal Form)
+3. Prosedur menguji apakah sebuah tabel sudah BCNF
+4. Studi kasus: tabel `PENGAMPUAN` — 3NF namun belum BCNF
+5. Dekomposisi BCNF: *lossless-join* dan *dependency preservation*
+6. Keputusan praktis: kapan berhenti di 3NF dan kapan perlu BCNF
+
+<div class="callout callout--amber">
+  <span class="callout__label">Penting</span>
+  <p>Ini merupakan <strong>kelanjutan langsung dari Pertemuan 5</strong>. Di sini Anda melihat sisi kritis normalisasi: ternyata 3NF <em>belum tentu</em> menghilangkan semua redundansi. Posisi BCNF dalam hirarki normal form bisa Anda lihat kembali pada gambar di <a href="/pertemuan/5#k-cheat-sheet">Pertemuan 5</a> (BCNF ⊂ 3NF).</p>
+</div>
+
+## D. Keterbatasan 3NF
+
+3NF mensyaratkan: untuk setiap FD `X → A`, **X harus superkey ATAU A adalah atribut prime** (anggota dari salah satu candidate key).
+
+Celanya ada pada kata <strong>"ATAU"</strong>. Sebuah tabel bisa lolos 3NF hanya karena atribut dependennya kebetulan *prime* — padahal determinannya **bukan superkey**. Akibatnya, pasangan (determinan → dependen) tetap berulang di banyak baris.
+
+<div class="callout">
+  <span class="callout__label">Analogi</span>
+  <p>Bayangkan 3NF seperti aturan "kunci lemari harus punya satu label". BCNF jauh lebih ketat: <strong>setiap label harus berasal dari kunci asli</strong>, bukan sekadar atribut yang kebetulan ikut jadi bagian kunci.</p>
+</div>
+
+## E. Definisi BCNF
+
+Suatu relasi berada di **Boyce-Codd Normal Form (BCNF)** jika:
+
+> Untuk **setiap** ketergantungan fungsional `X → A` (A ∉ X), maka **X haruslah sebuah superkey**.
+
+Tidak ada klausul "ATAU" — determinan **wajib** superkey, apa pun status atribut dependennya.
+
+**Akibat:** BCNF ⊂ 3NF. Setiap tabel BCNF pasti 3NF, tetapi **tidak semua tabel 3NF adalah BCNF**.
+
+### Prosedur Uji BCNF
+
+<ol class="steps">
+  <li>Identifikasi seluruh <strong>candidate key</strong> relasi.</li>
+  <li>Tuliskan semua <strong>FD nontrivial</strong> (dari closure/analisis semantik).</li>
+  <li>Untuk setiap FD, periksa: <em>apakah determinannya adalah superkey (memuat candidate key)?</em></li>
+  <li>Bila ada satu saja determinan yang <strong>bukan superkey</strong> → tabel <strong>belum BCNF</strong>.</li>
+</ol>
+
+## F. Studi Kasus: Tabel PENGAMPUAN (3NF, tetapi Bukan BCNF)
+
+Perhatikan relasi yang mencatat siapa dosen yang mengampu sebuah mata kuliah bagi setiap mahasiswa:
+
+```text
+PENGAMPUAN(nim, kode_mk, nip)
+```
+
+**Semantik bisnis (aturan):**
+- Seorang mahasiswa mengikuti setiap mata kuliah diampu oleh **tepat satu dosen** → `(nim, kode_mk) → nip`
+- Satu dosen mengampu **hanya satu** mata kuliah → `nip → kode_mk`
+
+**Candidate key:** `{nim, kode_mk}` **dan** `{nim, nip}` (karena `nip → kode_mk`, maka `nim, nip` sudah menentukan semua).
+
+Data contoh:
+
+<table class="dtable">
+  <thead><tr><th>nim</th><th>kode_mk</th><th>nip</th></tr></thead>
+  <tbody>
+    <tr><td>22104001</td><td>BD01</td><td>D001</td></tr>
+    <tr><td>22104002</td><td>BD01</td><td>D001</td></tr>
+    <tr><td>22104003</td><td>BD01</td><td>D001</td></tr>
+    <tr><td>22104001</td><td>ALGO</td><td>D002</td></tr>
+    <tr><td>22104002</td><td>ALGO</td><td>D002</td></tr>
+  </tbody>
+</table>
+
+### Mengapa Tabel Ini Lolos 3NF (Tetapi Belum BCNF)?
+
+Periksa setiap FD terhadap syarat 3NF dan BCNF sekaligus:
+
+<table class="dtable">
+  <thead>
+    <tr>
+      <th style="width:190px">FD</th>
+      <th>Determinan = Superkey?</th>
+      <th>Dependen = Atribut Prime?</th>
+      <th style="width:120px">Verdict 3NF</th>
+      <th style="width:130px">Verdict BCNF</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>(nim, kode_mk) → nip</code></td>
+      <td>✅ Ya<br/><span class="muted" style="font-size:11px;">candidate key</span></td>
+      <td>✅ Ya<br/><span class="muted" style="font-size:11px;">nip ∈ `{nim, nip}`</span></td>
+      <td>✅ Lolos</td>
+      <td>✅ Lolos</td>
+    </tr>
+    <tr>
+      <td><code>nip → kode_mk</code></td>
+      <td><strong style="color:#C9584F;">✗ Tidak</strong><br/><span class="muted" style="font-size:11px;">nip saja tidak menentukan nim</span></td>
+      <td>✅ Ya<br/><span class="muted" style="font-size:11px;">kode_mk ∈ `{nim, kode_mk}`</span></td>
+      <td>✅ Lolos<br/><span class="muted" style="font-size:11px;">karena dependennya prime</span></td>
+      <td><strong style="color:#C9584F;">✗ Gagal</strong><br/><span class="muted" style="font-size:11px;">determinan bukan superkey</span></td>
+    </tr>
+  </tbody>
+</table>
+
+**Kesimpulan:** FD `nip → kode_mk` **lolos 3NF** (karena `kode_mk` adalah atribut prime) tetapi **gagal BCNF** (karena determinan `nip` bukan superkey). Di sinilah 3NF masih menyisakan celah.
+
+Tabel ini **3NF**, tetapi masih **terlihat redundan**: pasangan `(D001, BD01)` tertulis berulang 3 kali, dan `(D002, ALGO)` 2 kali — sama banyaknya dengan jumlah mahasiswa.
+
+### Mengapa Belum BCNF?
+
+FD `nip → kode_mk`: determinan `nip` **bukan superkey** (nip saja tidak menentukan `nim`). Menurut definisi BCNF, ini **pelanggaran** — apa pun status `kode_mk`.
+
+<figure class="media-figure">
+  <img src="/images/database-normalization.svg" alt="Hirarki normal form termasuk BCNF di bawah 3NF" width="300" loading="lazy" />
+  <figcaption>
+    Posisi BCNF dalam hirarki normal form (subset dari 3NF). Lihat lingkaran "BCNF" di dalam lingkaran "3NF".
+    <span class="media-src">Sumber: "Database normalization.svg" oleh LimoWreck (Wikipedia Belanda), vektorisasi oleh Beao. Wikimedia Commons, lisensi CC BY-SA 3.0. <a href="https://commons.wikimedia.org/wiki/File:Database_normalization.svg">commons.wikimedia.org/wiki/File:Database_normalization.svg</a></span>
+  </figcaption>
+</figure>
+
+## G. Dekomposisi BCNF (Lossless-Join)
+
+**Prinsip:** setiap FD yang melanggar (`X → A`) dijadikan dasar pemecahan: satu relasi berisi `X ∪ A`, relasi lainnya berisi `X` + sisa atribut.
+
+Untuk `nip → kode_mk`, dekomposisi menghasilkan:
+
+```text
+PENGAMPUAN_DOSEN(nip, kode_mk)          PK: nip        ← menampung nip → kode_mk
+PENGAMPUAN_MHS(nim, nip)                PK: (nim, nip)  ← sisa + determinan
+```
+
+**Data setelah dekomposisi (tanpa redundansi):**
+
+<table class="dtable">
+  <thead><tr><th colspan="2">PENGAMPUAN_DOSEN</th></tr></thead>
+  <tbody>
+    <tr><td><code>nip</code></td><td><code>kode_mk</code></td></tr>
+    <tr><td>D001</td><td>BD01</td></tr>
+    <tr><td>D002</td><td>ALGO</td></tr>
+  </tbody>
+</table>
+
+<table class="dtable">
+  <thead><tr><th colspan="2">PENGAMPUAN_MHS</th></tr></thead>
+  <tbody>
+    <tr><td><code>nim</code></td><td><code>nip</code></td></tr>
+    <tr><td>22104001</td><td>D001</td></tr>
+    <tr><td>22104002</td><td>D001</td></tr>
+    <tr><td>22104003</td><td>D001</td></tr>
+    <tr><td>22104001</td><td>D002</td></tr>
+    <tr><td>22104002</td><td>D002</td></tr>
+  </tbody>
+</table>
+
+Kedua tabel sekarang **BCNF** (semua determinan adalah superkey), dan informasi `(nim, kode_mk, nip)` utuh diperoleh kembali dengan `JOIN` pada `nip`.
+
+<div class="callout">
+  <span class="callout__label">Syarat Dekomposisi yang Aman</span>
+  <ol style="margin:0; padding-left:18px;">
+    <li><strong>Lossless-join:</strong> irisan kedua relasi harus menjadi superkey di salah satu relasi → data asli selalu bisa direkonstruksi. Di sini irisan = <code>nip</code> = PK dari <code>PENGAMPUAN_DOSEN</code> ✅</li>
+    <li><strong>Dependency preservation:</strong> semua FD seharusnya tetap bisa diperkuat pada relasi hasil.</li>
+  </ol>
+</div>
+
+### Jebakan: Ketergantungan yang Terkadang Hilang
+
+Pada contoh ini, FD `(nim, kode_mk) → nip` **tidak tersimpan eksplisit** di dekomposisi. Secara semantik pengampu masih benar hanya jika aplikasi/DBMS menegakkan aturan "satu dosen per mata kuliah". Ini adalah <strong>trade-off klasik BCNF</strong>: dekomposisi BCNF dijamin *lossless*, tetapi <em>tidak selalu</em> *dependency-preserving*.
+
+<div class="callout callout--amber">
+  <span class="callout__label">Keputusan Praktis</span>
+  <p>Jika dekomposisi BCNF kehilangan ketergantungan penting, desainer biasa memilih: (1) tetap 3NF yang <strong>dependency-preserving</strong> dan menambahkan constraint/business rule di aplikasi, atau (2) menerima BCNF dan menegakkan aturan lewat <code>CHECK</code>/triger/validasi aplikasi. Tidak ada jawaban tunggal — ini keputusan rekayasa.</p>
+</div>
+
+## H. Kapan Harus Melanjutkan ke BCNF?
+
+Gunakan poin-poin berikut untuk memutuskan:
+
+- **Lanjut ke BCNF jika** tabel 3NF masih memuat redundansi yang jelas (pasangan determinan–dependen berulang) dan Anda tidak keberatan menangani aturan bisnis di aplikasi.
+- **Berhenti di 3NF jika** tidak ada FD dengan determinan non-superkey, atau dekomposisi BCNF justru memutus ketergantungan bisnis yang penting.
+- Normal form di atas BCNF (4NF, 5NF) membahas **multivalued dependency** — di luar lingkup mata kuliah ini.
+
+## I. Cheat Sheet — 3NF vs BCNF
+
+<table class="dtable">
+  <thead><tr><th>Kriteria</th><th>3NF</th><th>BCNF</th></tr></thead>
+  <tbody>
+    <tr><td>Syarat untuk FD <code>X → A</code></td><td>X superkey <strong>ATAU</strong> A prime</td><td><strong>X wajib superkey</strong> (tanpa pengecualian)</td></tr>
+    <tr><td>Menghilangkan partial dependency</td><td>✅</td><td>✅</td></tr>
+    <tr><td>Menghilangkan transitive dependency</td><td>✅</td><td>✅</td></tr>
+    <tr><td>Menghilangkan redundansi dari determinan non-superkey pada atribut prime</td><td>⚠️ Tidak selalu</td><td>✅</td></tr>
+    <tr><td>Dekomposisi lossless-join</td><td>✅ Dijamin</td><td>✅ Dijamin</td></tr>
+    <tr><td>Dependency preservation</td><td>✅ Selalu bisa</td><td>⚠️ Tidak selalu</td></tr>
+  </tbody>
+</table>
+
+## J. Kuis Evaluasi
+
+<QuizCard question="Perbedaan inti antara 3NF dan BCNF adalah...">
+  <button class="quiz-option" data-correct="true" data-explanation="BCNF mengharuskan SETIAP determinan adalah superkey, tanpa pengecualian untuk atribut prime.">BCNF mensyaratkan setiap determinan FD adalah superkey</button>
+  <button class="quiz-option" data-correct="false">BCNF menghapus partial dependency sedangkan 3NF tidak</button>
+  <button class="quiz-option" data-correct="false">BCNF dan 3NF adalah istilah yang sama</button>
+</QuizCard>
+
+<QuizCard question="Pada relasi PENGAMPUAN(nim, kode_mk, nip) dengan FD nip → kode_mk, mengapa tabel ini belum BCNF?">
+  <button class="quiz-option" data-correct="false">Karena nip bukan atribut prime</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Determinan 'nip' bukan superkey (tidak menentukan nim), sehingga definisi BCNF dilanggar meskipun kode_mk prime.">Determinan nip bukan superkey</button>
+  <button class="quiz-option" data-correct="false">Karena ada dua candidate key sekaligus</button>
+</QuizCard>
+
+<QuizCard question="Dekomposisi PENGAMPUAN menjadi PENGAMPUAN_DOSEN(nip, kode_mk) dan PENGAMPUAN_MHS(nim, nip) bersifat lossless karena...">
+  <button class="quiz-option" data-correct="true" data-explanation="Irisan kedua relasi adalah nip, dan nip adalah primary key dari PENGAMPUAN_DOSEN.">Irisan (nip) adalah kunci pada salah satu relasi hasil</button>
+  <button class="quiz-option" data-correct="false">Karena kedua relasi disimpan berurutan</button>
+  <button class="quiz-option" data-correct="false">Karena atributnya sama jumlahnya</button>
+</QuizCard>
+
+<QuizCard question="Tabel yang sudah 3NF dan memiliki FD dengan determinan non-superkey yang dependennya atribut prime…">
+  <button class="quiz-option" data-correct="false">Pasti sudah BCNF</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Nilai prime pada dependen membuat tabel lolos 3NF, tetapi bukan jaminan BCNF — itulah celah yang ditutup BCNF.">Lolos 3NF namun belum tentu BCNF</button>
+  <button class="quiz-option" data-correct="false">Tidak memenuhi syarat 2NF</button>
+</QuizCard>
+
+<QuizCard question="Kelemahan utama dekomposisi BCNF dibanding 3NF adalah...">
+  <button class="quiz-option" data-correct="false">Membuat data jadi lebih banyak</button>
+  <button class="quiz-option" data-correct="true" data-explanation="BCNF menjamin lossless-join tetapi tidak selalu mempertahankan seluruh ketergantungan fungsional.">Tidak selalu dependency-preserving</button>
+  <button class="quiz-option" data-correct="false">Selalu menghasilkan join yang kompleks</button>
+</QuizCard>
+
+## K. Rangkuman
+
+- **BCNF**: untuk setiap FD, determinan **wajib superkey** — lebih ketat dari 3NF
+- Selisih 3NF vs BCNF terletak pada klausul "atau dependennya prime"
+- Tabel 3NF bisa tetap redundan bila ada FD `X → A` dengan X bukan superkey dan A prime
+- **Dekomposisi BCNF** berdasar FD pelanggar: `(X, A)` dan `(selebihnya, X)`
+- Dekomposisi dijamin *lossless-join*, tetapi **belum tentu** *dependency-preserving*
+- Keputusan 3NF vs BCNF adalah keputusan rekayasa: seimbangkan antara keterbacaan, integritas, dan aturan bisnis
+
+## L. Referensi
+
+<ul class="refs">
+  <li>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7th ed.). Pearson Education Limited.</li>
+  <li>Silberschatz, A., Korth, H. F., &amp; Sudarshan, S. (2020). <em>Database System Concepts</em> (7th ed.). McGraw-Hill Education.</li>
+  <li>Connolly, T. M., &amp; Begg, C. E. (2015). <em>Database Systems: A Practical Approach</em> (6th ed.). Pearson.</li>
+</ul>
+
+## M. Penugasan
+
+### Tugas Individu (berkelanjutan dari Pertemuan 5)
+
+1. Uji hasil normalisasi penugasan Pertemuan 5 (tabel `PEMINJAMAN` perpustakaan) terhadap **syarat BCNF**: tulis semua FD, tentukan semua candidate key, lalu cek apakah ada determinan yang bukan superkey.
+2. Jika ditemukan pelanggaran BCNF, lakukan dekomposisi lossless-join dan gambarkan skema relasinya.
+3. Tuliskan analisis singkat: apakah dekomposisi Anda *dependency-preserving*? Jika tidak, pilih salah satu solusi dan jelaskan alasannya.
+4. Tambahkan DDL SQL `CREATE TABLE` untuk hasil akhir yang Anda pilih.
+
+### Format Pengumpulan
+
+1. File PDF: analisis FD, candidate key, uji BCNF, hasil dekomposisi, dan DDL SQL
+2. Deadline: 1 minggu dari pertemuan

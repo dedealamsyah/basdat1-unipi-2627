@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.5.0] - 2026-08-28
+
+### Added
+
+#### Content
+- ✅ **Pertemuan 6: Normalisasi Lanjutan (BCNF)** — lengkap
+  - Sub-CPMK sesuai RPS: memecahkan masalah perancangan basis data dengan normalisasi lanjutan (bobot 5%)
+  - Keterbatasan 3NF: celah "atau dependennya prime"
+  - Definisi formal BCNF + prosedur uji BCNF langkah demi langkah
+  - Studi kasus PENGAMPUAN (nim, kode_mk, nip): 3NF namun bukan BCNF, dengan data
+  - Dekomposisi lossless-join + pembahasan dependency preservation (trade-off klasik BCNF)
+  - Cheat sheet 3NF vs BCNF + 5 kuis evaluasi + penugasan lanjutan dari P5
+  - Memakai kembali gambar hirarki normal form berlisensi (CC BY-SA 3.0) dengan atribusi
+
+### Changed
+- Jumlah pertemuan terbuka: 5 → **6** (Pertemuan 7–16 masih terkunci)
+
+---
+
 ## [1.4.0] - 2026-08-28
 
 ### Added
@@ -82,7 +101,7 @@
 - Dependensi: tambah `sql.js`
 
 ### Roadmap (terbaru)
-- [ ] Pertemuan 6: Normalisasi Lanjutan (BCNF)
+- [ ] Pertemuan 7: Perancangan Model Fisik (PDM)
 - [ ] Pindahkan materi pertemuan 11–13 agar memanfaatkan SQL playground
 
 ---
@@ -229,4 +248,4 @@ Untuk melanjutkan di sesi berikutnya:
 1. **Menambah materi baru**: buat `src/content/pertemuan/{id}.mdx` lalu set `locked: false`
 2. **Worksheet**: logika di `src/pages/praktikum.astro` (inline script, state di `localStorage` key `basdat_wks_v1`)
 3. **Diagram interaktif**: tambahkan `class="entity-box" data-entity=".."` pada rect, dan `class="rel-line" data-a data-b data-cardinality data-desc data-participation` pada line relasi
-4. **Pertemuan 6** paling relevan untuk dikerjakan berikutnya (Normalisasi Lanjutan/BCNF — lanjutan dari normalisasi Pertemuan 5)
+4. **Pertemuan 7** paling relevan untuk dikerjakan berikutnya (Perancangan Model Fisik PDM — dari skema relasional ke implementasi DBMS nyata, lanjutan Pertemuan 4–6)
