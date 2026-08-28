@@ -7,6 +7,9 @@ export default defineConfig({
   site: 'https://portal-basis-data.unipi.ac.id',
   output: 'static',
   integrations: [mdx()],
+  devToolbar: {
+    enabled: false
+  },
   markdown: {
     shikiConfig: {
       theme: 'github-dark',
