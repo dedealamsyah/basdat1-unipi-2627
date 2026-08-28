@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.2.0] - 2026-08-28
+
+### Added
+
+#### SQL Playground Interaktif (baru)
+- ✅ **`/playground` — SQL Playground** (`src/pages/playground.astro`)
+  - SQLite berjalan penuh di browser via **sql.js** (WASM), tanpa backend/server
+  - Wasm disalin ke `public/sql-wasm.wasm` (di-serve dari root)
+  - 5 tabel relasional contoh ter-seed otomatis: `mahasiswa`, `dosen`, `matakuliah`, `krs`, `nilai`
+  - Editor query + tombol jalankan, jalankan semua (Ctrl/Cmd+Enter), reset data, bersihkan editor
+  - 7 preset contoh query (SELECT, JOIN, GROUP BY, fungsi agregasi, CREATE TABLE)
+  - Pemilih tabel untuk melihat isi langsung
+  - Hasil dirender sebagai tabel HTML rapi
+  - Link di sidebar (📌 "LAB · SQL Playground") dan beranda
+
+#### Worksheet Praktikum (diperkuat)
+- ✅ **Validasi otomatis** (section G) — memeriksa kelengkapan & konsistensi:
+  - Identitas, studi kasus, minimal 2 entitas, nama entitas, duplikat, deskripsi
+  - PK/atribut, referensi relasi ke entitas terdaftar, kardinalitas, asumsi
+  - Output skor kelengkapan + daftar masalah kritis & saran
+- ✅ **Ekspor / Impor data kelompok** (section H) — simpan & muat ulang JSON isian seluruh worksheet (untuk review silang / lanjutan di rumah)
+- ✅ Print styles diperbaiki (section `break-inside`, hasil validasi terbaca saat dicetak)
+
+### Changed
+- Jumlah halaman: 19 (18 + `/playground`)
+- Dependensi: tambah `sql.js`
+
+### Roadmap (terbaru)
+- [ ] Pertemuan 4: Transformasi ERD → Model Relasional
+- [ ] Pertemuan 5–6: Normalisasi 1NF–3NF, BCNF
+- [ ] Pindahkan materi pertemuan 11–13 agar memanfaatkan SQL playground
+
+---
+
 ## [1.1.0] - 2026-08-27 (Booking terakhir)
 
 ### Added

@@ -50,6 +50,16 @@ const firstAvailable = sorted.find(p => !p.data.locked);
   </section>
 
   <section class="block">
+    <h2>SQL Playground</h2>
+    <p>
+      Latihan query SQL langsung di browser (SQLite via WASM), lengkap dengan data contoh relasional dan contoh query yang siap dijalankan.
+    </p>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <a class="navBtn" href="/playground" style="background:#2BA6A0; color:#fff; font-weight:700;">▸ Buka SQL Playground</a>
+    </div>
+  </section>
+
+  <section class="block">
     <h2>Daftar Pertemuan</h2>
     <div style="display:grid; gap:12px; margin-top:16px;">
       {sorted.map((p) => (

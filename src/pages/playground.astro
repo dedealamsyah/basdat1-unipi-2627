@@ -1,0 +1,254 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+---
+
+<BaseLayout title="SQL Playground Interaktif · Basis Data UNIPI" description="SQL playground interaktif berbasis SQLite WASM untuk latihan query SQL langsung di browser">
+  <Sidebar slot="sidebar" />
+
+  <div class="contentHeader">
+    <div class="eyebrow">LABORATORIUM SQL</div>
+    <h1 class="pageTitle">SQL Playground Interaktif</h1>
+    <p class="pageSubtitle">
+      Jalankan query SQL langsung di browser (SQLite via WASM — tanpa server). Cocok untuk latihan DDL &amp; DML pada data contoh relasional.
+    </p>
+    <div class="chipRow">
+      <span class="chip">SQLite</span>
+      <span class="chip chip--amber">Berjalan 100% di browser</span>
+      <span class="chip">Terkait: Pertemuan 11–13</span>
+    </div>
+  </div>
+
+  <div class="block">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:10px;">
+      <label for="pgTable" style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);">CONTOH TABLE:</label>
+      <select id="pgTable" class="pg-select">
+        <option value="">-- Pilih tabel untuk melihat isi --</option>
+        <option value="mahasiswa">mahasiswa</option>
+        <option value="dosen">dosen</option>
+        <option value="matakuliah">matakuliah</option>
+        <option value="krs">krs (perkuliahan)</option>
+        <option value="nilai">nilai</option>
+      </select>
+      <button class="btn-sim" id="pgViewTable" style="background:#2BA6A0;">Lihat Isi</button>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+      <span style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);">QUERY EDITOR (menjalankan &lt;Ctrl|Cmd&gt; + Enter)</span>
+      <div style="display:flex; gap:6px;">
+        <button class="btn-sim" id="pgRun" style="background:#2BA6A0;">▶ Jalankan SQL</button>
+        <button class="btn-sim" id="pgReset" style="background:#C9584F;">Reset Data</button>
+        <button class="btn-sim" id="pgClear" style="background:#1F3864;">Bersihkan Editor</button>
+      </div>
+    </div>
+
+    <textarea id="pgEditor" class="pg-editor" spellcheck="false"></textarea>
+
+    <div style="margin-top:10px; margin-bottom:6px;">
+      <span style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);">CONTOH QUERY:</span>
+    </div>
+    <div id="pgPresets" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+  </div>
+
+  <div class="block">
+    <h2>Hasil</h2>
+    <div id="pgStatus" class="muted" style="font-family:var(--font-mono); font-size:12px; margin-bottom:10px;">Menunggu query…</div>
+    <div id="pgResult"></div>
+  </div>
+
+  <div class="block">
+    <h2>Struktur Data Contoh</h2>
+    <table class="dtable">
+      <tbody>
+        <tr><th>mahasiswa</th><td><code>nim TEXT (PK)</code>, <code>nama TEXT</code>, <code>prodi TEXT</code>, <code>angkatan INTEGER</code></td></tr>
+        <tr><th>dosen</th><td><code>nip TEXT (PK)</code>, <code>nama TEXT</code>, <code>bidang TEXT</code></td></tr>
+        <tr><th>matakuliah</th><td><code>kode TEXT (PK)</code>, <code>nama TEXT</code>, <code>sks INTEGER</code>, <code>nip TEXT (FK→dosen)</code></td></tr>
+        <tr><th>krs</th><td><code>nim TEXT</code>, <code>kode TEXT</code>, <code>semester TEXT</code> (nim,kode = PK gabungan)</td></tr>
+        <tr><th>nilai</th><td><code>nim TEXT</code>, <code>kode TEXT</code>, <code>nilai_huruf TEXT</code>, <code>bobot NUMERIC</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="navFooter">
+    <a class="navBtn" href="/praktikum">‹ Worksheet Praktikum</a>
+    <a class="navBtn" href="/pertemuan/11">Pertemuan 11 (SQL Dasar) ›</a>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .pg-editor {
+    width: 100%;
+    min-height: 220px;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #0D1B30;
+    color: #E2E8F0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    white-space: pre;
+  }
+  .pg-editor:focus { border-color: var(--teal-500); }
+  .pg-select {
+    padding: 7px 10px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    font-family: var(--font-mono); font-size: 12px; outline: none; cursor: pointer;
+  }
+  .pg-preset {
+    padding: 6px 10px; border-radius: 20px; border: 1px solid var(--line);
+    background: var(--card); color: var(--teal-400); font-family: var(--font-mono);
+    font-size: 11.5px; cursor: pointer; transition: background 0.2s;
+  }
+  .pg-preset:hover { background: var(--navy-700); color: #fff; }
+
+  .pg-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+  .pg-table th {
+    background: var(--navy-700); color: #fff; font-family: var(--font-mono);
+    font-size: 11px; text-transform: uppercase; letter-spacing: .03em;
+    padding: 8px 10px; text-align: left; position: sticky; top: 0;
+  }
+  .pg-table td { padding: 6px 10px; border-bottom: 1px solid var(--line); }
+  .pg-table tr:nth-child(even) td { background: rgba(43,166,160,0.05); }
+
+  @media print {
+    .pg-editor, .pg-select, #pgRun, #pgReset, #pgClear,
+    #pgViewTable, #pgPresets, .pg-preset { display: none !important; }
+  }
+</style>
+
+<script>
+  import initSqlJs from 'sql.js';
+
+  const $pg = (id) => document.getElementById(id);
+
+  const PRESETS = [
+    { label: "Lihat semua mahasiswa", sql: "SELECT * FROM mahasiswa;" },
+    { label: "Join mahasiswa↔krs↔matakuliah", sql: "SELECT m.nama, mk.nama AS matkul, k.semester FROM mahasiswa m JOIN krs k ON m.nim = k.nim JOIN matakuliah mk ON k.kode = mk.kode ORDER BY m.nama;" },
+    { label: "Hitung SKS per mahasiswa", sql: "SELECT m.nama, SUM(mk.sks) AS total_sks FROM mahasiswa m JOIN krs k ON m.nim = k.nim JOIN matakuliah mk ON k.kode = mk.kode GROUP BY m.nama;" },
+    { label: "Dosen terbanyak mengajar", sql: "SELECT d.nama, COUNT(mk.kode) AS jumlah_mk FROM dosen d JOIN matakuliah mk ON d.nip = mk.nip GROUP BY d.nama ORDER BY jumlah_mk DESC;" },
+    { label: "Nilai rata-rata per matkul", sql: "SELECT mk.nama, ROUND(AVG(n.bobot),2) AS rerata FROM nilai n JOIN matakuliah mk ON n.kode = mk.kode GROUP BY mk.nama;" },
+    { label: "Mahasiswa nilai A", sql: "SELECT m.nama, mk.nama AS matkul, n.nilai_huruf FROM nilai n JOIN mahasiswa m ON n.nim = m.nim JOIN matakuliah mk ON n.kode = mk.kode WHERE n.nilai_huruf = 'A';" },
+    { label: "CREATE TABLE contoh", sql: "CREATE TABLE contoh (id INTEGER PRIMARY KEY, judul TEXT);\nINSERT INTO contoh VALUES (1,'latihan DDL');\nSELECT * FROM contoh;" },
+  ];
+
+  function schemaInit() {
+    return [
+      "CREATE TABLE IF NOT EXISTS mahasiswa (nim TEXT PRIMARY KEY, nama TEXT, prodi TEXT, angkatan INTEGER);",
+      "CREATE TABLE IF NOT EXISTS dosen (nip TEXT PRIMARY KEY, nama TEXT, bidang TEXT);",
+      "CREATE TABLE IF NOT EXISTS matakuliah (kode TEXT PRIMARY KEY, nama TEXT, sks INTEGER, nip TEXT REFERENCES dosen(nip));",
+      "CREATE TABLE IF NOT EXISTS krs (nim TEXT REFERENCES mahasiswa(nim), kode TEXT REFERENCES matakuliah(kode), semester TEXT, PRIMARY KEY (nim, kode));",
+      "CREATE TABLE IF NOT EXISTS nilai (nim TEXT, kode TEXT, nilai_huruf TEXT, bobot NUMERIC, PRIMARY KEY (nim, kode));",
+
+      "INSERT INTO dosen VALUES ('N001','Dr. Budi Santoso','Sistem Basis Data'),('N002','Dra. Siti Aminah','Pemrograman'),('N003','Ir. Joko Wibowo','Jaringan');",
+
+      "INSERT INTO mahasiswa VALUES ('22104001','Andi Pratama','Informatika',2022),('22104002','Bella Maharani','Informatika',2022),('22104003','Citra Dewi','Informatika',2022),('23105001','Dedi Kurniawan','Sistem Informasi',2023),('23105002','Eka Saputra','Sistem Informasi',2023);",
+
+      "INSERT INTO matakuliah VALUES ('BD01','Basis Data',3,'N001'),('ALGO','Algoritma',3,'N002'),('WEB','Pemrograman Web',3,'N002'),('DK','Komunikasi Data',2,'N003');",
+
+      "INSERT INTO krs VALUES ('22104001','BD01','20252'),('22104001','ALGO','20252'),('22104002','BD01','20252'),('22104002','WEB','20252'),('22104003','BD01','20252'),('22104003','DK','20252'),('23105001','ALGO','20252'),('23105002','WEB','20252');",
+
+      "INSERT INTO nilai VALUES ('22104001','BD01','A',4.0),('22104002','BD01','B',3.0),('22104003','BD01','A-',3.7),('22104001','ALGO','B+',3.3),('22104002','WEB','A',4.0),('22104003','DK','B',3.0),('23105001','ALGO','C+',2.3),('23105002','WEB','A-',3.7);"
+    ];
+  }
+
+  let db = null;
+  let SQL = null;
+
+  function renderResult(res) {
+    if (!res || res.length === 0) {
+      $pg("pgResult").innerHTML = '<span class="muted">(No rows returned)</span>';
+      return;
+    }
+    const r = res[0];
+    const cols = r.columns;
+    const rows = r.values;
+    if (!cols.length) {
+      $pg("pgResult").innerHTML = '<span class="muted">Query sukses.</span>';
+      return;
+    }
+    let html = '<table class="pg-table"><thead><tr>';
+    cols.forEach(c => { html += "<th>" + (c==null?"":String(c)) + "</th>"; });
+    html += "</tr></thead><tbody>";
+    rows.forEach(row => {
+      html += "<tr>";
+      row.forEach(v => { html += "<td>" + (v==null?"NULL":String(v)) + "</td>"; });
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    $pg("pgResult").innerHTML = html;
+  }
+
+  function runSql(sql) {
+    try {
+      const res = db.exec(sql);
+      $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ Query berhasil dijalankan.</span>';
+      renderResult(res);
+    } catch (e) {
+      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Error: ' + (e && e.message ? e.message : e) + "</span>";
+      $pg("pgResult").innerHTML = "";
+    }
+  }
+
+  function setupDB() {
+    if (!SQL) return;
+    db = new SQL.Database();
+    const seeded = schemaInit();
+    seeded.forEach(s => db.run(s));
+  }
+
+  function initPresets() {
+    const box = $pg("pgPresets");
+    if (!box) return;
+    const items = (typeof PRESETS !== "undefined") ? PRESETS : [];
+    items.forEach(p => {
+      const b = document.createElement("button");
+      b.className = "pg-preset";
+      b.textContent = p.label;
+      b.addEventListener("click", () => { $pg("pgEditor").value = p.sql; runSql(p.sql); });
+      box.appendChild(b);
+    });
+  }
+
+  async function init() {
+    initPresets();
+    try {
+      SQL = await initSqlJs({ locateFile: (f) => "/" + f });
+      setupDB();
+      $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ SQLite siap (berjalan di browser). Jalankan query untuk mulai.</span>';
+      $pg("pgEditor").value = PRESETS[0].sql;
+    } catch (e) {
+      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Gagal memuat SQLite: ' + (e && e.message ? e.message : e) + "</span>";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  $pg("pgRun").addEventListener("click", () => {
+    if (!db) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">Database belum siap.</span>'; return; }
+    runSql($pg("pgEditor").value);
+  });
+
+  $pg("pgReset").addEventListener("click", () => {
+    setupDB();
+    $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ Data contoh di-reset ke kondisi awal.</span>';
+    $pg("pgResult").innerHTML = "";
+  });
+
+  $pg("pgClear").addEventListener("click", () => { $pg("pgEditor").value = ""; $pg("pgResult").innerHTML = ""; });
+
+  $pg("pgViewTable").addEventListener("click", () => {
+    const t = $pg("pgTable").value;
+    if (!t) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">Pilih tabel terlebih dahulu.</span>'; return; }
+    runSql("SELECT * FROM " + t + ";");
+  });
+
+  $pg("pgEditor").addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      if (db) runSql($pg("pgEditor").value);
+    }
+  });
+</script>

@@ -138,9 +138,34 @@ const studyCases = [
     <textarea id="asumsiText" class="wks-input" rows="5" placeholder="Tuliskan asumsi yang Anda ambil saat merancang..."></textarea>
   </section>
 
-  <!-- ============ G. AKSI ============ -->
+  <!-- ============ G. VALIDASI ============ -->
   <section class="block">
-    <h2>G. Simpan, Unduh & Cetak</h2>
+    <h2>G. Validasi & Pemeriksaan</h2>
+    <p>
+      Jalankan pemeriksaan otomatis untuk memastikan worksheet sudah lengkap dan konsisten sebelum dikumpulkan.
+    </p>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn-sim" id="wksValidate" style="background:#2BA6A0;">✓ Validasi Worksheet</button>
+    </div>
+    <div id="wksValidation" style="margin-top:14px;"></div>
+  </section>
+
+  <!-- ============ H. IMPORT/EKSPOR ============ -->
+  <section class="block">
+    <h2>H. Ekspor / Impor Data Kelompok</h2>
+    <p>
+      Bagikan isian worksheet ke kelompok lain (untuk review silang atau lanjutan di rumah) dalam format JSON.
+    </p>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn-sim" id="wksExport" style="background:#1F3864;">⬇ Ekspor Data (.json)</button>
+      <button class="btn-sim" id="wksImport" style="background:#6699CC;">⬆ Impor Data</button>
+      <input type="file" id="wksImportFile" accept=".json" style="display:none;">
+    </div>
+  </section>
+
+  <!-- ============ I. AKSI ============ -->
+  <section class="block">
+    <h2>I. Simpan, Unduh & Cetak</h2>
     <p>Isian terdokumentasi otomatis. Gunakan tombol di bawah untuk memproduksi laporan:</p>
     <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
       <button class="btn-sim" id="wksSave" style="background:#2BA6A0;">💾 Simpan & Unduh Laporan (.txt)</button>
@@ -190,15 +215,30 @@ const studyCases = [
   }
   .wks-del:hover { background: #a8433b; }
 
+  .v-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border-left: 4px solid var(--teal-500);
+    background: var(--card);
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .v-item.ok { border-left-color: #2BA6A0; }
+  .v-item.warn { border-left-color: #E7A83D; }
+  .v-item.err { border-left-color: #C9584F; }
+  .v-item.__label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing:.04em; }
+  .v-score { font-size: 22px; font-weight: 800; }
+
   @media print {
     .wks-table input, .wks-table select,
     #entitasAdd, #entitasClear, #relasiAdd, #relasiClear,
     .wks-del, #wksSave, #wksPrint, #wksReset,
+    #wksValidate, #wksExport, #wksImport, #wksImportFile,
     .case-btn, .btn-sim {
       display: none !important;
     }
-    .wks-table th, .wks-table td { border: 1px solid #999 !important; }
-    section.block { break-inside: auto !important; }
+    section.block { break-inside: avoid !important; }
+    .v-item { border: 1px solid #aaa !important; border-left-width: 4px !important; }
   }
 </style>
 
@@ -318,6 +358,72 @@ const studyCases = [
     return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  // ---------- validasi ----------
+  function validate() {
+    var issues = [];
+    var warns = [];
+    var okCount = 0;
+
+    // A. identitas
+    if (state.identitas.nama.trim()) okCount++; else warns.push("Identitas kelompok (nama anggota) belum diisi.");
+    if (state.identitas.kelas.trim()) okCount++;
+
+    // B. studi kasus
+    if (state.studiKasus) okCount++; else warns.push("Studi kasus belum dipilih.");
+
+    // C. entitas
+    var entNames = state.entitas.map(function (e) { return (e.nama || "").toUpperCase(); });
+    if (state.entitas.length < 2) {
+      issues.push("Minimal perlu 2 entitas (mendapatkan " + state.entitas.length + ").");
+    } else {
+      okCount++;
+      state.entitas.forEach(function (e, i) {
+        if (!e.nama) { issues.push("Entitas #" + (i+1) + " belum diberi nama."); }
+        if (!e.desk) warns.push("Entitas \"" + (e.nama || "?") + "\" belum memiliki deskripsi singkat.");
+      });
+      var dupes = entNames.filter(function (n, i) { return n && entNames.indexOf(n) !== i; });
+      if (dupes.length) issues.push("Terdapat nama entitas duplikat: " + dupes.join(", ") + ".");
+    }
+
+    // D. atribut & key
+    var hasPK = false;
+    state.atribut.forEach(function (a) {
+      if (!a.atribut.trim()) warns.push("Atribut untuk entitas \"" + (a.entitas || "?") + "\" masih kosong.");
+      if (a.pk) hasPK = true;
+    });
+    if (state.atribut.length && !hasPK) issues.push("Belum ada entitas yang menandai Primary Key (PK).");
+    else if (state.atribut.length) okCount++;
+
+    // E. relasi
+    state.relasi.forEach(function (r, i) {
+      if (!r.entitasA || !r.entitasB) { issues.push("Relasi #" + (i+1) + " belum lengkap (entitas A/B)."); return; }
+      if (r.entitasA === r.entitasB) { warns.push("Relasi #" + (i+1) + " menghubungkan entitas yang sama (" + r.entitasA + "). Periksa kembali."); }
+      if (!entNames.includes(r.entitasA.toUpperCase())) { issues.push("Relasi #" + (i+1) + " merujuk entitas A yang tidak terdaftar: \"" + r.entitasA + "\"."); }
+      if (!entNames.includes(r.entitasB.toUpperCase())) { issues.push("Relasi #" + (i+1) + " merujuk entitas B yang tidak terdaftar: \"" + r.entitasB + "\"."); }
+    });
+    if (state.relasi.length) okCount++;
+
+    // F. asumsi
+    if (state.asumsi.trim()) okCount++; else warns.push("Catatan asumsi masih kosong.");
+
+    var totalChecks = 7;
+    var score = Math.round((okCount / totalChecks) * 100);
+
+    var html = "";
+    html += '<div class="v-item __label">HASIL VALIDASI — SKOR KELENGKAPAN: <span class="v-score">' + score + '%</span></div>';
+    if (issues.length) {
+      html += '<div class="v-item err"><strong>Perlu diperbaiki (' + issues.length + '):</strong><ul style="margin:6px 0 0 18px;padding:0;">' +
+        issues.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul></div>";
+    } else {
+      html += '<div class="v-item ok"><strong>✓ Tidak ada masalah kritis.</strong> Worksheet siap dikumpulkan.</div>';
+    }
+    if (warns.length) {
+      html += '<div class="v-item warn"><strong>Saran (' + warns.length + '):</strong><ul style="margin:6px 0 0 18px;padding:0;">' +
+        warns.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul></div>";
+    }
+    $("wksValidation").innerHTML = html;
+  }
+
   function generateReport() {
     var L = [];
     L.push("=============================================");
@@ -412,6 +518,57 @@ const studyCases = [
     $("relasiClear").addEventListener("click", function () {
       state.relasi = [];
       renderRelasi(); save();
+    });
+
+    // validasi
+    $("wksValidate").addEventListener("click", function () { validate(); });
+
+    // ekspor JSON
+    $("wksExport").addEventListener("click", function () {
+      var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "worksheet-erd-" + (state.studiKasus || "kelompok").toLowerCase() + ".json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // impor JSON
+    $("wksImport").addEventListener("click", function () { $("wksImportFile").click(); });
+    $("wksImportFile").addEventListener("change", function (e) {
+      var file = e.target.files && e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var imported = JSON.parse(reader.result);
+          if (!imported || typeof imported !== "object" || !("identitas" in imported)) {
+            throw new Error("File tidak valid");
+          }
+          state = Object.assign(state, imported);
+          save();
+          // re-render semua
+          renderEntitas(); renderAtribut(); renderRelasi();
+          $("kelNama").value = state.identitas.nama || "";
+          $("kelNim").value = state.identitas.nim || "";
+          $("kelKelas").value = state.identitas.kelas || "";
+          $("kelTanggal").value = state.identitas.tanggal || "";
+          $("asumsiText").value = state.asumsi || "";
+          if (state.studiKasus) {
+            document.querySelectorAll(".case-btn").forEach(function (b) {
+              if (b.getAttribute("data-sc") === state.studiKasus) b.click();
+            });
+          }
+          $("wksFeedback").innerHTML = '<span style="color:#166534;">✓ Data berhasil diimpor.</span>';
+        } catch (err) {
+          $("wksFeedback").innerHTML = '<span style="color:#C9584F;">✗ Gagal mengimpor file. Pastikan file JSON ekspor dari worksheet ini.</span>';
+        }
+        e.target.value = "";
+      };
+      reader.readAsText(file);
     });
 
     // simpan/unduh

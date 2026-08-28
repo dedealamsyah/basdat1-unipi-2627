@@ -114,6 +114,32 @@ Buat file di `public/game-{nama}.js`:
 <script is:inline src="/game-{nama}.js"></script>
 ```
 
+## Mengembangkan SQL Playground
+
+Halaman `/playground` (`src/pages/playground.astro`) menjalankan SQLite via `sql.js`.
+
+### Cara kerja
+1. `import initSqlJs from 'sql.js'` → memuat SQLite WASM
+2. Wasm di-serve dari `public/sql-wasm.wasm` (jangan pindahkan — di-refer alias lokasi root `"/" + f`)
+3. `new SQL.Database()` dibuat, lalu di-seed dengan data contoh dari `schemaInit()`
+4. Query dijalankan lewat `db.exec(sql)`, hasil dirender sebagai tabel HTML
+
+### Menambah tabel contoh
+Tambahkan `CREATE TABLE` dan `INSERT` pada array `schemaInit()` di `src/pages/playground.astro`. Reset data akan menjalankan ulang seluruh skrip tersebut.
+
+### Menambah preset query
+Tambah objek `{ label, sql }` pada array `PRESETS`. Tombol preset otomatis dirender.
+
+> Catatan: Jangan pindahkan `sql-wasm.wasm` keluar dari `public/`. Posisinya di-root penting karena `locateFile` menggunakan `"/" + f` agar sesuai untuk SSG statis.
+
+## Mengembangkan Worksheet Praktikum
+
+Halaman `/praktikum` (`src/pages/praktikum.astro`) — satu file berisi markup + script inline.
+
+- **State** disimpan di `localStorage` (key `basdat_wks_v1`) dan diekspor/impor sebagai JSON.
+- **Validasi** ada di function `validate()` — mengecek kelengkapan identitas, entitas, atribut, relasi, asumsi, lalu menampilkan skor + masalah.
+- Untuk menambah studi kasus, tambahkan entri pada array `studyCases` (frontmatter) dan objek `NAR` (script).
+
 ## Komponen yang Tersedia
 
 ### QuizCard

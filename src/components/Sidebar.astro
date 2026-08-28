@@ -44,6 +44,13 @@ const available = sorted.filter(p => !p.data.locked).length;
       <span class="row__title" style="color:#FCD34D;">Worksheet Perancangan ERD</span>
     </span>
   </li>
+  <li class="row playground-link" data-kind="playground" data-title="sql playground interaktif lab sql query">
+    <span class="row__pk" style="background:#2BA6A0; color:#03211D;">▸</span>
+    <span class="row__text">
+      <span class="row__num">LAB</span>
+      <span class="row__title" style="color:#5FD3CB;">SQL Playground</span>
+    </span>
+  </li>
   {sorted.map((p) => (
     <li 
       class={`row ${p.data.locked ? 'locked' : ''} ${p.data.id === activeId ? 'active' : ''}`}
@@ -95,6 +102,10 @@ const available = sorted.filter(p => !p.data.locked).length;
         window.location.href = '/praktikum';
         return;
       }
+      if (kind === 'playground') {
+        window.location.href = '/playground';
+        return;
+      }
       const id = this.getAttribute('data-id');
       window.location.href = `/pertemuan/${id}`;
     });
@@ -104,5 +115,9 @@ const available = sorted.filter(p => !p.data.locked).length;
   if (window.location.pathname.includes('/praktikum')) {
     const pk = document.querySelector('.praktikum-link');
     if (pk) pk.classList.add('active');
+  }
+  if (window.location.pathname.includes('/playground')) {
+    const pg = document.querySelector('.playground-link');
+    if (pg) pg.classList.add('active');
   }
 </script>

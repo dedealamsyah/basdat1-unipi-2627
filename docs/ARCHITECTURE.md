@@ -135,9 +135,25 @@ Otomatis menambah tombol "Salin" pada semua `<pre><code>` blocks.
 |-----|-----------|
 | `/` | Beranda + daftar pertemuan |
 | `/praktikum` | Worksheet praktikum interaktif (isian tersimpan di localStorage) |
+| `/playground` | SQL Playground interaktif (SQLite via sql.js WASM) |
 | `/pertemuan/1` | Pertemuan 1: Introduction to Databases |
-| `/pertemuan/2` | Pertemuan 2: Perancangan Model Konseptual |
+| `/pertemuan/2` | Pertemuan 2: Perancangan Model Konseptual ERD |
 | `/pertemuan/{id}` | Dynamic route untuk setiap pertemuan |
+
+## SQL Playground
+
+Halaman `/playground` menjalankan **SQLite** sepenuhnya di browser menggunakan **`sql.js`** (SQLite dikompilasi ke WebAssembly).
+
+```
+Browser ──▶ initSqlJs() ──▶ /sql-wasm.wasm (public/) ──▶ SQL.Database
+                │
+                └─▶ run(query) ──▶ db.exec() ──▶ render tabel hasil
+```
+
+- Wasm diletakkan di `public/sql-wasm.wasm` agar bisa di-fetch dari root
+- 5 tabel contoh (mahasiswa, dosen, matakuliah, krs, nilai) di-seed pada inisialisasi
+- 7 preset contoh query siap pakai; editor mendukung Ctrl/Cmd+Enter untuk menjalankan
+- Tidak memerlukan backend — cocok untuk model SSG
 
 ## Tema (Dark Mode)
 
@@ -166,5 +182,6 @@ Otomatis menambah tombol "Salin" pada semua `<pre><code>` blocks.
 |---------|-------|--------|
 | astro | ^7.2.8 | Static site generator |
 | @astrojs/mdx | latest | MDX support untuk konten |
+| sql.js | latest | SQLite WASM untuk SQL playground |
 
 **Total size node_modules:** ~140MB (dev), ~2MB (dist output)
