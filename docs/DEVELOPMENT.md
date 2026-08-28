@@ -114,15 +114,36 @@ Buat file di `public/game-{nama}.js`:
 <script is:inline src="/game-{nama}.js"></script>
 ```
 
+## Menambah Gambar & Media (dengan Atribusi)
+
+Semua gambar ditempatkan di `public/images/` dan direferensikan sebagai `/images/...`.
+
+- **Gambar eksternal** (Wikipedia/Wikimedia, dsb.) WAJIB mencantumkan sumber & lisensi. Gunakan pola berikut:
+
+```mdx
+<figure class="media-figure">
+  <img src="/images/namafile.jpg" alt="Deskripsi singkat" width="520" loading="lazy" />
+  <figcaption>
+    Keterangan gambar.
+    <span class="media-src">Sumber: "Judul File" oleh Penulis, Wikimedia Commons, <lisensi>. <a href="https://...">tautan file</a></span>
+  </figcaption>
+</figure>
+```
+
+- **Diagram buatan sendiri** boleh langsung disisipkan sebagai SVG inline; beri keterangan "Gambar asli dibuat untuk Portal Basis Data UNIPI." jika diperlukan.
+- Styling figure tersedia di `src/styles/global.css` (`.media-figure`, `.media-src`).
+
 ## Mengembangkan SQL Playground
 
 Halaman `/playground` (`src/pages/playground.astro`) menjalankan SQLite via `sql.js`.
 
 ### Cara kerja
 1. `import initSqlJs from 'sql.js'` → memuat SQLite WASM
-2. Wasm di-serve dari `public/sql-wasm.wasm` (jangan pindahkan — di-refer alias lokasi root `"/" + f`)
+2. Wasm di-serve dari `public/sql-wasm.wasm` (jangan pindahkan — `locateFile` selalu memetakan ke `"/sql-wasm.wasm"`)
 3. `new SQL.Database()` dibuat, lalu di-seed dengan data contoh dari `schemaInit()`
 4. Query dijalankan lewat `db.exec(sql)`, hasil dirender sebagai tabel HTML
+
+> Catatan: Vite mungkin me-resolve `sql.js` ke bundle browser yang meminta file bernama `sql-wasm-browser.wasm`. Karena MD5 `sql-wasm.wasm`, `sql-wasm-browser.wasm`, dan file di `public/` identik, `locateFile: () => "/sql-wasm.wasm"` (abaikan nama file yang diminta) adalah solusi paling andal — jangan pakai `"/" + f`.
 
 ### Menambah tabel contoh
 Tambahkan `CREATE TABLE` dan `INSERT` pada array `schemaInit()` di `src/pages/playground.astro`. Reset data akan menjalankan ulang seluruh skrip tersebut.
@@ -130,7 +151,7 @@ Tambahkan `CREATE TABLE` dan `INSERT` pada array `schemaInit()` di `src/pages/pl
 ### Menambah preset query
 Tambah objek `{ label, sql }` pada array `PRESETS`. Tombol preset otomatis dirender.
 
-> Catatan: Jangan pindahkan `sql-wasm.wasm` keluar dari `public/`. Posisinya di-root penting karena `locateFile` menggunakan `"/" + f` agar sesuai untuk SSG statis.
+> Catatan: Jangan pindahkan `sql-wasm.wasm` keluar dari `public/`. Posisinya di-root penting karena `locateFile` memetakan ke `"/sql-wasm.wasm"` agar sesuai untuk SSG statis.
 
 ## Mengembangkan Worksheet Praktikum
 

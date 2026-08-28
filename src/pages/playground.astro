@@ -162,22 +162,20 @@ import Sidebar from '../components/Sidebar.astro';
       $pg("pgResult").innerHTML = '<span class="muted">(No rows returned)</span>';
       return;
     }
-    const r = res[0];
-    const cols = r.columns;
-    const rows = r.values;
-    if (!cols.length) {
-      $pg("pgResult").innerHTML = '<span class="muted">Query sukses.</span>';
-      return;
-    }
-    let html = '<table class="pg-table"><thead><tr>';
-    cols.forEach(c => { html += "<th>" + (c==null?"":String(c)) + "</th>"; });
-    html += "</tr></thead><tbody>";
-    rows.forEach(row => {
-      html += "<tr>";
-      row.forEach(v => { html += "<td>" + (v==null?"NULL":String(v)) + "</td>"; });
-      html += "</tr>";
+    let html = "";
+    res.forEach(function(r) {
+      if (!r.columns.length) return;
+      html += '<table class="pg-table"><thead><tr>';
+      r.columns.forEach(c => { html += "<th>" + (c==null?"":String(c)) + "</th>"; });
+      html += "</tr></thead><tbody>";
+      r.values.forEach(row => {
+        html += "<tr>";
+        row.forEach(v => { html += "<td>" + (v==null?"NULL":String(v)) + "</td>"; });
+        html += "</tr>";
+      });
+      html += "</tbody></table>";
     });
-    html += "</tbody></table>";
+    html = html || '<span class="muted">(No rows returned)</span>';
     $pg("pgResult").innerHTML = html;
   }
 
@@ -207,7 +205,10 @@ import Sidebar from '../components/Sidebar.astro';
       const b = document.createElement("button");
       b.className = "pg-preset";
       b.textContent = p.label;
-      b.addEventListener("click", () => { $pg("pgEditor").value = p.sql; runSql(p.sql); });
+      b.addEventListener("click", () => {
+        if (!db) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">SQLite belum siap, tunggu sebentar lalu coba lagi.</span>'; return; }
+        $pg("pgEditor").value = p.sql; runSql(p.sql);
+      });
       box.appendChild(b);
     });
   }
@@ -215,7 +216,7 @@ import Sidebar from '../components/Sidebar.astro';
   async function init() {
     initPresets();
     try {
-      SQL = await initSqlJs({ locateFile: (f) => "/" + f });
+      SQL = await initSqlJs({ locateFile: () => "/sql-wasm.wasm" });
       setupDB();
       $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ SQLite siap (berjalan di browser). Jalankan query untuk mulai.</span>';
       $pg("pgEditor").value = PRESETS[0].sql;

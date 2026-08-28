@@ -28,6 +28,11 @@ basdat1-unipi-2627/
 │   ├── favicon.svg                  # Ikon site
 │   ├── manifest.json                # PWA manifest
 │   ├── service-worker.js            # Offline cache
+│   ├── images/                      # Gambar materi (wajib sertakan atribusi sumber)
+│   │   ├── er-diagram.jpg           # Contoh model ER (Wikimedia Commons, PD)
+│   │   ├── normal-2fn.jpg           # Pelanggaran 2NF (SQLpro, CC BY-SA 4.0)
+│   │   ├── normal-3fn.jpg           # Pelanggaran 3NF (SQLpro, CC BY-SA 4.0)
+│   │   └── database-normalization.svg # Hirarki normal form (CC BY-SA 3.0)
 │   ├── game-komponen.js             # Game interaktif P1
 │   └── game-entitas.js              # Game interaktif P2
 │

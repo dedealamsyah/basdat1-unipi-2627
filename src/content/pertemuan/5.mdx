@@ -1,12 +1,627 @@
 ---
 id: 5
 title: "Normalisasi Basis Data (1NF–3NF)"
-locked: true
+subtitle: "Anomali, Ketergantungan Fungsional, dan Sistematika Normal Form 1–3"
+locked: false
 order: 5
+meta:
+  subCPMK: "Mahasiswa mampu merancang basis data dengan teknik normalisasi (1NF-3NF/BCNF)."
+  alokasi: "3 × 50 menit"
+  bobot: "5%"
+  cpmk: "CPMK-1"
 ---
 
-## Pertemuan 5: Normalisasi Basis Data (1NF–3NF)
+import QuizCard from '../../components/QuizCard.astro';
 
-Materi pertemuan ini masih dalam proses pengembahan.
+## A. Identitas Pertemuan
 
-Silakan hubungi dosen pengampu untuk informasi lebih lanjut.
+<table class="dtable">
+  <tbody>
+    <tr><th>Mata Kuliah</th><td>Basis Data — Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Pertemuan / Minggu</th><td>Ke-5 dari 16 (Semester 3, TA 2026/2027)</td></tr>
+    <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka) + Penugasan Terstruktur</td></tr>
+    <tr><th>CPMK Terkait</th><td>CPMK-1: Menguasai konsep dan implementasi basis data dalam pengembangan rekayasa perangkat lunak.</td></tr>
+    <tr><th>Sub-CPMK Minggu 5</th><td>Mahasiswa mampu merancang basis data dengan teknik normalisasi (1NF-3NF/BCNF).</td></tr>
+  </tbody>
+</table>
+
+## B. Capaian Pembelajaran (Pendekatan OBE)
+
+<table class="dtable">
+  <thead><tr><th style="width:60px">No</th><th>Indikator Capaian (Outcome yang Diukur)</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Mahasiswa dapat mengidentifikasi atribut dan ketergantungan fungsional (functional dependency) pada sebuah tabel.</td></tr>
+    <tr><td>2</td><td>Mahasiswa dapat menerapkan tahap normalisasi 1NF, 2NF, dan 3NF.</td></tr>
+    <tr><td>3</td><td>Mahasiswa dapat menghasilkan tabel yang bebas anomali dan minim redundansi.</td></tr>
+  </tbody>
+</table>
+
+<div class="chipRow">
+  <span class="chip">KRITERIA · Partisipasi</span>
+  <span class="chip">BENTUK · Aktivitas partisipatif, penilaian produk</span>
+  <span class="chip chip--amber">BOBOT · 5%</span>
+</div>
+
+## C. Peta Konsep Pertemuan
+
+1. Mengapa tabel perlu dinormalisasi: tiga jenis anomali data
+2. Ketergantungan fungsional (Functional Dependency) sebagai dasar normalisasi
+3. Normal Form 1: hilangkan grup nilai berulang (atomic)
+4. Normal Form 2: hilangkan ketergantungan parsial (partial dependency)
+5. Normal Form 3: hilangkan ketergantungan transitif (transitive dependency)
+6. Studi kasus utama: dari satu tabel jelek menjadi 4 tabel bebas anomali
+7. Variasi pola: kunci gabungan + transitif (SIAKAD), kunci tunggal + transitif (Rumah Sakit), dan atribut multivalued
+8. Bukti hasil normalisasi dengan data nyata (sebelum / sesudah)
+
+<div class="callout callout--amber">
+  <span class="callout__label">Penting</span>
+  <p>Normalisasi bertujuan <strong>menghindari redundansi</strong> dan <strong>menjaga integritas data</strong>. Materi ini adalah validasi "mengapa" desain skema relasional pada Pertemuan 4 memang benar — dan alat bantu jika Anda menemukan tabel hasil desain yang masih bermasalah.</p>
+</div>
+
+## D. Anomali Data — Mengapa Normalisasi Diperlukan
+
+Perhatikan sebuah **rancangan tabel tunggal** yang buruk berikut untuk mencatat transaksi penjualan (sengaja dibuat satu tabel agar mudah dibayangkan masalahnya):
+
+<table class="dtable">
+  <thead><tr><th>no_nota</th><th>tgl</th><th>id_pelanggan</th><th>nama_pelanggan</th><th>kota</th><th>id_produk</th><th>nama_produk</th><th>harga</th><th>jumlah</th></tr></thead>
+  <tbody>
+    <tr><td>T001</td><td>12/08/2026</td><td>P01</td><td>Andi Pratama</td><td>Bandung</td><td>PR001</td><td>Laptop Dell</td><td>9.000.000</td><td>1</td></tr>
+    <tr><td>T001</td><td>12/08/2026</td><td>P01</td><td>Andi Pratama</td><td>Bandung</td><td>PR002</td><td>Mouse Logitech</td><td>150.000</td><td>2</td></tr>
+    <tr><td>T002</td><td>13/08/2026</td><td>P02</td><td>Sari Ayu</td><td>Jakarta</td><td>PR001</td><td>Laptop Dell</td><td>9.000.000</td><td>1</td></tr>
+    <tr><td>T003</td><td>13/08/2026</td><td>P01</td><td>Andi Pratama</td><td>Bandung</td><td>PR003</td><td>Monitor LG</td><td>2.500.000</td><td>1</td></tr>
+  </tbody>
+</table>
+
+Tabel ini menderita tiga **anomali**:
+
+<div class="callout callout--amber">
+  <span class="callout__label">1. Anomali Insert</span>
+  <p>Tidak bisa menyimpan <strong>pelanggan baru</strong> (mis. "Budi") yang belum pernah bertransaksi, karena kolom <code>no_nota</code>/<code>id_produk</code> (kunci) akan bernilai NULL. Begitu juga sulit menambah <strong>produk baru</strong> yang belum terjual.</p>
+</div>
+
+<div class="callout">
+  <span class="callout__label">2. Anomali Update</span>
+  <p>Jika pelanggan "Andi Pratama" pindah ke kota lain, maka <strong>setiap baris</strong> yang memuat namanya harus di-update. Terlewat satu baris saja → data menjadi tidak konsisten.</p>
+</div>
+
+<div class="callout">
+  <span class="callout__label">3. Anomali Delete</span>
+  <p>Jika transaksi T003 (satu-satunya yang memuat produk "Monitor LG") dihapus, maka informasi <strong>harga/produk Monitor LG ikut terhapus</strong> — padahal kita masih butuh datanya.</p>
+</div>
+
+<strong>Akar masalah:</strong> terlalu banyak informasi berbeda dicampur dalam satu tabel. Normalisasi memecah tabel tersebut menjadi tabel-tabel yang masing-masing menampung **satu fakta** saja.
+
+<div class="callout callout--amber">
+  <span class="callout__label">Analogi — Satu Binder Besar</span>
+  <p>Bayangkan <strong>satu binder besar</strong> berisi semua catatan kuliah: daftar mahasiswa, nilai, jadwal, dan data dosen ditumpuk dalam satu tempat.</p>
+  <p>→ <em>Anomali insert:</em> mahasiswa baru yang belum punya nilai jadi susah dicatat — kolom nilai di setiap halamannya kosong.<br/>
+  → <em>Anomali update:</em> ganti nama dosen harus menyobek dan menulis ulang <strong>banyak halaman</strong>; terlewat satu halaman berarti datanya jadi berbeda-beda.<br/>
+  → <em>Anomali delete:</em> membuang halaman nilai bisa ikut menghilangkan data dosen yang hanya tersisa di halaman itu.</p>
+  <p>Normalisasi = merapikan binder menjadi beberapa <strong>map terpisah</strong> (Mahasiswa, Dosen, Mata Kuliah, Nilai) yang antar-mapnya hanya dihubungkan lewat nomor referensi (FK).</p>
+</div>
+
+<div class="callout">
+  <span class="callout__label">Hubungan dengan ERD (Pertemuan 2–4)</span>
+  <p>ERD adalah model <em>konseptual</em> dari kebutuhan bisnis. Tabel yang <strong>salah dirancang</strong> (seperti contoh TRANSAKSI di atas) memunculkan anomali; normalisasi memperbaikinya secara sistematis. Perhatikan contoh model ER sederhana berikut — ia menggambarkan entitas, relasi kardinalitas, dan kamus datanya, sebelum diimplementasikan sebagai tabel.</p>
+</div>
+
+<figure class="media-figure">
+  <img src="/images/er-diagram.jpg" alt="Diagram ER yang memperlihatkan entitas, relasi kardinalitas, dan kamus data" width="520" loading="lazy" />
+  <figcaption>
+    Contoh model Entity-Relationship (ER) — entitas, relasi kardinalitas, dan kamus data.
+    <span class="media-src">Sumber: "Entity Relationship Diagram.jpg", Wikimedia Commons (domain publik). <a href="https://commons.wikimedia.org/wiki/File:Entity_Relationship_Diagram.jpg">commons.wikimedia.org/wiki/File:Entity_Relationship_Diagram.jpg</a></span>
+  </figcaption>
+</figure>
+
+## E. Ketergantungan Fungsional (Functional Dependency)
+
+**Functional Dependency (FD)** adalah relasi antar atribut yang menyatakan: *jika nilai atribut X diketahui, maka nilai atribut Y dapat ditentukan secara unik*. Ditulis:
+
+```text
+X → Y   (X menentukan Y)
+```
+
+X disebut **determinan**; Y disebut **dependent**.
+Contoh: `no_nota → tgl` (setiap nota punya satu tanggal).
+
+<div class="callout">
+  <span class="callout__label">Analogi — Kunci Kamus & KTP</span>
+  <p>FD seperti <strong>satu kunci → satu data</strong>: <em>"no. KTP → nama &amp; alamat pemilik"</em> dan <em>"ISBN → judul buku"</em> bersifat fungsional karena identitasnya unik dan konsisten. Sebaliknya, <em>"nama → alamat"</em> <strong>bukanlah FD</strong> yang benar — dua orang berbeda bisa memiliki nama yang sama, sehingga nama tidak bisa menentukan alamat secara unik.</p>
+  <p>Prinsip pengujian: tanya dirimu <em>"apakah mungkin dua baris berbeda memakai nilai X yang sama tetapi nilai Y-nya beda?"</em> Jika mungkin, maka <code>X → Y</code> bukan FD yang sah.</p>
+</div>
+
+### Jenis Ketergantungan dalam Konteks Normalisasi
+
+<table class="dtable">
+  <thead><tr><th>Jenis</th><th>Definisi</th><th>Contoh (PK: <code>no_nota, id_produk</code>)</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Full Dependency</strong></td><td>Atribut bergantung pada <strong>seluruh</strong> Primary Key.</td><td><code>(no_nota, id_produk) → jumlah</code></td></tr>
+    <tr><td><strong>Partial Dependency</strong></td><td>Atribut bergantung hanya pada <strong>sebagian</strong> PK (ada pada PK gabungan).</td><td><code>no_nota → tgl</code> atau <code>id_produk → nama_produk</code></td></tr>
+    <tr><td><strong>Transitive Dependency</strong></td><td>Atribut <strong>non-kunci → non-kunci</strong> (lewat atribut non-kunci lainnya).</td><td><code>id_pelanggan → kota</code> (non-kunci menentukan non-kunci)</td></tr>
+  </tbody>
+</table>
+
+<div class="sim-box" style="margin-top:12px;">
+  <p style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin:0 0 12px;">PETA KETERGANTUNGAN FUNGSIONAL — TABEL TRANSAKSI (PK: no_nota, id_produk)</p>
+  <svg viewBox="0 0 760 330" style="width:100%; height:auto; font-family:'JetBrains Mono',monospace; font-size:10.5">
+    <defs>
+      <marker id="mkr-p5-a" markerWidth="9" markerHeight="9" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 z" fill="#C9584F"/></marker>
+      <marker id="mkr-p5-b" markerWidth="9" markerHeight="9" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 z" fill="#166534"/></marker>
+      <marker id="mkr-p5-c" markerWidth="9" markerHeight="9" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 z" fill="#B45309"/></marker>
+    </defs>
+
+    <rect x="498" y="14" width="11" height="11" fill="#C9584F"/>
+    <text x="516" y="24">PARTIAL</text>
+    <rect x="582" y="14" width="11" height="11" fill="#166534"/>
+    <text x="600" y="24">FULL</text>
+    <rect x="656" y="14" width="11" height="11" fill="#B45309"/>
+    <text x="674" y="24">TRANSITIVE</text>
+
+    <rect x="40" y="55" width="150" height="38" rx="6" fill="#E7F0F1" stroke="#16294A" stroke-width="2"/>
+    <text x="115" y="79" text-anchor="middle" font-weight="bold">no_nota <tspan fill="#C9584F">(PK)</tspan></text>
+    <line x1="190" y1="74" x2="382" y2="74" stroke="#C9584F" stroke-width="2" marker-end="url(#mkr-p5-a)"/>
+    <text x="286" y="62" text-anchor="middle" fill="#C9584F" font-weight="bold" font-size="9.5">PARTIAL</text>
+    <rect x="400" y="52" width="320" height="44" rx="6" fill="#FDEAEA" stroke="#C9584F" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="560" y="73" text-anchor="middle">tgl · id_pelanggan · nama_pelanggan · kota</text>
+    <text x="560" y="88" text-anchor="middle" font-size="9" fill="#991b1b">ditentukan cukup oleh sebagian PK (no_nota)</text>
+
+    <rect x="40" y="120" width="150" height="38" rx="6" fill="#E7F0F1" stroke="#16294A" stroke-width="2"/>
+    <text x="115" y="144" text-anchor="middle" font-weight="bold">id_produk <tspan fill="#C9584F">(PK)</tspan></text>
+    <line x1="190" y1="139" x2="382" y2="139" stroke="#C9584F" stroke-width="2" marker-end="url(#mkr-p5-a)"/>
+    <text x="286" y="127" text-anchor="middle" fill="#C9584F" font-weight="bold" font-size="9.5">PARTIAL</text>
+    <rect x="400" y="117" width="320" height="44" rx="6" fill="#FDEAEA" stroke="#C9584F" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="560" y="147" text-anchor="middle">nama_produk · harga</text>
+
+    <rect x="40" y="195" width="160" height="52" rx="6" fill="#E9F3E9" stroke="#16294A" stroke-width="2"/>
+    <text x="120" y="216" text-anchor="middle" font-weight="bold">no_nota + id_produk</text>
+    <text x="120" y="233" text-anchor="middle" font-size="9" fill="#3A4A63">(seluruh PK)</text>
+    <line x1="200" y1="221" x2="382" y2="221" stroke="#166534" stroke-width="2" marker-end="url(#mkr-p5-b)"/>
+    <text x="291" y="208" text-anchor="middle" fill="#166534" font-weight="bold" font-size="9.5">FULL</text>
+    <rect x="400" y="198" width="320" height="46" rx="6" fill="#E9F3E9" stroke="#166534" stroke-width="2"/>
+    <text x="560" y="226" text-anchor="middle">jumlah</text>
+
+    <rect x="40" y="272" width="150" height="38" rx="6" fill="#F5EFE3" stroke="#16294A" stroke-width="2"/>
+    <text x="115" y="296" text-anchor="middle" font-weight="bold">id_pelanggan</text>
+    <line x1="190" y1="291" x2="382" y2="291" stroke="#B45309" stroke-width="2" stroke-dasharray="7,4" marker-end="url(#mkr-p5-c)"/>
+    <text x="286" y="279" text-anchor="middle" fill="#B45309" font-weight="bold" font-size="9.5">TRANSITIVE</text>
+    <rect x="400" y="269" width="320" height="44" rx="6" fill="#FBF0E0" stroke="#B45309" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="560" y="295" text-anchor="middle">nama_pelanggan · kota</text>
+  </svg>
+  <p class="muted" style="margin:8px 0 0; font-size:11px;">Gambar asli dibuat untuk Portal Basis Data UNIPI.</p>
+</div>
+
+### Latihan Interaktif: Kenali Jenis Ketergantungan
+
+<div class="interactive-card">
+  <p><strong>Klasifikasikan setiap FD sebagai FULL, PARTIAL, atau TRANSITIVE.</strong></p>
+  <div class="sim-box" style="background:#E7F0F1; border-color:#2BA6A0; margin-top:10px;">
+    <p id="fdStmt" style="font-family:var(--font-mono); font-weight:600; margin:0; font-size:14px; color:#0D1B30;">Klik "Mulai" untuk memulai.</p>
+  </div>
+  <p class="muted" id="fdHint" style="margin-top:8px; font-size:12px;">Konteks: tabel TRANSAKSI dengan PK gabungan (no_nota, id_produk).</p>
+  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+    <button class="btn-sim" id="fdStart" style="background:#2BA6A0;">Mulai</button>
+    <button class="btn-sim fd-btn" data-val="FULL" disabled style="background:#166534;">FULL</button>
+    <button class="btn-sim fd-btn" data-val="PARTIAL" disabled style="background:#7A6FC9;">PARTIAL</button>
+    <button class="btn-sim fd-btn" data-val="TRANSITIVE" disabled style="background:#C9584F;">TRANSITIVE</button>
+  </div>
+  <div id="fdFeedback" style="margin-top:10px; font-weight:600;"></div>
+  <p class="muted" style="margin-top:8px;">Skor: <span id="fdScore">0</span>/<span id="fdTotal">0</span></p>
+</div>
+
+<script is:inline src="/game-fd.js"></script>
+
+## F. Normal Form 1 (1NF)
+
+Suatu tabel berada di **1NF** jika:
+
+1. Semua nilai pada setiap kolom **atomik** (tidak dapat dipecah lagi) — tanpa tabel/kolom berulang.
+2. Tidak ada **repeating group** (grup berulang) — mis. satu sel berisi banyak produk.
+
+### Dari UNF ke 1NF
+
+Rancangan awal yang masih menampung **grup berulang** (satu nota memuat banyak produk dalam satu sel) adalah bentuk *Unnormalized Form* (UNF):
+
+```text
+TRANSAKSI_UNF(no_nota, tgl, id_pelanggan, nama_pelanggan, kota,
+              [id_produk, nama_produk, harga, jumlah]  ← grup berulang)
+```
+
+Setelah **memflatten grup berulang** menjadi satu baris per produk, PK berubah menjadi **gabungan** `(no_nota, id_produk)`:
+
+```text
+TRANSAKSI(no_nota, id_produk, tgl, id_pelanggan, nama_pelanggan,
+          kota, nama_produk, harga, jumlah)   ✓ Lolos 1NF
+```
+
+<div class="callout">
+  <span class="callout__label">Catatan</span>
+  <p>1NF hanya menyelesaikan <strong>struktur</strong> (atomisitas). Redundansi dan anomali <strong>belum hilang</strong> — pada 1NF, data pelanggan tetap berulang di tiap baris produknya. Itu tugas 2NF dan 3NF.</p>
+</div>
+
+## G. Normal Form 2 (2NF)
+
+Suatu tabel berada di **2NF** jika:
+
+1. Tabel sudah berada di **1NF**.
+2. Tidak ada **partial dependency** — yakni tidak ada atribut non-kunci yang bergantung hanya pada *sebagian* PK gabungan.
+
+> Atribut yang bukan PK hanya boleh bergantung pada **seluruh** kunci, bukan sebagian.
+
+Pada tabel `TRANSAKSI` (PK `no_nota, id_produk`) terdapat partial dependency:
+
+- `no_nota → tgl, id_pelanggan, nama_pelanggan, kota`
+- `id_produk → nama_produk, harga`
+
+<figure class="media-figure">
+  <img src="/images/normal-2fn.jpg" alt="Contoh pelanggaran 2NF dalam notasi generik: atribut ditentukan oleh sebagian kunci gabungan" width="480" loading="lazy" />
+  <figcaption>
+    Pelanggaran 2NF dalam notasi generik — atribut non-kunci bergantung hanya pada sebagian kunci gabungan (ditandai panah).
+    <span class="media-src">Sumber: "2FN.jpg" oleh SQLpro, Wikimedia Commons, CC BY-SA 4.0. <a href="https://commons.wikimedia.org/wiki/File:2FN.jpg">commons.wikimedia.org/wiki/File:2FN.jpg</a></span>
+  </figcaption>
+</figure>
+
+**Pemecahan:** setiap determinan parsial menjadi tabel baru.
+
+```text
+TRANSAKSI(no_nota, tgl, id_pelanggan, nama_pelanggan, kota)      PK: no_nota
+PRODUK(id_produk, nama_produk, harga)                           PK: id_produk
+DETAIL_TRANSAKSI(no_nota, id_produk, jumlah)                    PK: (no_nota, id_produk)
+```
+
+<table class="dtable">
+  <thead><tr><th>Tabel</th><th>Atribut</th><th>Partial Dependency? </th></tr></thead>
+  <tbody>
+    <tr><td><code>TRANSAKSI</code></td><td>no_nota, tgl, id_pelanggan, nama_pelanggan, kota</td><td>Bersih</td></tr>
+    <tr><td><code>PRODUK</code></td><td>id_produk, nama_produk, harga</td><td>Bersih</td></tr>
+    <tr><td><code>DETAIL_TRANSAKSI</code></td><td>no_nota, id_produk, jumlah</td><td>Bersih</td></tr>
+  </tbody>
+</table>
+
+## H. Normal Form 3 (3NF)
+
+Suatu tabel berada di **3NF** jika:
+
+1. Tabel sudah berada di **2NF**.
+2. Tidak ada **transitive dependency** — tidak ada atribut **non-kunci** yang bergantung pada atribut **non-kunci** lainnya.
+
+Pada tabel `TRANSAKSI(no_nota, ..., id_pelanggan, nama_pelanggan, kota)` terdapat transitive dependency:
+
+```text
+no_nota → id_pelanggan → nama_pelanggan, kota
+(id_pelanggan ditentukan no_nota, lalu nama & kota ditentukan id_pelanggan — keduanya non-kunci)
+```
+
+<figure class="media-figure">
+  <img src="/images/normal-3fn.jpg" alt="Contoh pelanggaran 3NF dalam notasi generik: ketergantungan transitif antar atribut non-kunci" width="480" loading="lazy" />
+  <figcaption>
+    Pelanggaran 3NF dalam notasi generik — ketergantungan antara dua atribut non-kunci (transitif).
+    <span class="media-src">Sumber: "3FN.jpg" oleh SQLpro, Wikimedia Commons, CC BY-SA 4.0. <a href="https://commons.wikimedia.org/wiki/File:3FN.jpg">commons.wikimedia.org/wiki/File:3FN.jpg</a></span>
+  </figcaption>
+</figure>
+
+**Pemecahan:** pindahkan atribut yang tergantung transitif ke tabel baru, di mana `id_pelanggan` menjadi kunci.
+
+```text
+PELANGGAN(id_pelanggan, nama_pelanggan, kota)                  PK: id_pelanggan
+TRANSAKSI(no_nota, tgl, id_pelangganFK→PELANGGAN)              PK: no_nota
+PRODUK(id_produk, nama_produk, harga)                          PK: id_produk
+DETAIL_TRANSAKSI(no_notaFK→TRANSAKSI, id_produkFK→PRODUK, jumlah)  PK: (no_nota, id_produk)
+```
+
+### Hasil Akhir 3NF
+
+<table class="dtable">
+  <thead><tr><th>Tabel</th><th>Skema Relasi</th><th>Menampung Fakta</th></tr></thead>
+  <tbody>
+    <tr><td><code>PELANGGAN</code></td><td><code>(id_pelanggan PK, nama_pelanggan, kota)</code></td><td>Data pelanggan</td></tr>
+    <tr><td><code>TRANSAKSI</code></td><td><code>(no_nota PK, tgl, id_pelanggan FK)</code></td><td>Kepala transaksi</td></tr>
+    <tr><td><code>PRODUK</code></td><td><code>(id_produk PK, nama_produk, harga)</code></td><td>Data produk</td></tr>
+    <tr><td><code>DETAIL_TRANSAKSI</code></td><td><code>(no_nota FK, id_produk FK, jumlah)</code> PK gabungan</td><td>Baris item transaksi</td></tr>
+  </tbody>
+</table>
+
+### Bukti: Data yang Sama, Disimpan Tanpa Redundansi
+
+Empat transaksi pada tabel awal kini tersimpan di 4 tabel. Perhatikan **setiap fakta hanya muncul satu kali**:
+
+<table class="dtable">
+  <thead><tr><th colspan="3">PELANGGAN</th></tr></thead>
+  <tbody>
+    <tr><td><code>id_pelanggan</code></td><td><code>nama_pelanggan</code></td><td><code>kota</code></td></tr>
+    <tr><td>P01</td><td>Andi Pratama</td><td>Bandung</td></tr>
+    <tr><td>P02</td><td>Sari Ayu</td><td>Jakarta</td></tr>
+  </tbody>
+</table>
+
+<table class="dtable">
+  <thead><tr><th colspan="3">TRANSAKSI</th></tr></thead>
+  <tbody>
+    <tr><td><code>no_nota</code></td><td><code>tgl</code></td><td><code>id_pelanggan</code></td></tr>
+    <tr><td>T001</td><td>12/08/2026</td><td>P01</td></tr>
+    <tr><td>T002</td><td>13/08/2026</td><td>P02</td></tr>
+    <tr><td>T003</td><td>13/08/2026</td><td>P01</td></tr>
+  </tbody>
+</table>
+
+<table class="dtable">
+  <thead><tr><th colspan="3">PRODUK</th></tr></thead>
+  <tbody>
+    <tr><td><code>id_produk</code></td><td><code>nama_produk</code></td><td><code>harga</code></td></tr>
+    <tr><td>PR001</td><td>Laptop Dell</td><td>9.000.000</td></tr>
+    <tr><td>PR002</td><td>Mouse Logitech</td><td>150.000</td></tr>
+    <tr><td>PR003</td><td>Monitor LG</td><td>2.500.000</td></tr>
+  </tbody>
+</table>
+
+<table class="dtable">
+  <thead><tr><th colspan="3">DETAIL_TRANSAKSI</th></tr></thead>
+  <tbody>
+    <tr><td><code>no_nota</code></td><td><code>id_produk</code></td><td><code>jumlah</code></td></tr>
+    <tr><td>T001</td><td>PR001</td><td>1</td></tr>
+    <tr><td>T001</td><td>PR002</td><td>2</td></tr>
+    <tr><td>T002</td><td>PR001</td><td>1</td></tr>
+    <tr><td>T003</td><td>PR003</td><td>1</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="callout__label">Bandingkan dengan data awal</span>
+  <p>Pada tabel awal, data pelanggan "Andi Pratama" tercatat <strong>3×</strong> (redundan). Setelah 3NF, hanya tersimpan <strong>1×</strong>. Datanya dikembalikan utuh saat dibutuhkan menggunakan <code>JOIN</code> berdasarkan FK — tanpa pernah menyalinnya secara fisik di tempat lain.</p>
+</div>
+
+<div class="callout callout--amber">
+  <span class="callout__label">Kunci Pemahaman</span>
+  <p>Perhatikan hasil akhir ini — <strong>persis sama</strong> dengan struktur tabel E-Commerce yang kita hasilkan dari transformasi ERD pada Pertemuan 3–4 (PELANGGAN, ORDER, PRODUK, ORDER_DETAIL). Artinya desain ERD yang baik <em>secara otomatis</em> menghasilkan skema yang sudah ternormalisasi; normalisasi menjadi alat untuk <strong>memeriksa ulang</strong> kualitas desain.</p>
+</div>
+
+## I. Variasi Contoh — Pola Normalisasi yang Lain
+
+Contoh TRANSAKSI di atas mencakup ketiga jenis dependency sekaligus. Agar lebih mantap, berikut **3 pola lain** yang sering muncul di dunia nyata — masing-masing menekankan pola berbeda.
+
+### Variasi 1 — Tabel dengan Kunci Gabungan + Ketergantungan Transitif (SIAKAD)
+
+Rancangan jelek untuk mencatat nilai mahasiswa (semua digabung dalam satu tabel):
+
+```text
+NILAI_MHS(nim, nama_mhs, kode_prodi, nama_prodi, kode_mk, nama_mk, sks, nilai)
+```
+
+<table class="dtable">
+  <thead><tr><th>nim</th><th>nama_mhs</th><th>kode_prodi</th><th>nama_prodi</th><th>kode_mk</th><th>nama_mk</th><th>sks</th><th>nilai</th></tr></thead>
+  <tbody>
+    <tr><td>22104001</td><td>Andi</td><td>INF</td><td>Informatika</td><td>BD01</td><td>Basis Data</td><td>3</td><td>A</td></tr>
+    <tr><td>22104001</td><td>Andi</td><td>INF</td><td>Informatika</td><td>ALGO</td><td>Algoritma</td><td>3</td><td>B</td></tr>
+    <tr><td>22104003</td><td>Citra</td><td>INF</td><td>Informatika</td><td>BD01</td><td>Basis Data</td><td>3</td><td>A-</td></tr>
+    <tr><td>23105001</td><td>Dedi</td><td>SI</td><td>Sistem Informasi</td><td>ALGO</td><td>Algoritma</td><td>3</td><td>C+</td></tr>
+  </tbody>
+</table>
+
+**Analisis FD (PK gabungan `nim, kode_mk`):**
+
+| FD | Jenis | Karena |
+|---|---|---|
+| `nim → nama_mhs, kode_prodi, nama_prodi` | Partial | Cukup ditentukan sebagian PK (`nim`) |
+| `kode_mk → nama_mk, sks` | Partial | Cukup ditentukan sebagian PK (`kode_mk`) |
+| `kode_prodi → nama_prodi` | Transitive | non-kunci (prodi) menentukan non-kunci (nama prodi) |
+| `(nim, kode_mk) → nilai` | Full | Nilai hanya ada untuk pasangan mahasiswa–matkul |
+
+**Normalisasi:**
+
+```text
+1NF   : sudah atomik (PK = nim, kode_mk)
+2NF   : buang partial dependency
+        MAHASISWA(nim, nama_mhs, kode_prodi, nama_prodi)
+        MATAKULIAH(kode_mk, nama_mk, sks)
+        NILAI(nim, kode_mk, nilai)                     PK: (nim, kode_mk)
+3NF   : buang transitive dependency di MAHASISWA
+        PROGRAM_STUDI(kode_prodi, nama_prodi)
+        MAHASISWA(nim, nama_mhs, kode_prodiFK)
+        MATAKULIAH(kode_mk, nama_mk, sks)
+        NILAI(nim FK, kode_mk FK, nilai)               PK: (nim, kode_mk)
+```
+
+<div class="callout">
+  <span class="callout__label">Aha!</span>
+  <p>Hasil akhirnya <strong>persis sama</strong> dengan skema SIAKAD pada Pertemuan 4 (PROGRAM_STUDI, MAHASISWA, MATAKULIAH, NILAI). Jadi: tabel curah yang ditulis sembarangan, setelah dinormalisasi, akan berakhir pada skema yang sama seperti hasil perancangan ERD yang baik.</p>
+</div>
+
+### Variasi 2 — Tabel Kunci Tunggal + Dua Ketergantungan Transitif (Rumah Sakit)
+
+Rancangan jelek untuk kunjungan pasien. Kunci hanya satu kolom (`id_kunjungan`), tetapi terdapat dua rantai transitif:
+
+```text
+KUNJUNGAN(id_kunjungan, tgl, id_dokter, nama_dokter, spesialisasi,
+          id_pasien, nama_pasien, diagnosa)
+```
+
+**Analisis FD:**
+
+- `id_kunjungan → tgl, id_dokter, nama_dokter, spesialisasi, id_pasien, nama_pasien, diagnosa`
+- `id_dokter → nama_dokter, spesialisasi` (transitif)
+- `id_pasien → nama_pasien` (transitif)
+
+> **Poin penting:** karena kunci hanya satu kolom, tabel ini tidak mungkin punya *partial dependency*. Jika sudah 1NF, ia **otomatis berada di 2NF**. Langkah yang diperlukan hanya **3NF** — buang rantai transitifnya.
+
+```text
+2NF   : otomatis lolos (kunci tunggal)
+3NF   : buang transitive dependency
+        DOKTER(id_dokter, nama_dokter, spesialisasi)
+        PASIEN(id_pasien, nama_pasien)
+        KUNJUNGAN(id_kunjungan, tgl, id_dokter FK, id_pasien FK, diagnosa)
+```
+
+<div class="callout">
+  <span class="callout__label">Aturan Emas</span>
+  <p><strong>2NF hanya relevan untuk tabel ber-PK gabungan.</strong> Untuk tabel ber-PK satu kolom, jika sudah 1NF maka langsung lolos 2NF — langkah yang biasanya tersisa hanyalah menghilangkan transitive dependency (3NF).</p>
+</div>
+
+### Variasi 3 — Atribut Multivalued (melanggar 1NF)
+
+Kadang masalahnya bukan di kunci, melainkan satu sel berisi **banyak nilai**. Contoh: karyawan dengan beberapa nomor telepon.
+
+```text
+KARYAWAN(nik, nama, no_telp1, no_telp2, no_telp3)      ← BURUK: kolom menyatu
+KARYAWAN(nik, nama, no_telp = "0812..., 0813...")      ← BURUK: grup berulang
+```
+
+**Solusi 1NF — pisahkan ke tabel terpisah** (sama seperti Aturan 6 di Pertemuan 4):
+
+```text
+KARYAWAN(nik PK, nama)
+KARYAWAN_TELP(nik FK→KARYAWAN, no_telp)   PK: (nik, no_telp)
+```
+
+<div class="callout">
+  <span class="callout__label">Kaitan dengan Pertemuan 4</span>
+  <p>Pola ini adalah Aturan 6 transformasi ERD (atribut multivalued → tabel terpisah). Normalisasi 1NF mengajarkan <em>mengapa</em> aturan itu diperlukan: menyimpan banyak nilai dalam satu kolom menyulitkan pencarian, agregasi, dan integritas data.</p>
+</div>
+
+## J. Ilustrasi Proses Normalisasi
+
+<div class="sim-box" style="margin-top:12px;">
+  <p style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin:0 0 12px;">ALUR UNF → 1NF → 2NF → 3NF</p>
+  <svg viewBox="0 0 760 210" style="width:100%; height:auto; font-family:'JetBrains Mono',monospace; font-size:10">
+    <g transform="translate(0,0)">
+      <rect x="10" y="40" width="160" height="90" rx="8" fill="#FBEFDC" stroke="#16294A" stroke-width="2"/>
+      <text x="90" y="64" text-anchor="middle" font-weight="bold" font-size="11" fill="#16294A">UNF</text>
+      <text x="90" y="82" text-anchor="middle" font-size="9" fill="#3A4A63">grup berulang</text>
+      <text x="90" y="96" text-anchor="middle" font-size="9" fill="#3A4A63">(#[produk...])</text>
+      <text x="90" y="112" text-anchor="middle" font-size="9" fill="#C9584F">1 tabel</text>
+    </g>
+    <line x1="170" y1="85" x2="205" y2="85" stroke="#16294A" stroke-width="2" marker-end="url(#ar1)"/>
+    <text x="187" y="74" text-anchor="middle" font-size="9" fill="#2BA6A0">1NF</text>
+
+    <g transform="translate(215,0)">
+      <rect x="10" y="40" width="160" height="90" rx="8" fill="#E7F0F1" stroke="#16294A" stroke-width="2"/>
+      <text x="90" y="64" text-anchor="middle" font-weight="bold" font-size="11" fill="#16294A">1NF</text>
+      <text x="90" y="82" text-anchor="middle" font-size="9" fill="#3A4A63">atomik, PK gabungan</text>
+      <text x="90" y="96" text-anchor="middle" font-size="9" fill="#C9584F">masih redundan</text>
+      <text x="90" y="112" text-anchor="middle" font-size="9" fill="#3A4A63">1 tabel</text>
+    </g>
+    <line x1="385" y1="85" x2="420" y2="85" stroke="#16294A" stroke-width="2"/>
+    <text x="402" y="74" text-anchor="middle" font-size="9" fill="#2BA6A0">2NF</text>
+
+    <g transform="translate(430,0)">
+      <rect x="10" y="40" width="160" height="90" rx="8" fill="#E9F3E9" stroke="#16294A" stroke-width="2"/>
+      <text x="90" y="64" text-anchor="middle" font-weight="bold" font-size="11" fill="#16294A">2NF</text>
+      <text x="90" y="82" text-anchor="middle" font-size="9" fill="#3A4A63">buang partial dep.</text>
+      <text x="90" y="96" text-anchor="middle" font-size="9" fill="#3A4A63">3 tabel</text>
+    </g>
+    <line x1="600" y1="85" x2="620" y2="85" stroke="#16294A" stroke-width="2"/>
+
+    <g transform="translate(630,0)">
+      <rect x="10" y="40" width="160" height="90" rx="8" fill="#FDEAEA" stroke="#C9584F" stroke-width="2"/>
+      <text x="90" y="64" text-anchor="middle" font-weight="bold" font-size="11" fill="#C9584F">3NF</text>
+      <text x="90" y="82" text-anchor="middle" font-size="9" fill="#3A4A63">buang transitive dep.</text>
+      <text x="90" y="96" text-anchor="middle" font-size="9" fill="#3A4A63">4 tabel, bebas anomali</text>
+    </g>
+
+    <text x="380" y="190" text-anchor="middle" font-size="10" fill="#16294A" font-weight="bold">Semakin banyak tabel, semakin sedikit redundansi, namun tetap bisa menjawab kebutuhan query dengan JOIN.</text>
+  </svg>
+</div>
+
+## K. Cheat Sheet — Rangkuman NF
+
+<table class="dtable">
+  <thead><tr><th>Normal Form</th><th>Syarat</th><th>Masalah yang Dihilangkan</th></tr></thead>
+  <tbody>
+    <tr><td><strong>1NF</strong></td><td>Nilai atomik, tanpa grup berulang</td><td>Struktur "tabel dalam tabel"</td></tr>
+    <tr><td><strong>2NF</strong></td><td>1NF <strong>+</strong> tidak ada partial dependency</td><td>Redundansi dari kunci gabungan</td></tr>
+    <tr><td><strong>3NF</strong></td><td>2NF <strong>+</strong> tidak ada transitive dependency</td><td>Redundansi antar atribut non-kunci</td></tr>
+  </tbody>
+</table>
+
+<figure class="media-figure">
+  <img src="/images/database-normalization.svg" alt="Diagram hirarki normal form: 1NF hingga 5NF" width="320" loading="lazy" />
+  <figcaption>
+    Hirarki normal form — setiap tingkat normal adalah <strong>subset</strong> dari tingkat sebelumnya (1NF ⊃ 2NF ⊃ 3NF ⊃ BCNF ⊃ 4NF ⊃ 5NF). Tabel 3NF otomatis berada di 2NF dan 1NF.
+    <span class="media-src">Sumber: "Database normalization.svg" oleh LimoWreck (Wikipedia Belanda), vektorisasi oleh Beao. Wikimedia Commons, lisensi CC BY-SA 3.0. <a href="https://commons.wikimedia.org/wiki/File:Database_normalization.svg">commons.wikimedia.org/wiki/File:Database_normalization.svg</a></span>
+  </figcaption>
+</figure>
+
+<div class="callout">
+  <span class="callout__label">Aturan Praktis</span>
+  <ol style="margin:0; padding-left:18px;">
+    <li>Setiap tabel menyimpan <strong>satu fakta</strong>.</li>
+    <li>Kolom non-kunci hanya bergantung pada <strong>seluruh kunci</strong> (mudah diingat motto: <em>"the key, the whole key, and nothing but the key"</em>).</li>
+    <li>Jika sebuah kolom berulang-ulang nilainya di banyak baris → sinyal untuk dicek normalisasinya.</li>
+  </ol>
+</div>
+
+## L. Kuis Evaluasi
+
+<QuizCard question="Tabel di 1NF yang masih memiliki partial dependency berada dalam kondisi...">
+  <button class="quiz-option" data-correct="true" data-explanation="2NF mensyaratkan tidak ada atribut non-kunci yang bergantung hanya pada sebagian PK. 1NF yang masih punya partial dependency belum memenuhi 2NF.">Belum memenuhi syarat 2NF</button>
+  <button class="quiz-option" data-correct="false">Sudah otomatis berada di 3NF</button>
+  <button class="quiz-option" data-correct="false">Tidak perlu dinormalisasi lagi</button>
+</QuizCard>
+
+<QuizCard question="FD 'id_produk → nama_produk' pada tabel dengan PK gabungan (no_nota, id_produk) termasuk jenis...">
+  <button class="quiz-option" data-correct="true" data-explanation="Atribut bergantung hanya pada sebagian PK (id_produk), bukan seluruhnya.">Partial dependency</button>
+  <button class="quiz-option" data-correct="false">Full dependency</button>
+  <button class="quiz-option" data-correct="false">Transitive dependency</button>
+</QuizCard>
+
+<QuizCard question="Anomali yang terjadi ketika menghapus satu-satunya baris yang memuat data produk, sehingga data produk ikut hilang disebut...">
+  <button class="quiz-option" data-correct="true" data-explanation="Anomali delete: penghapusan baris turut menghapus informasi lain yang seharusnya tetap disimpan.">Anomali delete</button>
+  <button class="quiz-option" data-correct="false">Anomali insert</button>
+  <button class="quiz-option" data-correct="false">Anomali update</button>
+</QuizCard>
+
+<QuizCard question="Urutan normalisasi yang benar adalah...">
+  <button class="quiz-option" data-correct="false">3NF → 2NF → 1NF</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Normalisasi bertahap: hilangkan grup berulang (1NF), lalu partial dependency (2NF), lalu transitive dependency (3NF).">1NF → 2NF → 3NF</button>
+  <button class="quiz-option" data-correct="false">1NF → 3NF → 2NF</button>
+</QuizCard>
+
+<QuizCard question="Pada hasil normalisasi TRANSAKSI, mengapa data pelanggan dipisah ke tabel PELANGGAN?">
+  <button class="quiz-option" data-correct="true" data-explanation="no_nota → id_pelanggan → nama_pelanggan, kota membentuk transitive dependency (non-kunci → non-kunci).">Karena ada transitive dependency antara atribut non-kunci</button>
+  <button class="quiz-option" data-correct="false">Karena tabel TRANSAKSI terlalu panjang kolomnya</button>
+  <button class="quiz-option" data-correct="false">Karena id_pelanggan bukan Primary Key</button>
+</QuizCard>
+
+<QuizCard question="Tabel KUNJUNGAN dengan kunci tunggal id_kunjungan yang sudah 1NF dan memiliki FD id_dokter → nama_dokter berarti...">
+  <button class="quiz-option" data-correct="false">Sudah otomatis berada di 3NF</button>
+  <button class="quiz-option" data-correct="true" data-explanation="Kunci tunggal → pasti lolos 2NF (tidak ada partial dependency), tapi masih punya transitive dependency sehingga perlu langkah 3NF.">Lolos 2NF, namun perlu di-normalisasi lagi ke 3NF</button>
+  <button class="quiz-option" data-correct="false">Masih berada pada 1NF murni</button>
+</QuizCard>
+
+<QuizCard question="Data mahasiswa 'Andi' pada Variasi 1 (tabel NILAI_MHS) muncul berulang di banyak baris. Setelah normalisasi, data itu cukup disimpan di...">
+  <button class="quiz-option" data-correct="true" data-explanation="nama_mhs tergantung partial pada nim, sehingga dipindah ke tabel MAHASISWA — cukup satu baris per mahasiswa.">Tabel MAHASISWA (satu baris per mahasiswa)</button>
+  <button class="quiz-option" data-correct="false">Tabel NILAI</button>
+  <button class="quiz-option" data-correct="false">Tabel PROGRAM_STUDI</button>
+</QuizCard>
+
+## M. Rangkuman
+
+- Tabel yang mencampur banyak fakta memunculkan **anomali insert, update, delete** — seperti buku catatan yang semua informasi ditumpuk dalam satu binder
+- **Functional Dependency** (X → Y) adalah fondasi analisis normalisasi — analoginya *satu kunci → satu data*
+- **1NF**: nilai atomik, tanpa grup berulang; atribut multivalued dipisah ke tabel sendiri
+- **2NF**: buang partial dependency (atribut bergantung sebagian PK) — hanya relevan untuk PK gabungan
+- **3NF**: buang transitive dependency (non-kunci → non-kunci)
+- Tabel ber-PK satu kolom yang sudah 1NF **otomatis lolos 2NF**
+- Hasil normalisasi selalu mengonfirmasi **ERD yang baik = skema ternormalisasi** (bukti: SIAKAD & E-Commerce Pertemuan 3–4)
+- Normalisasi lanjutan (BCNF dan NF lain) dibahas pada Pertemuan 6
+
+## N. Referensi
+
+<ul class="refs">
+  <li>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7th ed.). Pearson Education Limited.</li>
+  <li>Silberschatz, A., Korth, H. F., &amp; Sudarshan, S. (2020). <em>Database System Concepts</em> (7th ed.). McGraw-Hill Education.</li>
+  <li>Connolly, T. M., &amp; Begg, C. E. (2015). <em>Database Systems: A Practical Approach</em> (6th ed.). Pearson.</li>
+</ul>
+
+## O. Penugasan
+
+### Tugas Individu
+
+1. Berikut adalah satu tabel rancangan buruk untuk sistem **Pinjaman Perpustakaan**. Normalisasi hingga **3NF**:
+   `PEMINJAMAN(id_pinjam, tgl, nim_anggota, nama_anggota, no_hp, kode_buku, judul, pengarang, tgl_kembali)`
+2. Tuliskan langkah kerja Anda: identifikasi FD → tentukan partial/transitive dependency → pecah tabel → tulis notasi skema relasi final.
+3. Tulis DDL SQL `CREATE TABLE` untuk semua tabel hasil normalisasi.
+4. Jelaskan anomali apa saja yang berhasil Anda hilangkan.
+
+### Format Pengumpulan
+
+1. File PDF: analisis FD, langkah normalisasi, skema relasi, dan DDL SQL
+2. Deadline: 1 minggu dari pertemuan

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="304"
+   height="304"
+   id="svg2">
+  <defs
+     id="defs6" />
+  <path
+     d="M 165,95 A 66,66 0 1 1 33,95 66,66 0 1 1 165,95 z"
+     transform="matrix(2.280303,0,0,2.280303,-73.749997,-64.628785)"
+     id="path2818"
+     style="fill:#dee2ce;fill-opacity:1;stroke:#000000;stroke-width:0.43853819;stroke-opacity:1" />
+  <path
+     d="M 165,95 A 66,66 0 1 1 33,95 66,66 0 1 1 165,95 z"
+     transform="matrix(2.0075757,0,0,2.0075757,-46.749994,-38.719691)"
+     id="path3592"
+     style="fill:none;stroke:#000000;stroke-width:0.49811319;stroke-opacity:1" />
+  <path
+     d="M 165,95 A 66,66 0 1 1 33,95 66,66 0 1 1 165,95 z"
+     transform="matrix(1.7348485,0,0,1.7348485,-19.750001,-12.810608)"
+     id="path3594"
+     style="fill:none;stroke:#000000;stroke-width:0.57641917;stroke-opacity:1" />
+  <path
+     d="M 165,95 A 66,66 0 1 1 33,95 66,66 0 1 1 165,95 z"
+     transform="matrix(1.4621212,0,0,1.4621212,7.2500012,13.098486)"
+     id="path3596"
+     style="fill:none;stroke:#000000;stroke-width:0.68393779;stroke-opacity:1" />
+  <path
+     d="M 165,95 A 66,66 0 1 1 33,95 66,66 0 1 1 165,95 z"
+     transform="matrix(1.1893939,0,0,1.1893939,34.250004,39.00758)"
+     id="path3598"
+     style="fill:none;stroke:#000000;stroke-width:0.84076428;stroke-opacity:1" />
+  <path
+     d="M 165,95 A 66,66 0 1 1 33,95 66,66 0 1 1 165,95 z"
+     transform="matrix(0.91666667,0,0,0.91666667,61.25,64.916666)"
+     id="path3600"
+     style="fill:none;stroke:#000000;stroke-width:1.090909;stroke-opacity:1" />
+  <path
+     d="M 165,95 A 66,66 0 1 1 33,95 66,66 0 1 1 165,95 z"
+     transform="matrix(0.64393939,0,0,0.64393939,88.25,90.825758)"
+     id="path3602"
+     style="fill:none;stroke:#000000;stroke-width:1.55294108;stroke-opacity:1" />
+  <text
+     x="151.69531"
+     y="15.124023"
+     id="text3604"
+     xml:space="preserve"
+     style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
+       x="151.69531"
+       y="15.124023"
+       id="tspan3606">1NF</tspan></text>
+  <text
+     x="151.91504"
+     y="33.124023"
+     id="text3610"
+     xml:space="preserve"
+     style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
+       x="151.91504"
+       y="33.124023"
+       id="tspan3612">2NF</tspan></text>
+  <text
+     x="151.89746"
+     y="51.124023"
+     id="text3614"
+     xml:space="preserve"
+     style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
+       x="151.89746"
+       y="51.124023"
+       id="tspan3616">3NF</tspan></text>
+  <text
+     x="151.76562"
+     y="69.124023"
+     id="text3618"
+     xml:space="preserve"
+     style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
+       x="151.76562"
+       y="69.124023"
+       id="tspan3620">BCNF</tspan></text>
+  <text
+     x="151.8916"
+     y="105.12402"
+     id="text3622"
+     xml:space="preserve"
+     style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
+       x="151.8916"
+       y="105.12402"
+       id="tspan3624">5NF</tspan></text>
+  <text
+     x="152.06152"
+     y="87.124023"
+     id="text3626"
+     xml:space="preserve"
+     style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
+       x="152.06152"
+       y="87.124023"
+       id="tspan3628">4NF</tspan></text>
+  <text
+     x="152.00879"
+     y="153.63658"
+     id="text3630"
+     xml:space="preserve"
+     style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><tspan
+       x="152.00879"
+       y="153.63658"
+       id="tspan3632">...</tspan></text>
+</svg>

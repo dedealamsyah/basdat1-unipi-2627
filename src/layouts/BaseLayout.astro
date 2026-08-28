@@ -139,6 +139,51 @@ const { title, description = "Portal materi interaktif untuk mata kuliah Basis D
         const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
         if (readingProgress) readingProgress.style.width = progress + '%';
       }, { passive: true });
+
+      // Diagram Zoom (works with .diagram-container markup used in MDX content)
+      function initDiagramZoom() {
+        document.querySelectorAll('.diagram-container').forEach(function(container) {
+          if (container.dataset.zoomReady) return;
+          container.dataset.zoomReady = '1';
+          const inner = container.querySelector('.diagram-inner');
+          const zoomLabel = container.querySelector('.zoom-level');
+          if (!inner) return;
+          let scale = 1;
+          const minScale = 1, maxScale = 3;
+          function applyZoom() {
+            inner.style.transform = 'scale(' + scale + ')';
+            if (zoomLabel) zoomLabel.textContent = Math.round(scale * 100) + '%';
+          }
+          container.querySelectorAll('.zoom-in').forEach(function(b) {
+            b.addEventListener('click', function() { scale = Math.min(maxScale, scale + 0.25); applyZoom(); });
+          });
+          container.querySelectorAll('.zoom-out').forEach(function(b) {
+            b.addEventListener('click', function() { scale = Math.max(minScale, scale - 0.25); applyZoom(); });
+          });
+          container.querySelectorAll('.zoom-reset').forEach(function(b) {
+            b.addEventListener('click', function() { scale = 1; applyZoom(); });
+          });
+          const wrapper = container.querySelector('.diagram-wrapper');
+          if (wrapper) {
+            wrapper.addEventListener('wheel', function(e) {
+              if (!e.ctrlKey) return;
+              e.preventDefault();
+              scale = e.deltaY < 0 ? Math.min(maxScale, scale + 0.25) : Math.max(minScale, scale - 0.25);
+              applyZoom();
+            }, { passive: false });
+            wrapper.addEventListener('dblclick', function() {
+              scale = scale === 1 ? 2 : 1;
+              applyZoom();
+            });
+          }
+        });
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDiagramZoom);
+      } else {
+        initDiagramZoom();
+      }
+      document.addEventListener('astro:page-load', initDiagramZoom);
     </script>
 
     <script is:inline src="/erd-interactive.js"></script>

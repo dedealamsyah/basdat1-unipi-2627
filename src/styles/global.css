@@ -843,6 +843,44 @@ figure.diagram figcaption {
   margin-top: 8px;
 }
 
+/* Media figures (gambar nyata + atribusi sumber) */
+.media-figure {
+  margin: 22px 0;
+  text-align: center;
+}
+
+.media-figure img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+}
+
+[data-theme="dark"] .media-figure img {
+  background: #16294a;
+}
+
+.media-figure figcaption {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  line-height: 1.55;
+}
+
+.media-figure figcaption .media-src {
+  display: block;
+  font-size: 11.5px;
+  color: #8494AB;
+  margin-top: 4px;
+}
+
+.media-figure figcaption a {
+  color: var(--teal-500);
+  text-decoration: underline;
+}
+
 .diagram-container {
   position: relative;
   margin: 20px 0;
