@@ -1,12 +1,307 @@
 ---
 id: 9
 title: "Instalasi & Akses DBMS"
-locked: true
+subtitle: "Konfigurasi Awal, Akses melalui CLI/GUI, dan Membedakan Jenis DBMS"
+locked: false
 order: 9
+meta:
+  subCPMK: "Mahasiswa mampu melakukan instalasi, konfigurasi, dan akses DBMS untuk membangun basis data sederhana."
+  alokasi: "3 × 50 menit"
+  bobot: "4%"
+  cpmk: "CPMK-2"
 ---
 
-## Pertemuan 9: Instalasi & Akses DBMS
+import QuizCard from '../../components/QuizCard.astro';
 
-Materi pertemuan ini masih dalam proses pengembahan.
+## A. Identitas Pertemuan
 
-Silakan hubungi dosen pengampu untuk informasi lebih lanjut.
+<table class="dtable">
+  <tbody>
+    <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
+    <tr><th>Pertemuan / Minggu</th><td>Ke-9 dari 16 (Semester 3, TA 2026/2027)</td></tr>
+    <tr><th>Alokasi Waktu</th><td>3 × 50 menit (Tatap Muka, praktikum laboratorium)</td></tr>
+    <tr><th>CPMK Terkait</th><td>CPMK-2: Mampu mengimplementasikan dan mengelola sistem basis data menggunakan DBMS.</td></tr>
+    <tr><th>Sub-CPMK Minggu 9</th><td>Mahasiswa mampu melakukan instalasi, konfigurasi, dan akses DBMS untuk membangun basis data sederhana.</td></tr>
+  </tbody>
+</table>
+
+## B. Capaian Pembelajaran (Pendekatan OBE)
+
+Pertemuan ini menandai **peralihan dari tahap perancangan** (Pertemuan 1–8) menuju **tahap implementasi** (Pertemuan 9–15). Anda mulai bekerja dengan DBMS sungguhan: menginstal, mengonfigurasi, dan mengaksesnya.
+
+<table class="dtable">
+  <thead><tr><th style="width:60px">No</th><th>Indikator Capaian (Outcome yang Diukur)</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Mahasiswa dapat melakukan konfigurasi awal dan mengakses DBMS melalui CLI maupun GUI.</td></tr>
+    <tr><td>2</td><td>Mahasiswa dapat membedakan jenis-jenis DBMS dan bahasa pemrograman basis data.</td></tr>
+    <tr><td>3</td><td>Mahasiswa dapat membuat basis data sederhana dan menjalankan perintah dasar untuk mengelolanya.</td></tr>
+  </tbody>
+</table>
+
+<div class="chipRow">
+  <span class="chip">KRITERIA · Presentasi tahapan akses DBMS</span>
+  <span class="chip">BENTUK · Penilaian produk (praktikum laboratorium)</span>
+  <span class="chip chip--amber">BOBOT · 4%</span>
+</div>
+
+<div class="callout callout--amber">
+  <span class="callout__label">Peran Perangkat (sesuai RPS)</span>
+  <p><strong>Laptop</strong> sangat disarankan untuk pertemuan ini: instalasi DBMS penuh (XAMPP, MySQL, PostgreSQL) membutuhkan perangkat lunak desktop. <strong>Smartphone</strong> dapat dipakai untuk latihan mandiri via aplikasi DBMS mobile (SQLite Editor, Termux) atau SQL online editor (DB Fiddle, SQLite Online).</p>
+</div>
+
+## C. Peta Konsep Pertemuan
+
+1. Mengenal jenis-jenis DBMS dan cara kerjanya
+2. Instalasi & konfigurasi awal DBMS (XAMPP / MySQL / PostgreSQL)
+3. Akses DBMS melalui **CLI** (command line) dan **GUI** (antarmuka grafis)
+4. Membedakan peran SQL, pengguna DBMS, dan bahasa pemrograman basis data
+5. Membuat basis data sederhana pertama (langkah awal proyek tahap 2)
+
+## D. Jenis-Jenis DBMS dan Bahasa Basis Data
+
+Pada Pertemuan 1 Anda telah mengenal model basis data (relasional, dokumen, kolom, graf, kunci-nilai). Kini kita fokus pada perangkat lunak yang mewujudkan model tersebut, terutama yang **relasional (RDBMS)**.
+
+### D.1 Perbandingan DBMS Populer
+
+<table class="dtable">
+  <thead><tr><th>DBMS</th><th>Model</th><th>Lisensi</th><th>Kelebihan</th><th>Kapan Dipakai</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MySQL</strong></td><td>Relasional</td><td>Open source (GPL)</td><td>Populer, ringan, banyak tutorial</td><td>Web/CRUD, tugas kuliah, XAMPP</td></tr>
+    <tr><td><strong>MariaDB</strong></td><td>Relasional</td><td>Open source</td><td>Cabang MySQL, kompatibel penuh</td><td>Pengganti MySQL di XAMPP</td></tr>
+    <tr><td><strong>PostgreSQL</strong></td><td>Relasional (objektif-relasional)</td><td>Open source</td><td>Fitur lanjutan, integritas & standar kuat</td><td>Aplikasi enterprise</td></tr>
+    <tr><td><strong>SQLite</strong></td><td>Relasional (embedded)</td><td>Public domain</td><td>Tanpa server, file tunggal</td><td>Prototipe, aplikasi mobile, portal ini</td></tr>
+    <tr><td><strong>Microsoft SQL Server</strong></td><td>Relasional</td><td>Komersial</td><td>Terintegrasi ekosistem Microsoft</td><td>Perusahaan</td></tr>
+    <tr><td><strong>Oracle</strong></td><td>Relasional</td><td>Komersial</td><td>Skala besar, robust</td><td>Perbankan/perusahaan besar</td></tr>
+  </tbody>
+</table>
+
+### D.2 Bahasa Pemrograman Basis Data
+
+Membedakan peran bahasa berikut sangat penting untuk pertemuan ini:
+
+<table class="dtable">
+  <thead><tr><th>Bahasa</th><th>Fungsi</th><th>Contoh Perintah</th></tr></thead>
+  <tbody>
+    <tr><td><strong>DDL</strong> (Data Definition Language)</td><td>Mendefinisikan struktur (tabel, skema)</td><td><code>CREATE TABLE</code>, <code>ALTER</code>, <code>DROP</code></td></tr>
+    <tr><td><strong>DML</strong> (Data Manipulation Language)</td><td>Memproses isi data (menambah, mengubah, mengambil)</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>SELECT</code></td></tr>
+    <tr><td><strong>DCL</strong> (Data Control Language)</td><td>Mengelola hak akses pengguna</td><td><code>GRANT</code>, <code>REVOKE</code></td></tr>
+    <tr><td><strong>TCL</strong> (Transaction Control Language)</td><td>Mengelola transaksi</td><td><code>COMMIT</code>, <code>ROLLBACK</code></td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <span class="callout__label">Perhatikan</span>
+  <p>Perintah <code>CREATE DATABASE</code> untuk membuat basis data bisa dianggap bagian DDL, meskipun beberapa literatur mengkategorikannya terpisah. Anda akan banyak memakai DDL dan DML di Pertemuan 11–13.</p>
+</div>
+
+## E. Instalasi & Konfigurasi Awal DBMS
+
+### E.1 Pilihan Alur Instalasi
+
+Ada tiga jalur umum untuk mulai memakai DBMS:
+
+| Jalur | Cara Bergerak | Cocok Untuk |
+|---|---|---|
+| **Aplikasi paket (XAMPP)** | Sekali instal, langsung dapat Apache + MySQL/MariaDB + PHP | Startup tercepat, Windows/macOS/Linux |
+| **Installer DBMS murni** | Instal MySQL/PostgreSQL tersendiri | Memahami detail konfigurasi |
+| **SQL online / portabel** | Tidak perlu instal; jalankan di browser (DB Fiddle, SQLite Online, atau SQL Playground portal ini) | Smartphone / uji cepat |
+
+<div class="callout callout--amber">
+  <span class="callout__label">Untuk Praktikum Ini</span>
+  <p>Ikuti jalur paling cepat sesuai perangkat Anda. Di laboratorium, gunakan <strong>XAMPP</strong> (berisi MySQL/MariaDB). Jika memakai smartphone atau tidak sempat instal, buka <strong>SQL Playground</strong> portal ini atau DB Fiddle/SQLite Online untuk latihan perintah yang sama.</p>
+</div>
+
+### E.2 Langkah Instalasi XAMPP (Ringkas)
+
+<ol class="steps">
+  <li>Unduh XAMPP dari situs resmi (Apache Friends) sesuai sistem operasi Anda (Windows/macOS/Linux).</li>
+  <li>Jalankan installer, ikuti default. Pada Windows, selesaikan hingga proses instalasi selesai.</li>
+  <li>Buka <strong>XAMPP Control Panel</strong>, lalu klik <strong>Start</strong> pada modul <strong>MySQL</strong> (dan Apache bila diperlukan).</li>
+  <li>Tunggu status berubah menjadi <strong>Running</strong>; port default MySQL adalah <code>3306</code>.</li>
+  <li>Buka browser ke <code>http://localhost/phpmyadmin</code> untuk mengakses MySQL via GUI, atau gunakan <strong>Shell</strong> pada Control Panel untuk mode CLI.</li>
+</ol>
+
+<div class="callout">
+  <span class="callout__label">Catatan Praktis</span>
+  <p>Pada XAMPP, akun default MySQL adalah <code>root</code> dengan <em>password kosong</em> (atau sesuai setelan Anda). Selalu ganti password pada praktik nyata. Port <code>3306</code> adalah <em>default</em> untuk MySQL, sementara PostgreSQL memakai <code>5432</code>.</p>
+</div>
+
+## F. Akses DBMS melalui CLI dan GUI
+
+DBMS dapat diakses dengan dua cara utama: baris perintah (CLI) dan antarmuka grafis (GUI).
+
+### F.1 Akses CLI (Command Line Interface)
+
+CLI memberi Anda kontrol penuh dan banyak dipakai programmer. Contoh pada terminal/laravel di lingkungan yang sudah aktif:
+
+```bash
+# Masuk ke shell MySQL sebagai pengguna root
+mysql -u root -p
+
+# Representasi di PostgreSQL
+psql -U postgres
+
+# Melihat daftar basis data
+SHOW DATABASES;
+```
+
+<div class="sim-box" style="margin-top:12px;">
+  <p style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); margin:0 0 12px;">TERMINAL · KONEKSI & BASIS DATA PERTAMA</p>
+
+```bash
+mysql -u root -p
+Enter password: ********
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set (0.00 sec)
+
+mysql> CREATE DATABASE akademik_unipi;
+Query OK, 1 row affected (0.05 sec)
+mysql> USE akademik_unipi;
+Database changed
+mysql>
+```
+
+  <p class="muted" style="margin:8px 0 0; font-size:11px;">Tampilan representatif; output persisnya dapat sedikit berbeda antar versi.</p>
+</div>
+
+### F.2 Akses GUI (Graphical User Interface)
+
+GUI memudahkan pemula karena semuanya terlihat. Pilihan umum:
+
+| Antarmuka | DBMS | Kegunaan |
+|---|---|---|
+| **phpMyAdmin** | MySQL/MariaDB | Bawaan XAMPP, berbasis browser |
+| **MySQL Workbench** | MySQL | Desain visual + editor query |
+| **pgAdmin** | PostgreSQL | Manajemen + shell query |
+| **DBeaver** | Banyak DBMS | Universal, mendukung banyak DBMS |
+
+<div class="callout">
+  <span class="callout__label">Tips Praktikum</span>
+  <p>Gunakan <strong>GUI</strong> untuk memahami struktur: melihat tabel, isi data, dan relasi secara visual. Gunakan <strong>CLI</strong> untuk mengetik perintah SQL langsung, yang lebih dekat dengan cara kerja saat Anda menulis program. Kuasai keduanya: mahasiswa yang dapat menulis di CLI umumnya lebih memahami logika SQL.</p>
+</div>
+
+## G. Studi Kasus: Basis Data "Akademik_UNIPI"
+
+Mari terapkan hal di atas untuk membangun basis data sederhana pertama kita, hasil implementasi dari PDM yang dirancang di Pertemuan 7.
+
+### G.1 Membuat dan Menggunakan Basis Data
+
+```sql
+-- Buat basis data baru
+CREATE DATABASE akademik_unipi;
+
+-- Aktifkan basis data tsb. sebagai default
+USE akademik_unipi;
+
+-- Karena belum ada tabel, cek hasilnya
+SHOW TABLES;   -- (kosong, belum ada tabel)
+```
+
+<div class="callout callout--amber">
+  <span class="callout__label">Hubungan dengan Pertemuan Sebelumnya</span>
+  <p>Perintah <code>CREATE TABLE</code> yang sudah Anda tulis sebagai <strong>DDL PDM</strong> di Pertemuan 7 kini akan dieksekusi pada <em>DBMS sungguhan</em>. Nama database di atas hanyalah contoh; gunakan nama proyek kelompok Anda.</p>
+</div>
+
+### G.2 Uji Coba di SQL Playground
+
+Tidak sempat menginstal? Coba langsung di **SQL Playground** portal ini (berbasis SQLite). Perbedaan kecil pada SQLite: tidak ada `SHOW DATABASES` (file basis data dibuat otomatis), dan `USE` tidak diperlukan.
+
+> **Perhatikan:** Playground sudah memuat data contoh sederhana, termasuk tabel `mahasiswa` (berisi `nim`, `nama`, `prodi`, `angkatan`). Jangan membuat ulang tabel yang sudah ada, inilah penyebab error "table mahasiswa already exists". Gunakan **nama tabel baru** untuk mencoba `CREATE TABLE`.
+
+Buka [SQL Playground](/playground) lalu coba tahapan berikut:
+
+**1) Akses data yang sudah tersedia (DML, seperti SELECT di CLI/GUI):**
+
+```sql
+-- Lihat isi tabel yang sudah ada di playground
+SELECT * FROM mahasiswa;
+```
+
+**2) Buat tabel baru dengan DDL (nama unik agar tidak bentrok):**
+
+```sql
+CREATE TABLE catatan (
+  id    INTEGER PRIMARY KEY,
+  judul TEXT NOT NULL
+);
+
+INSERT INTO catatan (judul) VALUES
+  ('latihan DDL Pertemuan 9'),
+  ('persiapan proyek tahap 2');
+
+SELECT * FROM catatan;
+```
+
+<div class="callout">
+  <span class="callout__label">Ingat</span>
+  <p>Sintaks <code>CREATE DATABASE</code>/<code>USE</code> dan <code>SHOW DATABASES</code> bersifat spesifik MySQL/PostgreSQL dan tidak berlaku di SQLite. Namun <strong>DDL &amp; DML</strong> (<code>CREATE TABLE</code>, <code>INSERT</code>, <code>SELECT</code>) hampir identik, hanya tipe datanya yang menyesuaikan (mis. <code>TEXT</code> menggantikan <code>VARCHAR</code>).</p>
+</div>
+
+## H. Kuis Evaluasi
+
+<QuizCard question="Di XAMPP, database MySQL dapat diakses melalui GUI berbasis browser dengan aplikasi...">
+  <button class="quiz-option" data-correct="true" data-explanation="phpMyAdmin adalah antarmuka berbasis web bawaan XAMPP untuk mengelola MySQL/MariaDB.">phpMyAdmin</button>
+  <button class="quiz-option" data-correct="false">Termux</button>
+  <button class="quiz-option" data-correct="false">MySQL Workbench</button>
+</QuizCard>
+
+<QuizCard question="Perintah CREATE TABLE termasuk dalam kelompok bahasa...">
+  <button class="quiz-option" data-correct="false">DML</button>
+  <button class="quiz-option" data-correct="true" data-explanation="DDL (Data Definition Language) digunakan untuk mendefinisikan/mengubah struktur, seperti CREATE TABLE, ALTER, dan DROP.">DDL</button>
+  <button class="quiz-option" data-correct="false">DCL</button>
+</QuizCard>
+
+<QuizCard question="Urutan yang benar untuk mulai memakai basis data di MySQL adalah...">
+  <button class="quiz-option" data-correct="true" data-explanation="CREATE DATABASE membuat basis data, lalu USE memilihnya sebagai basis data aktif untuk perintah selanjutnya.">CREATE DATABASE lalu USE</button>
+  <button class="quiz-option" data-correct="false">USE lalu CREATE DATABASE</button>
+  <button class="quiz-option" data-correct="false">SELECT lalu CREATE DATABASE</button>
+</QuizCard>
+
+<QuizCard question="Port default yang dipakai MySQL adalah...">
+  <button class="quiz-option" data-correct="false">80</button>
+  <button class="quiz-option" data-correct="true" data-explanation="MySQL menggunakan port 3306 secara default, sementara PostgreSQL memakai 5432 dan Apache 80.">3306</button>
+  <button class="quiz-option" data-correct="false">5432</button>
+</QuizCard>
+
+<QuizCard question="Perbedaan utama SQLite dari MySQL adalah...">
+  <button class="quiz-option" data-correct="true" data-explanation="SQLite adalah DBMS embedded tanpa server: seluruh database tersimpan dalam satu file, sedangkan MySQL berjalan sebagai server.">SQLite tidak butuh server, tersimpan dalam satu file</button>
+  <button class="quiz-option" data-correct="false">SQLite hanya bisa diakses via GUI</button>
+  <button class="quiz-option" data-correct="false">SQLite tidak mendukung SELECT</button>
+</QuizCard>
+
+## I. Rangkuman
+
+- Pertemuan 9 menandai peralihan ke **tahap implementasi** basis data dengan DBMS nyata
+- Jenis DBMS: MySQL, MariaDB, PostgreSQL, SQLite, SQL Server, Oracle; masing-masing punya kekhasan
+- Bahasa basis data: **DDL, DML, DCL, TCL**
+- DBMS diakses melalui **CLI** (`mysql -u root -p`) atau **GUI** (phpMyAdmin, MySQL Workbench, pgAdmin)
+- XAMPP adalah paket cepat untuk memulai MySQL/MariaDB (port default 3306)
+- Buat basis data dengan `CREATE DATABASE` lalu aktifkan dengan `USE`
+- Latihan tanpa instal: gunakan **SQL Playground**, DB Fiddle, atau SQLite Online
+
+## J. Referensi
+
+<ul class="refs">
+  <li>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7th ed.). Pearson Education Limited.</li>
+  <li>J Prayoga, Sinar Sinurat, Andi Rachman, dkk. (2023). <em>Sistem Basis Data</em>. Deli Serdang: Graha Mitra Edukasi.</li>
+  <li>Dokumentasi resmi MySQL, PostgreSQL, dan SQLite (panduan instalasi & CLI).</li>
+  <li>Dokumentasi Apache Friends XAMPP (Control Panel & modul MySQL).</li>
+</ul>
+
+## K. Penugasan: Mempersiapkan Proyek Tahap 2
+
+Pertemuan ini membuka rangkaian implementasi proyek. Siapkan lingkungan dan buktikan akses DBMS Anda:
+
+1. Instal & aktifkan DBMS sesuai perangkat: XAMPP (laptop) atau SQL online editor (smartphone).
+2. Buat basis data baru dengan nama proyek kelompok Anda (mis. `perpustakaan_unipi`).
+3. Tampilkan daftar basis data (CLI: `SHOW DATABASES;`) dan sertakan tangkapan layar.
+4. Buat satu tabel sederhana (boleh dari DDL PDM Pertemuan 7) dan isi 2 baris data.
+5. Siapkan **presentasi singkat** tahapan akses DBMS Anda untuk dikumpulkan (kriteria penilaian: presentasi tahapan akses DBMS).

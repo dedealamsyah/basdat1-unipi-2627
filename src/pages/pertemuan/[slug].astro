@@ -1,8 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
-import QuizCard from '../../components/QuizCard.astro';
-import DiagramViewer from '../../components/DiagramViewer.astro';
 import CopyCode from '../../components/CopyCode.astro';
 import { getCollection, render } from 'astro:content';
 
@@ -62,12 +60,12 @@ const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
     {prev && !prev.data.locked ? (
       <a class="navBtn" href={`/pertemuan/${prev.data.id}`}>‹ Pertemuan {prev.data.id}</a>
     ) : (
-      <span class="navBtn" disabled>‹ Pertemuan sebelumnya</span>
+      <span class="navBtn is-disabled" aria-disabled="true">‹ Pertemuan sebelumnya</span>
     )}
     {next && !next.data.locked ? (
       <a class="navBtn" href={`/pertemuan/${next.data.id}`}>Pertemuan {next.data.id} ›</a>
     ) : (
-      <span class="navBtn" disabled>Pertemuan berikutnya ›</span>
+      <span class="navBtn is-disabled" aria-disabled="true">Pertemuan berikutnya ›</span>
     )}
   </div>
 </BaseLayout>

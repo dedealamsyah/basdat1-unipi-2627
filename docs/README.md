@@ -9,9 +9,9 @@ Portal materi interaktif untuk mata kuliah Basis Data, Program Studi S1 Informat
 | **Framework** | Astro 7.x (Static Site Generator) |
 | **Content** | MDX (Markdown + JSX) |
 | **Output** | HTML statis (~2MB) |
-| **Pertemuan** | 16 minggu (3 aktif, 13 placeholder) |
-| **Halaman** | 18 (beranda + 16 pertemuan + worksheet praktikum) |
-| **Fitur** | Kuis, Game, Diagram ERD Interaktif, Worksheet Praktikum, Dark Mode, PWA |
+| **Pertemuan** | 16 minggu (10 aktif, 6 terkunci) |
+| **Halaman** | 20 (beranda + 16 pertemuan + worksheet praktikum + SQL playground) |
+| **Fitur** | Kuis, Game, Diagram ERD Interaktif, Worksheet Praktikum, SQL Playground, Dark Mode, PWA |
 
 ## Cepat Mulai
 

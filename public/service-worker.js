@@ -1,22 +1,31 @@
 /* =====================================================================
    service-worker.js — Offline Support for PWA
-   Caches essential assets for offline access
+   Strategi cache-first dengan runtime cache untuk navigasi & aset.
 ===================================================================== */
 
 const CACHE_NAME = "basdat-unipi-v1";
-const ASSETS_TO_CACHE = [
+const PRECACHE_ASSETS = [
   "./",
   "./index.html",
-  "./content.js",
-  "./app.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./favicon.svg",
+  "./favicon.ico",
+  "./erd-interactive.js",
+  "./game-entitas.js",
+  "./game-fd.js",
+  "./game-komponen.js",
+  "./sql-wasm.wasm"
 ];
 
-// Install: Cache essential assets
+// Install: Precache HTML shell & aset statis
 self.addEventListener("install", function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(ASSETS_TO_CACHE);
+      return Promise.allSettled(
+        PRECACHE_ASSETS.map(function(url) {
+          return cache.add(url);
+        })
+      );
     })
   );
   self.skipWaiting();
@@ -36,30 +45,25 @@ self.addEventListener("activate", function(event) {
   self.clients.claim();
 });
 
-// Fetch: Serve from cache, fallback to network
+// Fetch: Serve from cache (cache-first), fallback to network
 self.addEventListener("fetch", function(event) {
-  // Skip non-GET requests
   if (event.request.method !== "GET") return;
 
-  // Skip cross-origin requests (fonts, etc.)
-  if (!event.request.url.startsWith(self.location.origin)) {
-    event.respondWith(
-      fetch(event.request).catch(function() {
-        return new Response("", { status: 408, statusText: "Request Timeout" });
-      })
-    );
+  // Bypass service worker untuk permintaan lintas-asal (font, dsb)
+  if (event.request.url.startsWith(self.location.origin) === false) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then(function(cachedResponse) {
       if (cachedResponse) {
-        // Return cached version and update cache in background
+        // Perbarui cache di latar belakang
         event.waitUntil(
           fetch(event.request).then(function(networkResponse) {
             if (networkResponse && networkResponse.status === 200) {
+              var responseToCache = networkResponse.clone();
               caches.open(CACHE_NAME).then(function(cache) {
-                cache.put(event.request, networkResponse);
+                cache.put(event.request, responseToCache);
               });
             }
           }).catch(function() {})
@@ -67,7 +71,6 @@ self.addEventListener("fetch", function(event) {
         return cachedResponse;
       }
 
-      // Not in cache, fetch from network
       return fetch(event.request).then(function(networkResponse) {
         if (networkResponse && networkResponse.status === 200) {
           var responseToCache = networkResponse.clone();
@@ -77,14 +80,10 @@ self.addEventListener("fetch", function(event) {
         }
         return networkResponse;
       }).catch(function() {
-        // Offline and not cached
-        return new Response(
-          "<html><body style='font-family:system-ui;text-align:center;padding:50px;'>" +
-          "<h2>Offline</h2>" +
-          "<p>Anda sedang offline. Silakan periksa koneksi internet Anda.</p>" +
-          "</body></html>",
-          { headers: { "Content-Type": "text/html; charset=utf-8" } }
-        );
+        if (event.request.mode === "navigate") {
+          return caches.match("./index.html");
+        }
+        return new Response("", { status: 408, statusText: "Request Timeout" });
       });
     })
   );

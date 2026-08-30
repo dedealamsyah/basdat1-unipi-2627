@@ -187,5 +187,14 @@ const { title, description = "Portal materi interaktif untuk mata kuliah Basis D
     </script>
 
     <script is:inline src="/erd-interactive.js"></script>
+
+    <script is:inline>
+      // Register Service Worker (Production / HTTPS only)
+      if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/service-worker.js').catch(function() {});
+        });
+      }
+    </script>
   </body>
 </html>

@@ -121,8 +121,10 @@ import Sidebar from '../components/Sidebar.astro';
 
 <script>
   import initSqlJs from 'sql.js';
+  import type { Database, QueryExecResult, SqlJsStatic } from 'sql.js';
 
-  const $pg = (id) => document.getElementById(id);
+  const $pg = <T extends HTMLElement = HTMLElement>(id: string): T =>
+    document.getElementById(id) as T;
 
   const PRESETS = [
     { label: "Lihat semua mahasiswa", sql: "SELECT * FROM mahasiswa;" },
@@ -154,10 +156,10 @@ import Sidebar from '../components/Sidebar.astro';
     ];
   }
 
-  let db = null;
-  let SQL = null;
+  let db: Database | null = null;
+  let SQL: SqlJsStatic | null = null;
 
-  function renderResult(res) {
+  function renderResult(res: QueryExecResult[]) {
     if (!res || res.length === 0) {
       $pg("pgResult").innerHTML = '<span class="muted">(No rows returned)</span>';
       return;
@@ -179,22 +181,25 @@ import Sidebar from '../components/Sidebar.astro';
     $pg("pgResult").innerHTML = html;
   }
 
-  function runSql(sql) {
+  function runSql(sql: string) {
+    if (!db) return;
     try {
       const res = db.exec(sql);
       $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ Query berhasil dijalankan.</span>';
       renderResult(res);
     } catch (e) {
-      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Error: ' + (e && e.message ? e.message : e) + "</span>";
+      const msg = e instanceof Error ? e.message : String(e);
+      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Error: ' + msg + "</span>";
       $pg("pgResult").innerHTML = "";
     }
   }
 
   function setupDB() {
     if (!SQL) return;
-    db = new SQL.Database();
+    const instance = new SQL.Database();
+    db = instance;
     const seeded = schemaInit();
-    seeded.forEach(s => db.run(s));
+    seeded.forEach(s => instance.run(s));
   }
 
   function initPresets() {
@@ -207,7 +212,7 @@ import Sidebar from '../components/Sidebar.astro';
       b.textContent = p.label;
       b.addEventListener("click", () => {
         if (!db) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">SQLite belum siap, tunggu sebentar lalu coba lagi.</span>'; return; }
-        $pg("pgEditor").value = p.sql; runSql(p.sql);
+        $pg<HTMLTextAreaElement>("pgEditor").value = p.sql; runSql(p.sql);
       });
       box.appendChild(b);
     });
@@ -219,9 +224,10 @@ import Sidebar from '../components/Sidebar.astro';
       SQL = await initSqlJs({ locateFile: () => "/sql-wasm.wasm" });
       setupDB();
       $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ SQLite siap (berjalan di browser). Jalankan query untuk mulai.</span>';
-      $pg("pgEditor").value = PRESETS[0].sql;
+      $pg<HTMLTextAreaElement>("pgEditor").value = PRESETS[0].sql;
     } catch (e) {
-      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Gagal memuat SQLite: ' + (e && e.message ? e.message : e) + "</span>";
+      const msg = e instanceof Error ? e.message : String(e);
+      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Gagal memuat SQLite: ' + msg + "</span>";
     }
   }
 
@@ -229,7 +235,7 @@ import Sidebar from '../components/Sidebar.astro';
 
   $pg("pgRun").addEventListener("click", () => {
     if (!db) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">Database belum siap.</span>'; return; }
-    runSql($pg("pgEditor").value);
+    runSql($pg<HTMLTextAreaElement>("pgEditor").value);
   });
 
   $pg("pgReset").addEventListener("click", () => {
@@ -238,10 +244,10 @@ import Sidebar from '../components/Sidebar.astro';
     $pg("pgResult").innerHTML = "";
   });
 
-  $pg("pgClear").addEventListener("click", () => { $pg("pgEditor").value = ""; $pg("pgResult").innerHTML = ""; });
+  $pg("pgClear").addEventListener("click", () => { $pg<HTMLTextAreaElement>("pgEditor").value = ""; $pg("pgResult").innerHTML = ""; });
 
   $pg("pgViewTable").addEventListener("click", () => {
-    const t = $pg("pgTable").value;
+    const t = $pg<HTMLSelectElement>("pgTable").value;
     if (!t) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">Pilih tabel terlebih dahulu.</span>'; return; }
     runSql("SELECT * FROM " + t + ";");
   });
@@ -249,7 +255,7 @@ import Sidebar from '../components/Sidebar.astro';
   $pg("pgEditor").addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
-      if (db) runSql($pg("pgEditor").value);
+      if (db) runSql($pg<HTMLTextAreaElement>("pgEditor").value);
     }
   });
 </script>

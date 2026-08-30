@@ -309,7 +309,7 @@ const studyCases = [
     box.innerHTML =
       '<table class="wks-table"><thead><tr><th style="width:30%">Entitas</th><th>Daftar Atribut</th><th style="width:70px">PK</th><th style="width:70px">FK</th></tr></thead><tbody></tbody></table>';
     var tbody = box.querySelector("tbody");
-    state.atribut.forEach(function (a, i) {
+    state.atribut.forEach(function (a) {
       var tr = document.createElement("tr");
       tr.innerHTML =
         '<td><input type="text" data-role="entitas" value="' + esc(a.entitas) + '" readonly></td>' +

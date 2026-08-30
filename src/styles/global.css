@@ -1044,7 +1044,7 @@ ul.refs li {
   color: var(--teal-500);
 }
 
-.navBtn[disabled] {
+.navBtn.is-disabled {
   opacity: .35;
   pointer-events: none;
 }

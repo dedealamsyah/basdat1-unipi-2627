@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.8.0] - 2026-08-29
+
+### Added
+
+#### Content
+- ✅ **Pertemuan 10: Aljabar Relasional (AR)** — lengkap (lanjutan fase implementasi/CPMK-2)
+  - Sub-CPMK sesuai RPS: memecahkan permasalahan query dengan notasi Aljabar Relasional (AR) (bobot 4%)
+  - Operasi dasar: select (σ), project (π), rename (ρ), union (∪), set difference (−), cartesian product (×)
+  - Operasi turunan: inner/natural join (⋈), intersection (∩), division (÷)
+  - Cheat sheet simbol AR + padanan SQL (WHERE, SELECT, UNION, EXCEPT, INTERSECT, JOIN)
+  - Strategi pemecahan masalah query & contoh melibatkan 1–3 tabel (MAHASISWA/NILAI/MATAKULIAH)
+  - Studi kasus praktikum (ANGGOTA/BUKU/PEMINJAMAN) termasuk penggunaan set difference & division utk query "untuk semua"
+  - 5 kuis evaluasi + penugasan laporan praktikum algoritma relasional (AR → SQL + screenshot)
+  - Terjemahan AR→SQL siap diverifikasi di SQL Playground portal
+
+### Changed
+- Jumlah pertemuan terbuka: 8 → **9** (P10 dibuka; P8 UTS & 11–16 masih terkunci)
+
+---
+
+## [1.7.0] - 2026-08-29
+
+### Added
+
+#### Content
+- ✅ **Pertemuan 9: Instalasi & Akses DBMS** — lengkap (mulai fase implementasi/CPMK-2)
+  - Sub-CPMK sesuai RPS: melakukan instalasi, konfigurasi, dan akses DBMS untuk membangun basis data sederhana (bobot 4%)
+  - Perbandingan jenis DBMS (MySQL, MariaDB, PostgreSQL, SQLite, SQL Server, Oracle)
+  - Bahasa pemrograman basis data: DDL, DML, DCL, TCL
+  - Alur instalasi XAMPP (ringkas) + port default (MySQL 3306, PostgreSQL 5432)
+  - Akses DBMS melalui CLI (mysql/psql) dan GUI (phpMyAdmin, MySQL Workbench, pgAdmin, DBeaver)
+  - Studi kasus: basis data pertama "Akademik_UNIPI" (CREATE DATABASE + USE) terhubung ke PDM Pertemuan 7
+  - Latihan pengganti tanpa instal sudah tertaut ke SQL Playground portal
+  - 5 kuis evaluasi + penugasan persiapan proyek tahap 2
+
+### Changed
+- Jumlah pertemuan terbuka: 7 → **8** (P9 dibuka; P8 UTS & 10–16 masih terkunci)
+- Posisi kategori sidebar & beranda: penuh otomatis dari frontmatter `locked`
+
+---
+
 ## [1.6.2] - 2026-08-28
 
 ### Changed
@@ -299,4 +340,4 @@ Untuk melanjutkan di sesi berikutnya:
 1. **Menambah materi baru**: buat `src/content/pertemuan/{id}.mdx` lalu set `locked: false`
 2. **Worksheet**: logika di `src/pages/praktikum.astro` (inline script, state di `localStorage` key `basdat_wks_v1`)
 3. **Diagram interaktif**: tambahkan `class="entity-box" data-entity=".."` pada rect, dan `class="rel-line" data-a data-b data-cardinality data-desc data-participation` pada line relasi
-4. **Pertemuan 9** paling relevan untuk dikerjakan berikutnya (Instalasi & Akses DBMS — praktikum XAMPP/MySQL/PostgreSQL, dilanjutkan materi SQL P10–13)
+4. **Pertemuan 10** kini selesai (Aljabar Relasional / AR). Berikutnya: **Pertemuan 11: SQL Dasar (DDL & DML)** yang paling relevan dilanjutkan, memakai SQL Playground / SQL online editor, lalu P12–13 (SQL kompleks & implementasi RDBMS) menyusul.
