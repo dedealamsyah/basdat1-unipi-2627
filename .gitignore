@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# konfigurasi API berisi kredensial (jangan di-commit)
+api/config.php

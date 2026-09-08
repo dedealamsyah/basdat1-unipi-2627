@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+---
+
+<BaseLayout title="Login · Portal Materi Basis Data UNIPI" description="Masuk portal mahasiswa untuk mengakses materi dan progres belajar">
+  <Sidebar slot="sidebar" />
+
+  <div class="contentHeader">
+    <div class="eyebrow">AUTENTIKASI</div>
+    <h1 class="pageTitle">Masuk Portal</h1>
+    <p class="pageSubtitle">Gunakan akun yang diberikan oleh dosen pengampu. Progres belajar Anda akan tercatat otomatis.</p>
+  </div>
+
+  <section class="block login-card">
+    <form id="loginForm" autocomplete="on">
+      <label for="loginUsername" class="login-label">NIM / NIP</label>
+      <input type="text" id="loginUsername" class="wks-input" placeholder="contoh: 22104001" required autocomplete="username" />
+
+      <label for="loginPassword" class="login-label">Password</label>
+      <input type="password" id="loginPassword" class="wks-input" placeholder="••••••••" required autocomplete="current-password" />
+
+      <div class="login-actions">
+        <button type="submit" class="btn-sim" id="loginBtn">Masuk</button>
+      </div>
+
+      <p class="muted login-note" id="loginError"></p>
+      <p class="muted login-note">
+        Akun didaftarkan oleh admin. Jika belum punya akun, hubungi dosen pengampu
+        atau administrator portal. Admin dapat mengimpor data mahasiswa dari panel admin.
+      </p>
+    </form>
+  </section>
+</BaseLayout>
+
+<style is:global>
+  .login-card { max-width: 440px; margin-left: 0; }
+  .login-label {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--navy-700);
+    margin: 12px 0 5px;
+  }
+  .login-actions { margin-top: 18px; }
+  .login-note { margin-top: 14px; font-size: 12px; }
+  #loginError.error { color: #b03a2e; font-weight: 600; }
+</style>
+
+<script is:inline>
+  (function () {
+    var form = document.getElementById('loginForm');
+    var errorEl = document.getElementById('loginError');
+    var btn = document.getElementById('loginBtn');
+
+    function finalNext() {
+      var n = new URLSearchParams(location.search).get('next');
+      if (n && n.indexOf('/') === 0 && n.indexOf('//') !== 0) return n;
+      return '/';
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var u = document.getElementById('loginUsername').value.trim();
+      var p = document.getElementById('loginPassword').value;
+      if (!u || !p) {
+        errorEl.textContent = 'Isi NIM/NIP dan password.';
+        errorEl.classList.add('error');
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Memeriksa…';
+      if (typeof window.APIAuth === 'undefined') {
+        errorEl.textContent = 'Modul autentikasi sedang dimuat. Muat ulang halaman.';
+        errorEl.classList.add('error');
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+        return;
+      }
+      window.APIAuth.login(u, p).then(function (res) {
+        if (res && res.logged_in) {
+          location.href = finalNext();
+          return;
+        }
+        errorEl.textContent = (res && res.error) || 'Login gagal.';
+        errorEl.classList.add('error');
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+      });
+    });
+
+    // Sudah login? arahkan langsung
+    if (window.APIAuth) {
+      window.APIAuth.me().then(function (p) {
+        if (p && p.logged_in) location.href = finalNext();
+      });
+    }
+  })();
+</script>

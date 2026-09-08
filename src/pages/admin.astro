@@ -1,0 +1,216 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+---
+
+<BaseLayout title="Admin · Progres Belajar · Basis Data UNIPI" description="Panel admin untuk melihat progres belajar mahasiswa">
+  <Sidebar slot="sidebar" />
+
+  <div class="contentHeader">
+    <div class="eyebrow">PANEL ADMIN</div>
+    <h1 class="pageTitle">Progres Belajar Mahasiswa</h1>
+    <p class="pageSubtitle">Pantau penyelesaian materi, buka/tandai tuntas pertemuan, dan impor akun mahasiswa.</p>
+    <div id="adminStatus" class="muted"></div>
+  </div>
+
+  <section class="block">
+    <h2>Import Akun Mahasiswa</h2>
+    <p class="muted" style="margin-bottom:8px;">
+      Tempel data per baris dengan format <code>nim,nama,kelas</code> — contoh:
+      <code>22104001,Faris Alamsyah,IF3A</code>. Password awal = NIM.
+    </p>
+    <textarea id="importText" class="wks-input" rows="6" spellcheck="false" placeholder="22104001,Faris Alamsyah,IF3A&#10;22104002,Nadya Azzahra,IF3A"></textarea>
+    <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+      <button class="btn-sim" id="importBtn" style="background:#2A7A61;">Impor Mahasiswa</button>
+      <button class="btn-sim" id="importResetPass" style="background:#1C3B30;">Impor + Reset Password</button>
+      <label class="btn-sim" style="background:#4D8B6E; cursor:pointer; display:inline-block;">
+        Import dari File CSV <input type="file" id="importCsv" accept=".csv,.txt" hidden />
+      </label>
+    </div>
+    <p class="muted" id="importResult" style="margin-top:10px;"></p>
+  </section>
+
+  <section class="block">
+    <h2>Daftar Mahasiswa</h2>
+    <div style="overflow-x:auto;">
+      <table class="dtable" id="adminTable">
+        <thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th>Tuntas</th><th>%</th><th>Detail</th></tr></thead>
+        <tbody id="adminTbody"><tr><td colspan="6" class="muted">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block" id="detailBox" hidden>
+    <h2 id="detailTitle">Detail Progres</h2>
+    <div style="overflow-x:auto;">
+      <table class="dtable" id="detailTable">
+        <thead><tr><th>Pertemuan</th><th>Status</th><th>Skor Kuis</th><th>Attempts</th><th>Tgl Tuntas</th><th>Kelola</th></tr></thead>
+        <tbody id="detailTbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-sim" id="detailClose" style="background:#1C3B30; margin-top:12px;">Tutup Detail</button>
+  </section>
+</BaseLayout>
+
+<style is:global>
+  .admin-stat {
+    display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 0;
+  }
+  .admin-stat .chip { margin: 0; }
+  .st-done { color: #1F5F4B; font-weight: 700; }
+  .st-locked { color: var(--amber-400); font-weight: 600; }
+  td select, td input { padding: 5px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 12px; }
+</style>
+
+<script is:inline>
+  (function () {
+    var api = function (path, opts) {
+      opts = opts || {}; opts.credentials = 'same-origin';
+      if (opts.body && typeof opts.body !== 'string') {
+        opts.headers = Object.assign({}, opts.headers || {}, { 'Content-Type': 'application/json' });
+        opts.body = JSON.stringify(opts.body);
+      }
+      return fetch(path, opts).then(function (r) { return r.json(); });
+    };
+
+    var statusEl = document.getElementById('adminStatus');
+    var tbody = document.getElementById('adminTbody');
+    var dtbody = document.getElementById('detailTbody');
+    var detailBox = document.getElementById('detailBox');
+    var totalActive = 0;
+
+    function fail(msg) {
+      statusEl.textContent = '';
+      tbody.innerHTML = '<tr><td colspan="6" class="muted">' + msg + '</td></tr>';
+    }
+
+    function loadAdmin() {
+      statusEl.textContent = 'Memuat data…';
+      api('/api/admin.php').then(function (d) {
+        if (!d.ok) {
+          fail((d.error || 'Akses ditolak.') + ' — hubungi admin atau login sebagai admin.');
+          return;
+        }
+        totalActive = d.data.total;
+        statusEl.textContent = 'Total materi aktif: ' + totalActive + ' pertemuan.';
+        renderRows(d.data.students);
+      }).catch(function () {
+        fail('Gagal memuat data. Pastikan API tersedia (/api/admin.php).');
+      });
+    }
+
+    function renderRows(students) {
+      if (!students.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">Belum ada mahasiswa terdaftar. Impor data terlebih dahulu.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = '';
+      students.forEach(function (s) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + esc(s.nim) + '</td>' +
+          '<td>' + esc(s.nama) + '</td>' +
+          '<td>' + esc(s.kelas) + '</td>' +
+          '<td>' + s.done_count + ' / ' + s.total + '</td>' +
+          '<td>' + s.persen + '%</td>' +
+          '<td><button class="btn-sim" data-view="' + esc(s.nim) + '" style="background:#1C3B30;">Lihat</button></td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function loadDetail(nim) {
+      api('/api/admin.php?nim=' + encodeURIComponent(nim)).then(function (d) {
+        if (!d.ok) { alert(d.error || 'Gagal memuat detail.'); return; }
+        detailBox.hidden = false;
+        document.getElementById('detailTitle').textContent = 'Detail Progres: ' + nim;
+        dtbody.innerHTML = '';
+        d.data.progress.forEach(function (p) {
+          var st = p.status;
+          var stText = st === 'done' ? '<span class="st-done">✓ Tuntas</span>' : (st === 'open' ? 'Terbuka' : '<span class="st-locked">Terkunci</span>');
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>Pertemuan ' + p.pertemuan_id + '</td>' +
+            '<td>' + stText + '</td>' +
+            '<td>' + p.quiz_score + (p.quiz_total ? ' / ' + p.quiz_total : '') + '</td>' +
+            '<td>' + p.attempts + '</td>' +
+            '<td>' + (p.completed_at ? p.completed_at.slice(0, 10) : '—') + '</td>' +
+            '<td><button class="btn-sim" data-toggle="' + p.pertemuan_id + '" style="background:' + (st === 'done' ? '#C9584F;' : '#2A7A61;') + '" data-nim="' + esc(nim) + '">' + (st === 'done' ? 'Batal' : 'Tandai Tuntas') + '</button></td>';
+          dtbody.appendChild(tr);
+        });
+      });
+    }
+
+    tbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-view]');
+      if (btn) loadDetail(btn.getAttribute('data-view'));
+    });
+
+    dtbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-toggle]');
+      if (!btn) return;
+      var nim = btn.getAttribute('data-nim');
+      var pid = parseInt(btn.getAttribute('data-toggle'), 10);
+      var action = btn.textContent.indexOf('Batal') === 0 ? 'undone' : 'done';
+      if (action === 'undone' && !confirm('Batal tuntas pertemuan ini untuk ' + nim + '?')) return;
+      api('/api/unlock.php', { method: 'POST', body: { nim: nim, pertemuan_id: pid, action: action } }).then(function (d) {
+        if (!d.ok) { alert(d.error || 'Gagal.'); return; }
+        loadDetail(nim);
+        loadAdmin();
+      });
+    });
+
+    document.getElementById('detailClose').addEventListener('click', function () { detailBox.hidden = true; });
+
+    /* ---- import ---- */
+    function doImport() {
+      var text = document.getElementById('importText').value.trim();
+      if (!text) { document.getElementById('importResult').textContent = 'Isi kolom data dulu.'; return; }
+      document.getElementById('importResult').textContent = 'Mengimpor…';
+      api('/api/import_users.php', { method: 'POST', body: text, headers: { 'Content-Type': 'text/plain' } }).then(function (d) {
+        if (!d.ok) {
+          document.getElementById('importResult').textContent = 'Gagal: ' + (d.error || '?');
+          return;
+        }
+        document.getElementById('importResult').textContent =
+          'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' diperbarui. Password awal = NIM.';
+        document.getElementById('importText').value = '';
+        loadAdmin();
+      });
+    }
+
+    document.getElementById('importBtn').addEventListener('click', function () { doImport(); });
+    document.getElementById('importResetPass').addEventListener('click', function () {
+      var text = document.getElementById('importText').value.trim();
+      if (!text) {
+        document.getElementById('importResult').textContent = 'Tempel data mahasiswa (nim,nama,kelas) lalu klik impor + reset.';
+        return;
+      }
+      document.getElementById('importResult').textContent = 'Mengimpor + reset password…';
+      api('/api/import_users.php?reset=1', { method: 'POST', body: text, headers: { 'Content-Type': 'text/plain' } }).then(function (d) {
+        document.getElementById('importResult').textContent = d.ok
+          ? 'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' direset password ke NIM.'
+          : 'Gagal: ' + (d.error || '?');
+        document.getElementById('importText').value = '';
+        loadAdmin();
+      });
+    });
+
+    document.getElementById('importCsv').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        document.getElementById('importText').value = r.result;
+        document.getElementById('importResult').textContent = 'File dibaca — klik "Impor Mahasiswa".';
+      };
+      r.readAsText(f);
+      e.target.value = '';
+    });
+
+    loadAdmin();
+  })();
+</script>

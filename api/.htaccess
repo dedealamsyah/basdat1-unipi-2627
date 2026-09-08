@@ -1,0 +1,11 @@
+# Blokir akses langsung ke file konfigurasi privat
+<Files "config.php">
+  order allow,deny
+  deny from all
+</Files>
+
+# Protek: tool setup hanya boleh dijalankan saat migrasi, token selain itu nonaktif
+<Files "setup_db.php">
+  order allow,deny
+  deny from all
+</Files>

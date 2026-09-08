@@ -160,9 +160,9 @@ import Sidebar from '../components/Sidebar.astro';
       "CREATE TABLE IF NOT EXISTS krs (nim TEXT REFERENCES mahasiswa(nim), kode TEXT REFERENCES matakuliah(kode), semester TEXT, PRIMARY KEY (nim, kode));",
       "CREATE TABLE IF NOT EXISTS nilai (nim TEXT, kode TEXT, nilai_huruf TEXT, bobot NUMERIC, PRIMARY KEY (nim, kode));",
 
-      "INSERT INTO dosen VALUES ('N001','Dr. Budi Santoso','Sistem Basis Data'),('N002','Dra. Siti Aminah','Pemrograman'),('N003','Ir. Joko Wibowo','Jaringan');",
+      "INSERT INTO dosen VALUES ('N001','Dr. Al-Khawarizmi','Sistem Basis Data'),('N002','Dra. Aminah Zahra','Pemrograman'),('N003','Ir. Ibnu Sina','Jaringan');",
 
-      "INSERT INTO mahasiswa VALUES ('22104001','Andi Pratama','Informatika',2022),('22104002','Bella Maharani','Informatika',2022),('22104003','Citra Dewi','Informatika',2022),('23105001','Dedi Kurniawan','Sistem Informasi',2023),('23105002','Eka Saputra','Sistem Informasi',2023);",
+      "INSERT INTO mahasiswa VALUES ('22104001','Faris Alamsyah','Informatika',2022),('22104002','Nadya Azzahra','Informatika',2022),('22104003','Bintang Anugrah','Informatika',2022),('23105001','Naufal Hakim','Sistem Informasi',2023),('23105002','Khalid Musyafa','Sistem Informasi',2023);",
 
       "INSERT INTO matakuliah VALUES ('BD01','Basis Data',3,'N001'),('ALGO','Algoritma',3,'N002'),('WEB','Pemrograman Web',3,'N002'),('DK','Komunikasi Data',2,'N003');",
 

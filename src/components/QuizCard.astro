@@ -36,6 +36,7 @@ const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
           span.style.color = '#166534';
           span.textContent = '[Benar] ' + explanation;
           feedback.appendChild(span);
+          reportComplete();
         } else {
           this.classList.add('wrong');
           var span2 = document.createElement('span');
@@ -44,6 +45,18 @@ const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
           feedback.appendChild(span2);
         }
       };
+
+      function reportComplete() {
+        if (typeof window.APIAuth === 'undefined') return;
+        var meta = document.getElementById('pageMeta');
+        if (!meta) return;
+        var pid = parseInt(meta.getAttribute('data-pertemuan'), 10);
+        if (!pid) return;
+        window.APIAuth.complete(pid, 1, 1).then(function(res) {
+          if (!res || !res.progress) return;
+          if (window.APIAuth.refresh) window.APIAuth.refresh();
+        });
+      }
     });
   })();
 </script>

@@ -65,10 +65,10 @@ Perhatikan sebuah **rancangan tabel tunggal** yang buruk berikut untuk mencatat 
 <table class="dtable">
   <thead><tr><th>no_nota</th><th>tgl</th><th>id_pelanggan</th><th>nama_pelanggan</th><th>kota</th><th>id_produk</th><th>nama_produk</th><th>harga</th><th>jumlah</th></tr></thead>
   <tbody>
-    <tr><td>T001</td><td>12/08/2026</td><td>P01</td><td>Andi Pratama</td><td>Bandung</td><td>PR001</td><td>Laptop Dell</td><td>9.000.000</td><td>1</td></tr>
-    <tr><td>T001</td><td>12/08/2026</td><td>P01</td><td>Andi Pratama</td><td>Bandung</td><td>PR002</td><td>Mouse Logitech</td><td>150.000</td><td>2</td></tr>
+    <tr><td>T001</td><td>12/08/2026</td><td>P01</td><td>Faris Alamsyah</td><td>Bandung</td><td>PR001</td><td>Laptop Dell</td><td>9.000.000</td><td>1</td></tr>
+    <tr><td>T001</td><td>12/08/2026</td><td>P01</td><td>Faris Alamsyah</td><td>Bandung</td><td>PR002</td><td>Mouse Logitech</td><td>150.000</td><td>2</td></tr>
     <tr><td>T002</td><td>13/08/2026</td><td>P02</td><td>Sari Ayu</td><td>Jakarta</td><td>PR001</td><td>Laptop Dell</td><td>9.000.000</td><td>1</td></tr>
-    <tr><td>T003</td><td>13/08/2026</td><td>P01</td><td>Andi Pratama</td><td>Bandung</td><td>PR003</td><td>Monitor LG</td><td>2.500.000</td><td>1</td></tr>
+    <tr><td>T003</td><td>13/08/2026</td><td>P01</td><td>Faris Alamsyah</td><td>Bandung</td><td>PR003</td><td>Monitor LG</td><td>2.500.000</td><td>1</td></tr>
   </tbody>
 </table>
 
@@ -81,7 +81,7 @@ Tabel ini menderita tiga **anomali**:
 
 <div class="callout">
   <span class="callout__label">2. Anomali Update</span>
-  <p>Jika pelanggan "Andi Pratama" pindah ke kota lain, maka <strong>setiap baris</strong> yang memuat namanya harus di-update. Terlewat satu baris saja → data menjadi tidak konsisten.</p>
+  <p>Jika pelanggan "Faris Alamsyah" pindah ke kota lain, maka <strong>setiap baris</strong> yang memuat namanya harus di-update. Terlewat satu baris saja → data menjadi tidak konsisten.</p>
 </div>
 
 <div class="callout">
@@ -328,7 +328,7 @@ Empat transaksi pada tabel awal kini tersimpan di 4 tabel. Perhatikan **setiap f
   <thead><tr><th colspan="3">PELANGGAN</th></tr></thead>
   <tbody>
     <tr><td><code>id_pelanggan</code></td><td><code>nama_pelanggan</code></td><td><code>kota</code></td></tr>
-    <tr><td>P01</td><td>Andi Pratama</td><td>Bandung</td></tr>
+    <tr><td>P01</td><td>Faris Alamsyah</td><td>Bandung</td></tr>
     <tr><td>P02</td><td>Sari Ayu</td><td>Jakarta</td></tr>
   </tbody>
 </table>
@@ -366,7 +366,7 @@ Empat transaksi pada tabel awal kini tersimpan di 4 tabel. Perhatikan **setiap f
 
 <div class="callout">
   <span class="callout__label">Bandingkan dengan data awal</span>
-  <p>Pada tabel awal, data pelanggan "Andi Pratama" tercatat <strong>3×</strong> (redundan). Setelah 3NF, hanya tersimpan <strong>1×</strong>. Datanya dikembalikan utuh saat dibutuhkan menggunakan <code>JOIN</code> berdasarkan FK, tanpa pernah menyalinnya secara fisik di tempat lain.</p>
+  <p>Pada tabel awal, data pelanggan "Faris Alamsyah" tercatat <strong>3×</strong> (redundan). Setelah 3NF, hanya tersimpan <strong>1×</strong>. Datanya dikembalikan utuh saat dibutuhkan menggunakan <code>JOIN</code> berdasarkan FK, tanpa pernah menyalinnya secara fisik di tempat lain.</p>
 </div>
 
 <div class="callout callout--amber">

@@ -15,14 +15,19 @@ export async function getStaticPaths() {
 const { pertemuan, allPertemuan } = Astro.props;
 const { Content } = await render(pertemuan);
 const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
+const active = sorted.filter(p => !p.data.locked);
+const activeOrder = active.map(p => p.data.id).join('|');
 const currentIndex = sorted.findIndex(p => p.data.id === pertemuan.data.id);
 const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
 const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
+const isActive = !pertemuan.data.locked;
 ---
 
 <BaseLayout title={`${pertemuan.data.title} · Basis Data UNIPI`} description={pertemuan.data.subtitle}>
   <Sidebar slot="sidebar" activeId={pertemuan.data.id} />
   <CopyCode />
+
+  <span id="pageMeta" hidden data-pertemuan={pertemuan.data.id} data-active-order={activeOrder}></span>
 
   <div class="contentHeader">
     <div class="eyebrow">Pertemuan {String(pertemuan.data.id).padStart(2, '0')} · Basis Data</div>
@@ -37,11 +42,12 @@ const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
         <span class="chip">{pertemuan.data.meta.cpmk}</span>
         <span class="chip">⏱ {pertemuan.data.meta.alokasi}</span>
         <span class="chip chip--amber">BOBOT {pertemuan.data.meta.bobot}</span>
+        {isActive && <span class="chip" id="progressChip">—</span>}
       </div>
     )}
   </div>
 
-  {pertemuan.data.locked ? (
+  {!isActive ? (
     <div class="lockedNotice">
       <div class="bigIcon">◌</div>
       <h2 style="font-family:var(--font-display);color:var(--navy-800);margin:0 0 8px;">
@@ -50,9 +56,20 @@ const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
       <p>{pertemuan.data.title} akan ditambahkan oleh dosen pengampu.</p>
     </div>
   ) : (
-    <article>
-      <Content />
-    </article>
+    <>
+      <article>
+        <Content />
+      </article>
+
+      <div class="gate" id="contentGate" aria-live="polite">
+        <div class="gate__box">
+          <div class="gate__icon">◈</div>
+          <h2 class="gate__title" id="gateTitle">Memeriksa akses…</h2>
+          <p class="gate__msg" id="gateMsg"></p>
+          <a class="btn-sim gate__btn" id="gateAction" href="/login">Login</a>
+        </div>
+      </div>
+    </>
   )}
 
   <div class="navFooter">
@@ -67,7 +84,47 @@ const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
       <span class="navBtn is-disabled" aria-disabled="true">Pertemuan berikutnya ›</span>
     )}
   </div>
+
 </BaseLayout>
+
+<style is:global>
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .gate__box {
+    background: var(--card);
+    box-shadow: var(--neu-shadow);
+    border-radius: 16px;
+    padding: 40px 32px;
+    max-width: 420px;
+    text-align: center;
+  }
+  .gate__icon {
+    font-family: var(--font-display);
+    font-size: 30px;
+    color: var(--amber-400);
+    margin-bottom: 12px;
+  }
+  .gate__title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    color: var(--navy-800);
+    margin: 0 0 10px;
+  }
+  .gate__msg {
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin: 0 0 20px;
+  }
+</style>
 
 <script is:inline>
   function updateMobileHeader() {
@@ -79,4 +136,63 @@ const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
   }
   document.addEventListener('DOMContentLoaded', updateMobileHeader);
   document.addEventListener('astro:page-load', updateMobileHeader);
+
+  function gateInit() {
+    if (typeof window.APIAuth === 'undefined') return;
+    var contentGate = document.getElementById('contentGate');
+    if (!contentGate) return; // halaman statis locked / tidak perlu gate
+
+    var pertemuanId = parseInt(document.getElementById('pageMeta').getAttribute('data-pertemuan'), 10);
+    if (!pertemuanId) return;
+
+    window.APIAuth.me(true).then(function (p) {
+      var progressChip = document.getElementById('progressChip');
+
+      if (!p.logged_in) {
+        showGate('login', contentGate);
+        setChip(progressChip, '—');
+        return;
+      }
+      if (p.user && p.user.role === 'admin') {
+        contentGate.style.display = 'none';
+        setChip(progressChip, 'Terbuka');
+        return;
+      }
+      var st = (p.progress || {})[pertemuanId] || 'locked';
+      if (st === 'locked') {
+        showGate('locked', contentGate);
+        setChip(progressChip, 'Terkunci');
+      } else {
+        contentGate.style.display = 'none';
+        setChip(progressChip, st === 'done' ? '✓ Tuntas' : 'Terbuka');
+      }
+    });
+  }
+
+  function setChip(el, text) {
+    if (!el) return;
+    el.textContent = text;
+  }
+
+  function showGate(kind, gateEl) {
+    var title = document.getElementById('gateTitle');
+    var msg = document.getElementById('gateMsg');
+    var action = document.getElementById('gateAction');
+
+    if (kind === 'login') {
+      title.textContent = 'Masuk dulu, yuk';
+      msg.textContent = 'Materi ini hanya bisa diakses oleh mahasiswa terdaftar yang sudah masuk. Silakan login dengan akun Anda.';
+      action.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
+      action.textContent = 'Login Mahasiswa';
+    } else {
+      title.textContent = 'Materi terkunci';
+      msg.textContent = 'Selesaikan pertemuan sebelumnya untuk membuka materi ini. Progres Anda tercatat otomatis pada setiap penyelesaian.';
+      action.href = '/';
+      action.textContent = 'Kembali ke Beranda';
+    }
+    gateEl.style.display = 'flex';
+  }
+
+  document.addEventListener('DOMContentLoaded', gateInit);
+  document.addEventListener('astro:page-load', gateInit);
 </script>

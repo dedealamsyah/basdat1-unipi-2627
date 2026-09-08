@@ -8,7 +8,6 @@ interface Props {
 const { activeId } = Astro.props;
 const allPertemuan = await getCollection('pertemuan');
 const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
-const available = sorted.filter(p => !p.data.locked).length;
 ---
 
 <div class="sidebar__brand">
@@ -20,11 +19,11 @@ const available = sorted.filter(p => !p.data.locked).length;
 
 <div class="sidebar__progress">
   <div class="sidebar__progress-label">
-    <span>PROGRES MATERI</span>
-    <span>{available} / {sorted.length}</span>
+    <span>PROGRES BELAJAR</span>
+    <span id="sidebarProgressCount">—</span>
   </div>
   <div class="sidebar__progress-bar">
-    <div class="sidebar__progress-fill" style={`width: ${sorted.length > 0 ? (available / sorted.length) * 100 : 0}%`}></div>
+    <div class="sidebar__progress-fill" id="sidebarProgressFill" style="width:0%"></div>
   </div>
 </div>
 
@@ -74,7 +73,8 @@ const available = sorted.filter(p => !p.data.locked).length;
 
 <div class="sidebar__footer">
   <p class="sidebar__credit">&copy; {new Date().getFullYear()} &middot; Developed by Dede Alamsyah</p>
-  <div style="display:flex; align-items:center; gap:8px;">
+  <div id="accountBox" class="sidebar__account"><p class="muted">Memuat…</p></div>
+  <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
     <button id="themeToggle" class="zoom-btn" style="width:100%; padding:8px 12px; background:#1C3B30; color:#F3F1E8; border:1px solid rgba(255,255,255,.06); font-size:12px; cursor:pointer; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:none;">
       <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
     </button>
