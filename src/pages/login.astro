@@ -42,8 +42,8 @@ import Sidebar from '../components/Sidebar.astro';
 
         <p class="login-msg" id="loginError" role="alert"></p>
 
-        <button type="submit" class="login-btn" id="loginBtn">
-          <span id="loginBtnText">Masuk</span>
+        <button type="submit" class="login-btn" id="loginBtn" disabled>
+          <span id="loginBtnText">Menghubungi…</span>
         </button>
         <a class="login-back" href="/">← Kembali ke beranda</a>
       </form>
@@ -258,7 +258,7 @@ import Sidebar from '../components/Sidebar.astro';
       }
 
       window.APIAuth.login(u, p).then(function (res) {
-        if (res && res.logged_in) {
+        if (res && res.user) {
           setMsg('Berhasil masuk! Mengalihkan…', 'ok');
           var dest = (res.must_change_password)
             ? '/ganti-password/?next=' + encodeURIComponent(finalNext())
@@ -266,7 +266,7 @@ import Sidebar from '../components/Sidebar.astro';
           setTimeout(function () { location.href = dest; }, 400);
           return;
         }
-        setMsg((res && res.error) || 'Login gagal.', 'error');
+        setMsg((res && res.error) || 'Login gagal. Silakan coba lagi.', 'error');
         resetBtn();
         pass.focus();
         pass.select();
@@ -278,12 +278,36 @@ import Sidebar from '../components/Sidebar.astro';
       btnText.textContent = 'Masuk';
     }
 
-    // sudah login? arahkan langsung
-    if (window.APIAuth) {
-      window.APIAuth.me().then(function (p) {
-        if (p && p.logged_in) location.href = finalNext();
-      });
+// Warm-up: pastikan API merespons (mengatasi challenge anti-bot di kunjungan pertama).
+// Form dikunci sampai siap; sekali muat ulang otomatis bila perlu.
+function warmUp() {
+  var btn = document.getElementById('loginBtn');
+  if (typeof window.APIAuth === 'undefined') return;
+  window.APIAuth.readyCheck().then(function (ok) {
+    if (ok) {
+      btn.disabled = false;
+      btn.querySelector('#loginBtnText').textContent = 'Masuk';
+      return;
     }
+    // API belum siap (kemungkinan challenge) -> muat ulang sekali untuk menetapkan cookie
+    if (!window.__warmed) {
+      window.__warmed = true;
+      setMsg('Menghubungi server…', '');
+      setTimeout(function () { location.reload(); }, 600);
+      return;
+    }
+    btn.disabled = false;
+    setMsg('Ada kendala koneksi. Muat ulang halaman bila login tetap gagal.', 'error');
+  });
+}
+
+// sudah login? arahkan langsung
+if (window.APIAuth) {
+  window.APIAuth.me().then(function (p) {
+    if (p && p.logged_in) location.href = finalNext();
+    else warmUp();
+  });
+}
 
     // fokus otomatis
     setTimeout(function () { document.getElementById('loginUsername').focus(); }, 100);

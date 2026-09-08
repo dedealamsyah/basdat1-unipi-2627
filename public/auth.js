@@ -46,9 +46,25 @@
   function login(username, password) {
     return api("/api/login.php", { method: "POST", body: { username: username, password: password } })
       .then(function (r) {
-        if (r.data.ok) { meCache = null; return me(true); }
-        return r.data;
+        var d = r.data || {};
+        if (d.ok && d.data && d.data.user) {
+          // sukses atomik: keputusan tidak bergantung panggilan me() lanjutan
+          meCache = { logged_in: true, user: d.data.user };
+          csrfToken = "";
+          window.__apiReady = true;
+          return d.data;
+        }
+        return d;
       });
+  }
+
+  /* True bila API merespons JSON valid (bukan challenge anti-bot Byethost) */
+  function readyCheck() {
+    return me(false).then(function (p) {
+      var ok = !!(p && typeof p === "object" && "logged_in" in p);
+      if (ok) window.__apiReady = true;
+      return ok;
+    }).catch(function () { return false; });
   }
 
   function logout() {
@@ -223,6 +239,7 @@
     logout: logout,
     complete: complete,
     changePassword: changePassword,
+    readyCheck: readyCheck,
     refresh: refresh
   };
 
