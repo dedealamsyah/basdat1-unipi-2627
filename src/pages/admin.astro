@@ -113,7 +113,8 @@ import Sidebar from '../components/Sidebar.astro';
           '<td>' + esc(s.kelas) + '</td>' +
           '<td>' + s.done_count + ' / ' + s.total + '</td>' +
           '<td>' + s.persen + '%</td>' +
-          '<td><button class="btn-sim" data-view="' + esc(s.nim) + '" style="background:#1C3B30;">Lihat</button></td>';
+          '<td><button class="btn-sim" data-view="' + esc(s.nim) + '" style="background:#1C3B30;">Lihat</button> ' +
+          '<button class="btn-sim" data-del="' + esc(s.nim) + '" style="background:#C9584F;">Hapus</button></td>';
         tbody.appendChild(tr);
       });
     }
@@ -146,7 +147,17 @@ import Sidebar from '../components/Sidebar.astro';
 
     tbody.addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-view]');
-      if (btn) loadDetail(btn.getAttribute('data-view'));
+      if (btn) { loadDetail(btn.getAttribute('data-view')); return; }
+      var del = e.target.closest('button[data-del]');
+      if (del) {
+        var nim = del.getAttribute('data-del');
+        if (!confirm('Hapus akun mahasiswa ' + nim + ' beserta progresnya?')) return;
+        api('/api/delete_user.php', { method: 'POST', body: { nim: nim } }).then(function (d) {
+          if (!d.ok) { alert(d.error || 'Gagal.'); return; }
+          detailBox.hidden = true;
+          loadAdmin();
+        });
+      }
     });
 
     dtbody.addEventListener('click', function (e) {
