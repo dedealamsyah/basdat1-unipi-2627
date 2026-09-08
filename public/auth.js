@@ -122,8 +122,9 @@
       "</div>" +
       '<p class="acc__name">' + (u.nama || u.nim) + "</p>" +
       '<p class="acc__meta">' + u.nim + (kelas ? " · " + kelas : "") + "</p>" +
-      (isAdmin ? "" :
-        '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span></div>") +
+      (isAdmin
+        ? '<a class="btn-sim acc__admin" href="/admin/">Dashboard Admin</a>'
+        : '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span></div>") +
       "</div>";
 
     var btn = document.getElementById("accLogout");

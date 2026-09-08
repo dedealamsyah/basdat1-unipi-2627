@@ -620,6 +620,15 @@ a {
   font-weight: 600;
 }
 
+.acc__admin {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  margin-top: 10px;
+  background: #C9A227;
+  color: #221A02;
+}
+
 .sidebar__footer {
   padding: 14px 22px 20px;
   border-top: 1px solid rgba(255, 255, 255, .08);
