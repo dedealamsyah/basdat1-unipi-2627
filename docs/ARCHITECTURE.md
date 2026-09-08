@@ -190,3 +190,60 @@ Browser ──▶ initSqlJs() ──▶ /sql-wasm.wasm (public/) ──▶ SQL.D
 | sql.js | latest | SQLite WASM untuk SQL playground |
 
 **Total size node_modules:** ~140MB (dev), ~2MB (dist output)
+
+---
+
+## Subsistem Autentikasi, Progres & Admin (PHP + MySQL)
+
+Sejak v2.0 proyek bersifat **hibrida**: frontend tetap statis (Astro SSG), namun dilapisi
+subsistem dinamis PHP + MySQL yang melayani login, progres belajar, gradebook, dan panel admin.
+
+```
+Browser (statis Astro)
+   │  fetch (same-origin, JSON)
+   ▼
+/api/*.php  (PHP 8, Byethost)  ── PDO (prepared statements) ──►  MySQL Byethost
+   ├─ login.php   : POST sesi (password_hash bcrypt, regenerate id)
+   ├─ logout.php  : destroy sesi
+   ├─ me.php      : GET status sesi + status progresi (open/locked/done)
+   ├─ complete.php: POST tandai tuntas; validasi urutan (lompat = 422)
+   ├─ admin.php   : GET daftar mahasiswa + nilai akhir/huruf; ?nim= detail
+   ├─ grade.php   : POST input manual PTS/UAS/tugas/hadir (admin)
+   ├─ unlock.php  : POST override done/undone (admin)
+   ├─ pertemuan.php: GET metadata menu (publik) / POST update (admin)
+   ├─ import_users.php : POST impor massal nim,nama,kelas (admin)
+   ├─ delete_user.php  : POST hapus akun (admin)
+   ├─ migrate.php : buat tabel bila belum ada (admin, idempoten)
+   └─ setup_db.php: setup awal + admin pertama (token; dikunci .htaccess)
+```
+
+### Skema MySQL
+
+Tabel `users` (nim PK, nama, kelas, role mahasiswa|admin, pass_hash), `progress`
+(nim+pertemuan_id PK, quiz_score, quiz_total, attempts, completed_at), `grades`
+(nim+komponen PK: pts|uas|tugas|hadir, nilai), `pertemuan` (id PK, title, subtitle,
+aktif, posisi, alokasi, bobot, cpmk).
+
+### Progresi materiketik
+
+`status_map()` (config.php): setiap pertemuan `open` bila sebelumnya `done`.
+Pertemuan pertama selalu terbuka. `active_pertemuan()` menentukan daftar konten aktif
+(1–7, 9–10) — dokumentasikan untuk disinkronkan dengan tabel `pertemuan` (lihat docs/AUDIT.md).
+
+### Frontend integration
+
+- `public/auth.js` (window.APIAuth): `me/login/logout/complete/refresh`; memperbarui
+  kotak akun sidebar, progress bar, chip status tiap pertemuan (`prog-done/open/locked`),
+  dan overlay menu pertemuan dari DB (judul/urutan/tampil).
+- Halaman pertemuan: `<span id="pageMeta" data-pertemuan data-active-order>` + gate
+  klien (overlay login/terkunci). Kuis benar → `complete()`.
+- `src/pages/login.astro`: form login (toggle password, hint password awal = NIM).
+- `src/pages/admin.astro` → di-deploy sebagai `admin/panel.html`; `admin/index.php`
+  (server-side guard) membaca panel tersebut hanya untuk role admin.
+- `/admin/` di-proteksi `.htaccess` (semua file kecuali `index.php` diblokir).
+
+### Catatan deployment
+
+- Credential DB ada di `api/config.php` (gitignored); `api/config.example.php` sebagai template.
+- `api/.htaccess` menonaktifkan listing direktori & memblokir `config.php`/`setup_db.php`.
+- Situs berjalan di HTTP (Byethost) → PWA & flag `Secure` tak aktif; lihat rekomendasi HTTPS di docs/AUDIT.md.

@@ -1,5 +1,42 @@
 # Changelog
 
+## [2.0.0] - 2026-09-08
+
+### Added — Sistem Autentikasi, Progres & Panel Admin
+- Backend PHP + MySQL (Byethost): `login`, `logout`, `me`, `complete` (progresi berurutan),
+  `admin`, `unlock`, `grade`, `import_users`, `delete_user`, `migrate`, `pertemuan`, `setup_db`.
+- Login mahasiswa & admin (password hash, sesi HttpOnly + SameSite=Lax).
+- Progresi bertingkat: pertemuan N terbuka hanya setelah N-1 tuntas; kombinasi auto (kuis benar)
+  + override admin.
+- Halaman `/login` (UI poles: ikon, toggle password, hint) & `/admin` (dashboard).
+- **Dashboard admin kompleks**: ringkasan statistik (mahasiswa, rata-rata progres/nilai,
+  tuntas 100%), distribusi nilai A–E, pencarian & filter kelas, ekspor CSV.
+- **Gradebook**: nilai otomatis dari kuis (40%) + input manual PTS (30%)/UAS (30%),
+  tugas & kehadiran; nilai akhir + huruf (A–E, skala SN-Dikti).
+- **Kelola Menu Pertemuan** (editable): judul, sub-judul, posisi, alokasi, bobot, status
+  tampil — langsung tampil di portal tanpa rebuild (overlay via `auth.js`).
+- Impor massal mahasiswa: `nim,nama,kelas` / CSV / reset password (default = NIM).
+- Proteksi `/admin/` server-side (guard PHP + `.htaccess`); API admin `require_auth('admin')`.
+
+### Changed
+- Tema UI total: **"Tinta & Emas"** + neumorphism; font editorial (Lora/Public Sans).
+- Em-dash (—) dihapus total di seluruh teks; placeholder memakai en-dash (–).
+- Logo UNIPI terpasang (sidebar, mobile header, favicon, PWA manifest).
+- Data dummy diganti nama Islami-tokoh (Al-Khawarizmi, Faris Alamsyah, Ibnu Sina, dll.).
+- Registrasi 40 mahasiswa IF3A (NIM 26105001–26105040, password awal = NIM);
+  `docs/AKUN-MAHASISWA.md` berisi daftar akun.
+
+### Security hardening
+- `config.php` (kredensial) di-gitignore + block `.htaccess`; `config.example.php` untuk dev.
+- Directory listing mati (`Options -Indexes`) di `admin/` & `api/`.
+- XSS: escape via `esc()`/textContent; SQL injection: PDO prepared statements.
+
+### Catatan batasan (lihat docs/AUDIT.md)
+- Situs HTTP (Byethost) → HTTPS, force-change password, rate-limit login, CSRF token,
+  dan agregasi nilai (N+1) belum tersedia; dijadwalkan sebagai langkah berikutnya.
+
+---
+
 ## [1.8.0] - 2026-08-29
 
 ### Added
