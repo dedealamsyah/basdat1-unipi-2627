@@ -47,6 +47,16 @@ $pdo->exec(
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 );
 
+$pdo->exec(
+    "CREATE TABLE IF NOT EXISTS grades (
+        nim VARCHAR(24) NOT NULL,
+        komponen ENUM('pts','uas','tugas','hadir') NOT NULL,
+        nilai INT NOT NULL DEFAULT 0,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (nim, komponen)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+);
+
 $createdAdmin = false;
 $st = $pdo->query('SELECT 1 FROM users WHERE role = "admin" LIMIT 1');
 if (!$st->fetch()) {

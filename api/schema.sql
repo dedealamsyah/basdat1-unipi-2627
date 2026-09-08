@@ -25,6 +25,14 @@ CREATE TABLE IF NOT EXISTS progress (
   KEY idx_progress_nim (nim)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS grades (
+  nim VARCHAR(24) NOT NULL,
+  komponen ENUM('pts','uas','tugas','hadir') NOT NULL,
+  nilai INT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (nim, komponen)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Akun admin awal (dibuat oleh setup_db.php bila belum ada):
 --   nim = 'admin' / password = 'AdminUNIPI2026'
 -- Mohon segera diganti setelah login pertama.

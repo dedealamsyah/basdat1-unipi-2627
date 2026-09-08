@@ -31,24 +31,55 @@ import Sidebar from '../components/Sidebar.astro';
   </section>
 
   <section class="block">
-    <h2>Daftar Mahasiswa</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <h2 style="margin:0;">Daftar Mahasiswa</h2>
+      <button class="btn-sim" id="exportCsv" style="background:#1C3B30;">⬇ Ekspor CSV Nilai</button>
+    </div>
     <div style="overflow-x:auto;">
       <table class="dtable" id="adminTable">
-        <thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th>Tuntas</th><th>%</th><th>Detail</th></tr></thead>
-        <tbody id="adminTbody"><tr><td colspan="6" class="muted">Memuat…</td></tr></tbody>
+        <thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th>Tuntas</th><th>%</th><th>Nilai Akhir</th><th>Huruf</th><th>Kelola</th></tr></thead>
+        <tbody id="adminTbody"><tr><td colspan="8" class="muted">Memuat…</td></tr></tbody>
       </table>
     </div>
   </section>
 
   <section class="block" id="detailBox" hidden>
     <h2 id="detailTitle">Detail Progres</h2>
-    <div style="overflow-x:auto;">
+
+    <div class="grade-box" id="gradeBox">
+      <h3>Nilai Manual &amp; Akhir</h3>
+      <div class="grade-grid">
+        <label class="grade-item">Kuis (%)<span class="grade-readonly" id="gKuis">—</span></label>
+        <label class="grade-item">PTS
+          <input type="number" min="0" max="100" id="gPts" class="wks-input" />
+        </label>
+        <label class="grade-item">UAS
+          <input type="number" min="0" max="100" id="gUas" class="wks-input" />
+        </label>
+        <label class="grade-item">Tugas
+          <input type="number" min="0" max="100" id="gTugas" class="wks-input" />
+        </label>
+        <label class="grade-item">Kehadiran
+          <input type="number" min="0" max="100" id="gHadir" class="wks-input" />
+        </label>
+        <label class="grade-item">Nilai Akhir<span class="grade-readonly" id="gAkhir">—</span></label>
+        <label class="grade-item">Huruf<span class="grade-readonly" id="gHuruf">—</span></label>
+      </div>
+      <p class="muted" style="font-size:11px; margin-top:8px;">
+        Rumus: 40% kuis + 30% PTS + 30% UAS. Nilai akhir muncul saat ketiganya terisi.
+      </p>
+      <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+        <button class="btn-sim" id="gradeSave" style="background:#2A7A61;">Simpan Nilai</button>
+        <button class="btn-sim" id="detailClose" style="background:#1C3B30;">Tutup Detail</button>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto; margin-top:16px;">
       <table class="dtable" id="detailTable">
         <thead><tr><th>Pertemuan</th><th>Status</th><th>Skor Kuis</th><th>Attempts</th><th>Tgl Tuntas</th><th>Kelola</th></tr></thead>
         <tbody id="detailTbody"></tbody>
       </table>
     </div>
-    <button class="btn-sim" id="detailClose" style="background:#1C3B30; margin-top:12px;">Tutup Detail</button>
   </section>
 </BaseLayout>
 
@@ -60,6 +91,43 @@ import Sidebar from '../components/Sidebar.astro';
   .st-done { color: #1F5F4B; font-weight: 700; }
   .st-locked { color: var(--amber-400); font-weight: 600; }
   td select, td input { padding: 5px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 12px; }
+
+  .grade-box {
+    margin-top: 4px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--teal-100);
+  }
+  .grade-box h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--navy-800);
+    margin: 0 0 12px;
+  }
+  .grade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .grade-item {
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--navy-700);
+    gap: 5px;
+  }
+  .grade-item .wks-input { margin-bottom: 0; }
+  .grade-readonly {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--navy-800);
+    text-transform: none;
+    padding: 9px 0;
+  }
 </style>
 
 <script is:inline>
@@ -81,7 +149,7 @@ import Sidebar from '../components/Sidebar.astro';
 
     function fail(msg) {
       statusEl.textContent = '';
-      tbody.innerHTML = '<tr><td colspan="6" class="muted">' + msg + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="muted">' + msg + '</td></tr>';
     }
 
     function loadAdmin() {
@@ -100,8 +168,9 @@ import Sidebar from '../components/Sidebar.astro';
     }
 
     function renderRows(students) {
+      window.__students = students;
       if (!students.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="muted">Belum ada mahasiswa terdaftar. Impor data terlebih dahulu.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="muted">Belum ada mahasiswa terdaftar. Impor data terlebih dahulu.</td></tr>';
         return;
       }
       tbody.innerHTML = '';
@@ -113,6 +182,8 @@ import Sidebar from '../components/Sidebar.astro';
           '<td>' + esc(s.kelas) + '</td>' +
           '<td>' + s.done_count + ' / ' + s.total + '</td>' +
           '<td>' + s.persen + '%</td>' +
+          '<td>' + (s.akhir != null ? s.akhir : '—') + '</td>' +
+          '<td>' + (s.huruf ? '<strong>' + esc(s.huruf) + '</strong>' : '—') + '</td>' +
           '<td><button class="btn-sim" data-view="' + esc(s.nim) + '" style="background:#1C3B30;">Lihat</button> ' +
           '<button class="btn-sim" data-del="' + esc(s.nim) + '" style="background:#C9584F;">Hapus</button></td>';
         tbody.appendChild(tr);
@@ -128,6 +199,18 @@ import Sidebar from '../components/Sidebar.astro';
         if (!d.ok) { alert(d.error || 'Gagal memuat detail.'); return; }
         detailBox.hidden = false;
         document.getElementById('detailTitle').textContent = 'Detail Progres: ' + nim;
+        window.__curNim = nim;
+
+        // isi nilai
+        var n = d.data.nilai || {};
+        document.getElementById('gKuis').textContent = n.kuis_pct != null ? n.kuis_pct + '%' : '—';
+        document.getElementById('gPts').value = n.pts != null ? n.pts : '';
+        document.getElementById('gUas').value = n.uas != null ? n.uas : '';
+        document.getElementById('gTugas').value = n.tugas != null ? n.tugas : '';
+        document.getElementById('gHadir').value = n.hadir != null ? n.hadir : '';
+        document.getElementById('gAkhir').textContent = n.akhir != null ? n.akhir : '—';
+        document.getElementById('gHuruf').textContent = n.huruf || '—';
+
         dtbody.innerHTML = '';
         d.data.progress.forEach(function (p) {
           var st = p.status;
@@ -175,6 +258,59 @@ import Sidebar from '../components/Sidebar.astro';
     });
 
     document.getElementById('detailClose').addEventListener('click', function () { detailBox.hidden = true; });
+
+    document.getElementById('gradeSave').addEventListener('click', function () {
+      var nim = window.__curNim;
+      if (!nim) return;
+      var comps = [{ k: 'pts', el: gEl('gPts') }, { k: 'uas', el: gEl('gUas') },
+                   { k: 'tugas', el: gEl('gTugas') }, { k: 'hadir', el: gEl('gHadir') }];
+      var btn = document.getElementById('gradeSave');
+      btn.disabled = true;
+      btn.textContent = 'Menyimpan…';
+      var chain = Promise.resolve();
+      comps.forEach(function (c) {
+        chain = chain.then(function () {
+          var v = c.el.value.trim();
+          var nilai = v === '' ? -1 : parseInt(v, 10);
+          return api('/api/grade.php', { method: 'POST', body: { nim: nim, komponen: c.k, nilai: isNaN(nilai) ? -1 : nilai } });
+        });
+      });
+      chain.then(function (res) {
+        btn.disabled = false;
+        btn.textContent = 'Simpan Nilai';
+        if (res && res.ok) {
+          loadDetail(nim);
+          loadAdmin();
+        } else {
+          alert((res && res.error) || 'Gagal menyimpan.');
+        }
+      });
+    });
+
+    function gEl(id) { return document.getElementById(id); }
+
+    document.getElementById('exportCsv').addEventListener('click', function () {
+      var sts = window.__students || [];
+      if (!sts.length) { alert('Belum ada data untuk diekspor.'); return; }
+      var rows = [['NIM', 'Nama', 'Kelas', 'Tuntas', 'Total', 'Persen', 'NilaiAkhir', 'Huruf']];
+      sts.forEach(function (s) {
+        rows.push([s.nim, s.nama, s.kelas, s.done_count, s.total, s.persen + '%', s.akhir == null ? '' : s.akhir, s.huruf || '']);
+      });
+      var csv = rows.map(function (r) {
+        return r.map(function (c) {
+          var s = String(c);
+          return (s.indexOf(',') !== -1 || s.indexOf('"') !== -1) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }).join(',');
+      }).join('\r\n');
+      var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'nilai-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    });
 
     /* ---- import ---- */
     function doImport() {

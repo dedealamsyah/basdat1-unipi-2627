@@ -44,6 +44,7 @@ if ($nim !== '') {
     json_out(array('ok' => true, 'data' => array(
         'nim' => $nim,
         'progress' => $detail,
+        'nilai' => compute_nilai($nim),
     )));
 }
 
@@ -58,6 +59,7 @@ $st = db()->query(
 );
 $students = array();
 foreach ($st as $r) {
+    $nilai = compute_nilai($r['nim']);
     $students[] = array(
         'nim' => $r['nim'],
         'nama' => $r['nama'],
@@ -65,6 +67,8 @@ foreach ($st as $r) {
         'done_count' => (int) $r['done_count'],
         'total' => $total,
         'persen' => $total > 0 ? round(((int) $r['done_count'] / $total) * 100) : 0,
+        'akhir' => $nilai['akhir'],
+        'huruf' => $nilai['huruf'],
     );
 }
 

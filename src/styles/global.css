@@ -505,6 +505,30 @@ a {
   font-style: normal;
 }
 
+/* Progresi per-pertemuan (di-set auth.js) */
+.row.prog-locked {
+  opacity: .38;
+  filter: saturate(.6);
+}
+.row.prog-locked .row__pk {
+  background: #3C5148;
+  color: #BCCBBB;
+}
+.row.prog-done .row__pk {
+  background: #2A7A61;
+  color: #fff;
+}
+.row.prog-done .row__title {
+  color: #BFE3B3;
+}
+.row.prog-done .row__num::after {
+  content: " ✓";
+  color: #7FBF8F;
+}
+.row.prog-open {
+  opacity: 1;
+}
+
 .sidebar__account {
   margin-top: 12px;
   padding: 12px;

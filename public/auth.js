@@ -67,7 +67,24 @@
     return me(true).then(function (p) {
       refreshAccountBox(p);
       refreshProgressBar(p);
+      refreshPertemuanStates(p);
       return p;
+    });
+  }
+
+  function refreshPertemuanStates(p) {
+    var rows = document.querySelectorAll(
+      '.sidebar__list .row[data-id], #pertemuanList .row[data-id]'
+    );
+    rows.forEach(function (row) {
+      var id = row.getAttribute('data-id');
+      row.classList.remove('prog-done', 'prog-locked', 'prog-open');
+      if (!p || !p.logged_in) return;
+      if (p.user && p.user.role === 'admin') return; // admin melihat semua normal
+      var st = (p.progress || {})[String(id)];
+      if (st === 'done') row.classList.add('prog-done');
+      else if (st === 'open') row.classList.add('prog-open');
+      else row.classList.add('prog-locked');
     });
   }
 

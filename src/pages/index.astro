@@ -60,10 +60,11 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
 
   <section class="block">
     <h2>Daftar Pertemuan</h2>
-    <div style="display:grid; gap:12px; margin-top:16px;">
+    <div style="display:grid; gap:12px; margin-top:16px;" id="pertemuanList">
       {sorted.map((p) => (
         <a 
           href={p.data.locked ? '#' : `/pertemuan/${p.data.id}`}
+          data-id={p.data.id}
           class={`row ${p.data.locked ? 'locked' : ''}`}
           style={`text-decoration:none; ${p.data.locked ? 'pointer-events:none; opacity:0.5;' : ''}`}
         >
