@@ -20,6 +20,17 @@ if (isset($_GET['clear_attempts']) && $_GET['clear_attempts'] === '1') {
     db()->prepare('DELETE FROM login_attempts WHERE ip = ?')->execute(array($ip));
 }
 
+// Utilitas: reset password admin (token ops)
+if (isset($_GET['reset_admin']) && $_GET['reset_admin'] === '1' && $token === SETUP_TOKEN) {
+    $np = (string) ($_GET['newpass'] ?? '');
+    if (strlen($np) < 8) {
+        json_out(array('ok' => false, 'error' => 'Password baru minimal 8 karakter.'), 422);
+    }
+    db()->prepare('UPDATE users SET pass_hash = ?, must_change_password = 1 WHERE nim = ?')
+        ->execute(array(password_hash($np, PASSWORD_DEFAULT), ADMIN_DEFAULT_NIM));
+    json_out(array('ok' => true, 'data' => array('status' => 'password admin di-reset (wajib diganti saat login)')));
+}
+
 $pdo = db();
 $pdo->exec(
     "CREATE TABLE IF NOT EXISTS grades (
