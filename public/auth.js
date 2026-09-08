@@ -7,15 +7,21 @@
   "use strict";
 
   var meCache = null;
+  var csrfToken = null;
 
   function api(path, opts) {
     opts = opts || {};
     opts.credentials = "same-origin";
+    opts.cache = "no-store";
+    var method = (opts.method || "GET").toUpperCase();
     if (opts.body && typeof opts.body !== "string") {
       opts.headers = Object.assign({}, opts.headers || {}, {
         "Content-Type": "application/json"
       });
       opts.body = JSON.stringify(opts.body);
+    }
+    if (method !== "GET" && method !== "HEAD" && csrfToken) {
+      opts.headers = Object.assign({}, opts.headers || {}, { "X-CSRF-Token": csrfToken });
     }
     return fetch(path, opts).then(function (res) {
       return res.json().then(function (data) {
@@ -30,6 +36,7 @@
     if (meCache && !force) return Promise.resolve(meCache);
     return api("/api/me.php").then(function (r) {
       meCache = r.data.data || {};
+      if (meCache.logged_in && meCache.csrf) csrfToken = meCache.csrf;
       return meCache;
     }).catch(function () {
       return { logged_in: false, user: null, progress: {}, active: [] };
@@ -47,7 +54,18 @@
   function logout() {
     return api("/api/logout.php").then(function () {
       meCache = null;
+      csrfToken = null;
       return refresh();
+    });
+  }
+
+  function changePassword(oldPassword, newPassword) {
+    return api("/api/change_password.php", {
+      method: "POST",
+      body: { old_password: oldPassword, new_password: newPassword }
+    }).then(function (r) {
+      if (r.data.ok) { meCache = null; csrfToken = null; return r.data; }
+      return r.data;
     });
   }
 
@@ -100,8 +118,18 @@
       refreshAccountBox(p);
       refreshProgressBar(p);
       refreshPertemuanStates(p);
+      enforcePasswordChange(p);
       return p;
     });
+  }
+
+  /* Wajib ganti password sebelum memakai portal (kecuali di halaman itu) */
+  function enforcePasswordChange(p) {
+    if (!p || !p.logged_in || !p.must_change_password) return;
+    var path = location.pathname;
+    if (path === "/ganti-password/" || path === "/ganti-password") return;
+    var next = encodeURIComponent(path + location.search);
+    location.replace("/ganti-password/?next=" + next);
   }
 
   function refreshPertemuanStates(p) {
@@ -194,6 +222,7 @@
     login: login,
     logout: logout,
     complete: complete,
+    changePassword: changePassword,
     refresh: refresh
   };
 

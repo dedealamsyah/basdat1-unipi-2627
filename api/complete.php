@@ -11,7 +11,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     json_out(array('ok' => false, 'error' => 'Gunakan POST.'), 405);
 }
 
-$u = require_auth();
+ $u = require_auth();
+require_csrf();
 $in = json_in();
 $pertemuanId = (int) ($in['pertemuan_id'] ?? 0);
 $quizScore = (int) ($in['quiz_score'] ?? 0);

@@ -6,7 +6,19 @@
 declare(strict_types=1);
 require __DIR__ . '/config.php';
 
-require_auth('admin');
+// Jalankan migrasi bila: sesi admin ATAU token setup (untuk bootstrap saat login belum siap).
+$auth = current_user();
+$isAdmin = $auth && ($auth['role'] ?? '') === 'admin';
+$token = (string) ($_GET['token'] ?? '');
+if (!$isAdmin && $token !== SETUP_TOKEN) {
+    json_out(array('ok' => false, 'error' => 'Silakan login sebagai admin terlebih dahulu.'), 401);
+}
+
+// Utilitas: bersihkan log percobaan login untuk IP tertentu (ops opsional)
+if (isset($_GET['clear_attempts']) && $_GET['clear_attempts'] === '1') {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    db()->prepare('DELETE FROM login_attempts WHERE ip = ?')->execute(array($ip));
+}
 
 $pdo = db();
 $pdo->exec(
@@ -31,6 +43,29 @@ $pdo->exec(
         cpmk VARCHAR(120) NOT NULL DEFAULT ''
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 );
+
+$pdo->exec(
+    "CREATE TABLE IF NOT EXISTS login_attempts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        ip VARCHAR(45) NOT NULL DEFAULT '',
+        username VARCHAR(24) NOT NULL DEFAULT '',
+        attempted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        ok TINYINT(1) NOT NULL DEFAULT 0,
+        KEY idx_login_ip (ip),
+        KEY idx_login_user (username)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+);
+
+// Kolom kewajiban ganti password (bila belum ada) → paksa akun lama saat pertama migrasi
+$cols = $pdo->query('SHOW COLUMNS FROM users')->fetchAll();
+$hasMcp = false;
+foreach ($cols as $c) {
+    if ($c['Field'] === 'must_change_password') { $hasMcp = true; break; }
+}
+if (!$hasMcp) {
+    $pdo->exec('ALTER TABLE users ADD COLUMN must_change_password TINYINT(1) NOT NULL DEFAULT 0 AFTER pass_hash');
+    $pdo->exec('UPDATE users SET must_change_password = 1');
+}
 
 // Seed metadata pertemuan dari materi (hanya bila tabel kosong, agar edit admin tidak tertimpa)
 $cnt = (int) $pdo->query('SELECT COUNT(*) FROM pertemuan')->fetchColumn();

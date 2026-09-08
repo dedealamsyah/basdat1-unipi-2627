@@ -21,6 +21,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
 }
 
 require_auth('admin');
+require_csrf();
 
 $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 $resetPassword = isset($_GET['reset']) && $_GET['reset'] === '1';
@@ -58,9 +59,9 @@ $pdo = db();
 $pdo->beginTransaction();
 
 $selUser = $pdo->prepare('SELECT pass_hash FROM users WHERE nim = ?');
-$insUser = $pdo->prepare('INSERT INTO users (nim, nama, kelas, role, pass_hash) VALUES (?, ?, ?, "mahasiswa", ?)');
+$insUser = $pdo->prepare('INSERT INTO users (nim, nama, kelas, role, pass_hash, must_change_password) VALUES (?, ?, ?, "mahasiswa", ?, 1)');
 $updUser = $pdo->prepare('UPDATE users SET nama = ?, kelas = ? WHERE nim = ?');
-$updHash = $pdo->prepare('UPDATE users SET pass_hash = ? WHERE nim = ?');
+$updHash = $pdo->prepare('UPDATE users SET pass_hash = ?, must_change_password = 1 WHERE nim = ?');
 
 $imported = 0;
 $updated = 0;

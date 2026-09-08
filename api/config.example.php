@@ -57,12 +57,75 @@ function start_session(): void
         session_set_cookie_params(array('httponly' => true, 'samesite' => 'Lax'));
         session_start();
     }
+    if (empty($_SESSION['csrf'])) {
+        $_SESSION['csrf'] = bin2hex(random_bytes(16));
+    }
 }
 
 function current_user(): ?array
 {
     start_session();
     return isset($_SESSION['user']) ? $_SESSION['user'] : null;
+}
+
+/** Validasi CSRF token (header X-CSRF-Token) untuk aksi state-bentang. */
+function csrf_ok(): bool
+{
+    start_session();
+    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    return $token !== '' && hash_equals($_SESSION['csrf'] ?? '', $token);
+}
+
+function require_csrf(): void
+{
+    if (!csrf_ok()) {
+        json_out(array('ok' => false, 'error' => 'Token keamanan tidak valid. Muat ulang halaman.'), 403);
+    }
+}
+
+/** Nilai ambang rate-limit login (percobaan gagal per window menit) */
+const LOGIN_MAX_ATTEMPTS = 10;
+const LOGIN_WINDOW_MINUTES = 15;
+
+function login_too_many(string $username): bool
+{
+    try {
+        $pdo = db();
+        $pdo->prepare(
+            'DELETE FROM login_attempts WHERE attempted_at < (NOW() - INTERVAL ' . LOGIN_WINDOW_MINUTES . ' MINUTE)'
+        )->execute();
+        $st = $pdo->prepare(
+            'SELECT COUNT(*) c FROM login_attempts
+             WHERE (ip = ? OR username = ?) AND ok = 0'
+        );
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $st->execute(array($ip, strtolower($username)));
+        return (int) $st->fetchColumn() >= LOGIN_MAX_ATTEMPTS;
+    } catch (Throwable $e) {
+        return false; // tabel belum tersedia migrasi? biarkan login berjalan
+    }
+}
+
+function login_log_fail(string $username): void
+{
+    try {
+        db()->prepare(
+            'INSERT INTO login_attempts (ip, username, attempted_at, ok) VALUES (?, ?, NOW(), 0)'
+        )->execute(array($_SERVER['REMOTE_ADDR'] ?? 'unknown', strtolower($username)));
+    } catch (Throwable $e) {
+        // abaikan bila tabel belum ada
+    }
+}
+
+function login_log_clear(string $username): void
+{
+    try {
+        db()->prepare(
+            'DELETE FROM login_attempts WHERE ip = ? OR username = ?'
+        )->execute(array($_SERVER['REMOTE_ADDR'] ?? 'unknown', strtolower($username)));
+    } catch (Throwable $e) {
+        // abaikan bila tabel belum ada
+    }
 }
 
 function require_auth(string $role = 'mahasiswa'): array
@@ -113,4 +176,75 @@ function status_map(string $nim): array
         }
     }
     return $map;
+}
+
+/** Bobot komponen nilai */
+function grade_weights(): array
+{
+    return array('kuis' => 0.40, 'pts' => 0.30, 'uas' => 0.30);
+}
+
+/** Ambil nilai manual seorang mahasiswa: komponen => nilai */
+function manual_grades(string $nim): array
+{
+    $st = db()->prepare('SELECT komponen, nilai FROM grades WHERE nim = ?');
+    $st->execute(array($nim));
+    $out = array();
+    foreach ($st as $r) {
+        $out[$r['komponen']] = (int) $r['nilai'];
+    }
+    return $out;
+}
+
+/** Konversi 0-100 ke nilai huruf (skala SN-Dikti umum) */
+function grade_huruf(float $n): string
+{
+    if ($n >= 80) return 'A';
+    if ($n >= 75) return 'AB';
+    if ($n >= 70) return 'B';
+    if ($n >= 65) return 'BC';
+    if ($n >= 60) return 'C';
+    if ($n >= 50) return 'D';
+    return 'E';
+}
+
+/**
+ * Hitung nilai akhir dari skor kuis + nilai manual.
+ * Return array { kuis_pct, pts, uas, tugas, hadir, akhir, huruf }.
+ */
+function compute_nilai(string $nim): array
+{
+    $st = db()->prepare(
+        'SELECT quiz_score, quiz_total FROM progress WHERE nim = ? AND quiz_total > 0'
+    );
+    $st->execute(array($nim));
+    $qs = 0;
+    $qt = 0;
+    foreach ($st as $r) {
+        $qs += (int) $r['quiz_score'];
+        $qt += (int) $r['quiz_total'];
+    }
+    $kuisPct = $qt > 0 ? round(($qs / $qt) * 100) : null;
+
+    $g = manual_grades($nim);
+    $pts = $g['pts'] ?? null;
+    $uas = $g['uas'] ?? null;
+
+    $akhir = null;
+    if ($kuisPct !== null && $pts !== null && $uas !== null) {
+        $w = grade_weights();
+        $akhir = round(
+            $kuisPct * $w['kuis'] + $pts * $w['pts'] + $uas * $w['uas']
+        );
+    }
+
+    return array(
+        'kuis_pct' => $kuisPct,
+        'pts' => $pts,
+        'uas' => $uas,
+        'tugas' => $g['tugas'] ?? null,
+        'hadir' => $g['hadir'] ?? null,
+        'akhir' => $akhir,
+        'huruf' => $akhir !== null ? grade_huruf($akhir) : null,
+    );
 }

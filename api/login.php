@@ -18,13 +18,33 @@ if ($username === '' || $password === '') {
     json_out(array('ok' => false, 'error' => 'NIM/NIP dan password wajib diisi.'), 422);
 }
 
-$st = db()->prepare('SELECT nim, nama, kelas, role, pass_hash FROM users WHERE LOWER(nim) = ? LIMIT 1');
-$st->execute(array($username));
-$user = $st->fetch();
+// Rate-limit brute force
+if (login_too_many($username)) {
+    json_out(array(
+        'ok' => false,
+        'error' => 'Terlalu banyak percobaan login. Coba lagi nanti.',
+    ), 429);
+}
+
+try {
+    $st = db()->prepare('SELECT nim, nama, kelas, role, pass_hash, must_change_password FROM users WHERE LOWER(nim) = ? LIMIT 1');
+    $st->execute(array($username));
+    $user = $st->fetch();
+} catch (Throwable $e) {
+    // kompatibilitas: kolom must_change_password belum dimigrasi
+    $st = db()->prepare('SELECT nim, nama, kelas, role, pass_hash FROM users WHERE LOWER(nim) = ? LIMIT 1');
+    $st->execute(array($username));
+    $user = $st->fetch();
+    if ($user) { $user['must_change_password'] = 0; }
+}
 
 if (!$user || !password_verify($password, $user['pass_hash'])) {
+    login_log_fail($username);
+    usleep(400000); // perlambat enumerasi
     json_out(array('ok' => false, 'error' => 'NIM/NIP atau password salah.'), 401);
 }
+
+login_log_clear($username);
 
 start_session();
 session_regenerate_id(true);
@@ -44,6 +64,7 @@ json_out(array(
             'kelas' => $user['kelas'],
             'role' => $user['role'],
         ),
+        'must_change_password' => (bool) $user['must_change_password'],
         'progress' => status_map($user['nim']),
     ),
 ));

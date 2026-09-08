@@ -12,6 +12,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
 }
 
 require_auth('admin');
+require_csrf();
 $in = json_in();
 $nim = trim((string) ($in['nim'] ?? ''));
 $komponen = (string) ($in['komponen'] ?? '');

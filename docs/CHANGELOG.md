@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.0.1] - 2026-09-08
+
+### Security hardening (P1)
+- **Force-change password**: kolom `must_change_password`; wajib ganti saat login
+  pertama (halaman `/ganti-password`); berlaku untuk akun lama via migrasi.
+- **Rate-limit login**: tabel `login_attempts`, ambang 10× gagal/15 menit per username
+  → HTTP 429; + delay 400ms pada gagal (by-username, karena IP bersama tidak stabil).
+- **CSRF token**: token per sesi dikirim via header `X-CSRF-Token`; divalidasi
+  `require_csrf()` pada semua endpoint state-form (complete, unlock, grade, import,
+  delete, pertemuan POST, change_password).
+- **Security headers** (`api/.htaccess`): `X-Content-Type-Options`, `X-Frame-Options`,
+  `Referrer-Policy`.
+- `migrate.php` dapat dipanggil via token setup saat bootstrap (login belum siap),
+  plus utilitas `?clear_attempts=1`.
+
+### Changed
+- `me.php`/`login.php` mengembalikan `must_change_password`; `me` juga memberikan `csrf`.
+- `login.php`/`me.php` toleran bila kolom migrasi belum ada (tidak 500).
+
+---
+
 ## [2.0.0] - 2026-09-08
 
 ### Added — Sistem Autentikasi, Progres & Panel Admin

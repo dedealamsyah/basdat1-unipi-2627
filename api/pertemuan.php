@@ -12,6 +12,7 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'POST') {
     require_auth('admin');
+require_csrf();
     $in = json_in();
     $updates = isset($in['updates']) && is_array($in['updates']) ? $in['updates'] : array();
     if (empty($updates)) {

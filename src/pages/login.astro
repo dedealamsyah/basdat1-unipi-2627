@@ -260,7 +260,10 @@ import Sidebar from '../components/Sidebar.astro';
       window.APIAuth.login(u, p).then(function (res) {
         if (res && res.logged_in) {
           setMsg('Berhasil masuk! Mengalihkan…', 'ok');
-          setTimeout(function () { location.href = finalNext(); }, 400);
+          var dest = (res.must_change_password)
+            ? '/ganti-password/?next=' + encodeURIComponent(finalNext())
+            : finalNext();
+          setTimeout(function () { location.href = dest; }, 400);
           return;
         }
         setMsg((res && res.error) || 'Login gagal.', 'error');

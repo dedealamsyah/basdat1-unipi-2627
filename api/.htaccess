@@ -12,3 +12,9 @@
 
 # Matikan daftar direktori pada folder api
 Options -Indexes
+# Header keamanan dasar (bila mod_headers aktif; aman bila tidak)
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
