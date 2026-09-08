@@ -185,6 +185,10 @@
   clip-path: inset(50%);
 }
 
+.nav-hidden {
+  display: none !important;
+}
+
 html, body {
   margin: 0;
   padding: 0;

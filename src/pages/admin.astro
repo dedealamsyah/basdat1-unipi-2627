@@ -43,6 +43,28 @@ import Sidebar from '../components/Sidebar.astro';
     </div>
   </section>
 
+  <!-- KELOLA PERTEMUAN -->
+  <section class="block">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+      <h2 style="margin:0;">Kelola Menu Pertemuan</h2>
+      <span class="muted" style="font-size:11.5px;">Perubahan langsung tampil di portal (sidebar &amp; beranda) tanpa rebuild.</span>
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:6px;">
+      Edit judul, sub-judul, posisi, alokasi, bobot, dan status tampil (centang = muncul, kosong = disembunyikan).
+    </p>
+    <div style="overflow-x:auto; margin-top:12px;">
+      <table class="dtable" id="ptTable">
+        <thead><tr><th>ID</th><th>Judul</th><th>Sub Judul</th><th>Posisi</th><th>Alokasi</th><th>Bobot</th><th>Tampil</th></tr></thead>
+        <tbody id="ptTbody"><tr><td colspan="7" class="muted">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+      <button class="btn-sim" id="ptSave" style="background:#2A7A61;">Simpan Menu Pertemuan</button>
+      <button class="btn-sim" id="ptReset" style="background:#1C3B30;">Batal Perubahan</button>
+    </div>
+    <p class="muted" id="ptMsg" style="margin-top:10px;"></p>
+  </section>
+
   <!-- IMPORT -->
   <section class="block">
     <h2>Import Akun Mahasiswa</h2>
@@ -523,6 +545,74 @@ import Sidebar from '../components/Sidebar.astro';
       applyFilter();
     });
 
+    /* ---- kelola menu pertemuan ---- */
+    var ptTbody = document.getElementById('ptTbody');
+    var ptRows = [];
+
+    function loadPertemuan() {
+      ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Memuat…</td></tr>';
+      api('/api/pertemuan.php').then(function (d) {
+        if (!d.ok) { ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Gagal memuat.</td></tr>'; return; }
+        ptRows = d.data.pertemuan;
+        renderPt();
+      });
+    }
+
+    function renderPt() {
+      ptTbody.innerHTML = '';
+      ptRows.forEach(function (p) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-ptid', p.id);
+        tr.innerHTML =
+          '<td>' + p.id + '</td>' +
+          '<td><input type="text" data-f="title" value="' + esc(p.title) + '" style="width:100%;"></td>' +
+          '<td><input type="text" data-f="subtitle" value="' + esc(p.subtitle) + '" style="width:100%;"></td>' +
+          '<td><input type="number" data-f="posisi" value="' + p.posisi + '" style="width:60px;"></td>' +
+          '<td><input type="text" data-f="alokasi" value="' + esc(p.alokasi) + '" style="width:100%;"></td>' +
+          '<td><input type="text" data-f="bobot" value="' + esc(p.bobot) + '" style="width:70px;"></td>' +
+          '<td style="text-align:center"><input type="checkbox" data-f="aktif" ' + (p.aktif ? 'checked' : '') + '></td>';
+        tr.querySelector('input[data-f="aktif"]').style.width = 'auto';
+        ptTbody.appendChild(tr);
+      });
+    }
+
+    function collectPt() {
+      var updates = [];
+      ptTbody.querySelectorAll('tr[data-ptid]').forEach(function (tr) {
+        var id = parseInt(tr.getAttribute('data-ptid'), 10);
+        var title = tr.querySelector('[data-f="title"]').value;
+        var subtitle = tr.querySelector('[data-f="subtitle"]').value;
+        var posisi = parseInt(tr.querySelector('[data-f="posisi"]').value, 10) || 0;
+        var alokasi = tr.querySelector('[data-f="alokasi"]').value;
+        var bobot = tr.querySelector('[data-f="bobot"]').value;
+        var aktif = tr.querySelector('[data-f="aktif"]').checked ? 1 : 0;
+        updates.push({ id: id, title: title, subtitle: subtitle, posisi: posisi, alokasi: alokasi, bobot: bobot, aktif: aktif });
+      });
+      return updates;
+    }
+
+    document.getElementById('ptSave').addEventListener('click', function () {
+      var updates = collectPt();
+      var btn = document.getElementById('ptSave');
+      var msg = document.getElementById('ptMsg');
+      btn.disabled = true;
+      btn.textContent = 'Menyimpan…';
+      api('/api/pertemuan.php', { method: 'POST', body: { updates: updates } }).then(function (d) {
+        btn.disabled = false;
+        btn.textContent = 'Simpan Menu Pertemuan';
+        if (!d.ok) { msg.textContent = 'Gagal: ' + (d.error || '?'); return; }
+        msg.textContent = 'Menu pertemuan tersimpan dan langsung tampil di portal.';
+        ptRows = d.data.pertemuan;
+        renderPt();
+      });
+    });
+
+    document.getElementById('ptReset').addEventListener('click', function () {
+      document.getElementById('ptMsg').textContent = '';
+      loadPertemuan();
+    });
+
     loadAdmin();
+    loadPertemuan();
   })();
 </script>

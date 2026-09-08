@@ -61,6 +61,38 @@
     });
   }
 
+  /* ---------------- menu pertemuan dari DB (editable admin) ---------------- */
+  function loadPertemuanMeta() {
+    api("/api/pertemuan.php").then(function (r) {
+      var payload = r.data && r.data.data;
+      if (!payload || !payload.pertemuan) return;
+      applyPertemuanMeta(payload.pertemuan);
+    }).catch(function () {});
+  }
+
+  function applyPertemuanMeta(list) {
+    list.forEach(function (item) {
+      var sel = '.sidebar__list .row[data-id="' + item.id + '"], #pertemuanList .row[data-id="' + item.id + '"]';
+      document.querySelectorAll(sel).forEach(function (row) {
+        var t = row.querySelector('.row__title');
+        if (t && item.title) t.textContent = item.title;
+        row.classList.toggle('nav-hidden', !item.aktif);
+        row.setAttribute('data-pos', String(item.posisi));
+      });
+    });
+    // urutkan ulang menu sidebar sesuai posisi DB
+    var ul = document.getElementById('sidebarList');
+    if (ul) {
+      Array.prototype.slice.call(ul.children)
+        .sort(function (a, b) {
+          var pa = a.getAttribute('data-pos') || '99';
+          var pb = b.getAttribute('data-pos') || '99';
+          return pa.localeCompare(pb);
+        })
+        .forEach(function (n) { ul.appendChild(n); });
+    }
+  }
+
   /* ---------------- UI update ---------------- */
 
   function refresh() {
@@ -168,6 +200,7 @@
   // Muat otomatis saat first-load & navigasi dalam situs (astro)
   function init() {
     if (document.getElementById("accountBox")) refresh();
+    loadPertemuanMeta();
   }
   document.addEventListener("DOMContentLoaded", init);
   document.addEventListener("astro:page-load", init);
