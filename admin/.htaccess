@@ -1,0 +1,9 @@
+Options -Indexes
+DirectoryIndex index.php index.html
+
+# Semua file kecuali index.php TIDAK boleh diakses via URL.
+# PHP membaca panel.html via file_get_contents (di sisi server, tak terpengaruh).
+<FilesMatch "^(?!(index\.php$)).+">
+  order allow,deny
+  deny from all
+</FilesMatch>

@@ -11,7 +11,7 @@ import Sidebar from '../components/Sidebar.astro';
       <div class="login-head">
         <img src="/logo-unipi.png" alt="Logo Universitas Persatuan Islam (UNIPI)" class="login-logo" width="56" height="56" />
         <h1 class="login-title">Masuk Portal</h1>
-        <p class="login-sub">Akses materi, kuis, dan pantau progres belajar Anda.</p>
+        <p class="login-sub" id="loginSub">Akses materi, kuis, dan pantau progres belajar Anda.</p>
       </div>
 
       <form id="loginForm" class="login-form" autocomplete="on" novalidate>
@@ -52,7 +52,7 @@ import Sidebar from '../components/Sidebar.astro';
         <strong>Belum punya akun?</strong>
         <p>
           Akun didaftarkan oleh administrator. Jika belum punya akun,
-          hubungi dosen pengampu atau admin portal — data mahasiswa
+          hubungi dosen pengampu atau admin portal. Data mahasiswa
           dapat diimpor dari panel admin.
         </p>
       </div>
@@ -284,5 +284,11 @@ import Sidebar from '../components/Sidebar.astro';
 
     // fokus otomatis
     setTimeout(function () { document.getElementById('loginUsername').focus(); }, 100);
+
+    // petunjuk bila datang dari perlindungan admin
+    if (new URLSearchParams(location.search).get('type') === 'admin') {
+      var sub = document.getElementById('loginSub');
+      if (sub) { sub.textContent = 'Masuk dengan akun admin untuk membuka panel admin.'; }
+    }
   })();
 </script>

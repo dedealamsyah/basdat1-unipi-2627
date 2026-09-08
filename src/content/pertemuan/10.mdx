@@ -19,7 +19,7 @@ import QuizCard from '../../components/QuizCard.astro';
   <tbody>
     <tr><th>Mata Kuliah</th><td>Basis Data · Program Studi S1 Informatika, UNIPI</td></tr>
     <tr><th>Pertemuan / Minggu</th><td>Ke-10 dari 16 (Semester 3, TA 2026/2027)</td></tr>
-    <tr><th>Alokasi Waktu</th><td>3 × 50 menit (CTL &amp; PBL — Latihan AR-ke-SQL)</td></tr>
+    <tr><th>Alokasi Waktu</th><td>3 × 50 menit (CTL &amp; PBL: Latihan AR-ke-SQL)</td></tr>
     <tr><th>CPMK Terkait</th><td>CPMK-2: Mampu mengimplementasikan dan mengelola sistem basis data menggunakan DBMS, serta mengembangkannya menjadi produk aplikasi berbasis data.</td></tr>
     <tr><th>Sub-CPMK Minggu 10</th><td>Mahasiswa mampu memecahkan permasalahan query dengan notasi Aljabar Relasional (AR).</td></tr>
   </tbody>
@@ -61,11 +61,11 @@ Di Pertemuan 9 Anda sudah mampu menginstal dan mengakses DBMS. Sekarang kita mem
 
 ## D. Apa itu Aljabar Relasional?
 
-**Aljabar Relasional (Relational Algebra)** adalah kumpulan operasi yang bekerja pada satu atau dua **relasi (tabel)** dan menghasilkan **relasi baru** sebagai hasilnya. Karena hasil setiap operasi selalu berupa relasi, operasi-operasi ini bisa **dirangkai** (komposisi) untuk membentuk ekspresi yang rumit — persis seperti aljabar pada matematika.
+**Aljabar Relasional (Relational Algebra)** adalah kumpulan operasi yang bekerja pada satu atau dua **relasi (tabel)** dan menghasilkan **relasi baru** sebagai hasilnya. Karena hasil setiap operasi selalu berupa relasi, operasi-operasi ini bisa **dirangkai** (komposisi) untuk membentuk ekspresi yang rumit, persis seperti aljabar pada matematika.
 
 <div class="callout">
   <span class="callout__label">Mengapa Belajar AR?</span>
-  <p>AR adalah <strong>bahasa prosedural</strong>: Anda menjelaskan <strong>langkah demi langkah</strong> cara mendapatkan data. SQL adalah bahasa <em>non-prosedural</em> (deklaratif): Anda hanya menyebut <strong>apa</strong> yang diinginkan. Memahami AR membuat Anda mampu memecahkan masalah query secara sistematis — keterampilan kunci yang diukur pada pertemuan ini (laporan praktikum algoritma relasional).</p>
+  <p>AR adalah <strong>bahasa prosedural</strong>: Anda menjelaskan <strong>langkah demi langkah</strong> cara mendapatkan data. SQL adalah bahasa <em>non-prosedural</em> (deklaratif): Anda hanya menyebut <strong>apa</strong> yang diinginkan. Memahami AR membuat Anda mampu memecahkan masalah query secara sistematis: keterampilan kunci yang diukur pada pertemuan ini (laporan praktikum algoritma relasional).</p>
 </div>
 
 Untuk latihan di seluruh pertemuan ini, kita gunakan basis data kecil **SIAKAD** yang konsisten dengan Pertemuan 7–9:
@@ -80,7 +80,7 @@ NILAI(nim, kode_mk, nilai)
 
 Ada **enam operasi dasar** (fundamental) dalam AR. Tiga bekerja pada satu relasi (*unary*): **select, project, rename**. Tiga bekerja pada dua relasi (*binary*): **union, set difference, cartesian product**.
 
-### E.1 SELECT — σ (sigma)
+### E.1 SELECT: σ (sigma)
 
 Memilih **baris** (tuple) yang memenuhi suatu kondisi. Kondisi ditulis sebagai subskrip. Simbol: **σ**.
 
@@ -98,7 +98,7 @@ Contoh: semua nilai lebih dari 70
   <p>Operasi <code>σ</code> memilih <strong>baris</strong> berdasarkan kondisi. Ia mirip klausa <code>WHERE</code> pada SQL. Perhatikan: kondisi seperti <code>nilai > 70</code> di sini ditulis tanpa tanda kutip pada angka; pada tulisan tangan umum digunakan <code>σ<sub>nilai&gt;70</sub></code>.</p>
 </div>
 
-### E.2 PROJECT — π (pi)
+### E.2 PROJECT: π (pi)
 
 Memilih **kolom** (atribut) tertentu. Hasilnya menghilangkan duplikat baris (diperlakukan sebagai himpunan). Simbol: **π**.
 
@@ -109,7 +109,7 @@ Contoh: ambil hanya kolom nama dan prodi
 π<nama, prodi>(MAHASISWA)
 ```
 
-### E.3 RENAME — ρ (rho)
+### E.3 RENAME: ρ (rho)
 
 Mengganti nama relasi atau atribut. Simbol: **ρ**.
 
@@ -121,7 +121,7 @@ Contoh: MAHASISWA dinamai ulang menjadi MHS
 ρ<MHS>(MAHASISWA)
 ```
 
-### E.4 UNION — ∪
+### E.4 UNION: ∪
 
 Menggabungkan kedua relasi, menghilangkan duplikat. Syarat: kedua relasi harus **union-compatible** (jumlah atribut sama & domain berpadanan).
 
@@ -129,7 +129,7 @@ Menggabungkan kedua relasi, menghilangkan duplikat. Syarat: kedua relasi harus *
 R ∪ S
 ```
 
-### E.5 SET DIFFERENCE — −
+### E.5 SET DIFFERENCE: −
 
 Mengambil tuple yang ada di R tetapi **tidak ada** di S. Simbol: **−** (minus). Syarat sama dengan union (union-compatible).
 
@@ -137,7 +137,7 @@ Mengambil tuple yang ada di R tetapi **tidak ada** di S. Simbol: **−** (minus)
 R − S
 ```
 
-### E.6 CARTESIAN PRODUCT — ×
+### E.6 CARTESIAN PRODUCT: ×
 
 Menggabungkan **setiap baris** R dengan **setiap baris** S (perkalian silang). Simbol: **×**. Jika R punya n baris dan S punya m baris, hasilnya n×m baris.
 
@@ -165,11 +165,11 @@ MAHASISWA
 └─────┴─────────────┴──────────────┘
 ```
 
-**Contoh 1 — SELECT:** `σ<prodi='Informatika'>(MAHASISWA)` menghasilkan baris Andi (101) dan Bima (102).
+**Contoh 1: SELECT** `σ<prodi='Informatika'>(MAHASISWA)` menghasilkan baris Andi (101) dan Bima (102).
 
-**Contoh 2 — PROJECT:** `π<nim, nama>(MAHASISWA)` menghilangkan kolom prodi.
+**Contoh 2: PROJECT** `π<nim, nama>(MAHASISWA)` menghilangkan kolom prodi.
 
-**Contoh 3 — gabungan select + project** (komposisi):
+**Contoh 3: gabungan select + project** (komposisi)
 
 ```text
 π<nim, nama>( σ<prodi='Informatika'>(MAHASISWA) )
@@ -181,7 +181,7 @@ Hasilnya adalah `nim` dan `nama` dari mahasiswa yang prodi-nya Informatika (Andi
 
 Beberapa operasi sering dipakai sehingga didefinisikan sebagai "turunannya", meskipun dapat dinyatakan ulang memakai operasi dasar.
 
-### G.1 INNER JOIN — ⋈ (bowtie)
+### G.1 INNER JOIN: ⋈ (bowtie)
 
 Menggabungkan dua relasi berdasarkan **kondisi kesamaan** kolom, lalu membuang baris yang tidak cocok. Simbol: **⋈**.
 
@@ -194,10 +194,10 @@ NILAI ⋈<NILAI.kode_mk = MATAKULIAH.kode_mk> MATAKULIAH
 
 <div class="callout">
   <span class="callout__label">Definisi dengan Operasi Dasar</span>
-  <p><em>Theta join</em> dapat didefinisikan sebagai <code>σ(&lt;kondisi&gt;)(R × S)</code>. Ini menunjukkan bagaimana operasi turunan dibangun di atas operasi dasar — inti dari pemahaman AR.</p>
+  <p><em>Theta join</em> dapat didefinisikan sebagai <code>σ(&lt;kondisi&gt;)(R × S)</code>. Ini menunjukkan bagaimana operasi turunan dibangun di atas operasi dasar: inti dari pemahaman AR.</p>
 </div>
 
-### G.2 NATURAL JOIN — ⋈ (tanpa kondisi kolom)
+### G.2 NATURAL JOIN: ⋈ (tanpa kondisi kolom)
 
 Kasus khusus inner join: mencocokkan otomatis pada kolom yang **bernama sama**, dan hasilnya hanya memuat **satu salinan** kolom tersebut. Simbol: **⋈**.
 
@@ -208,7 +208,7 @@ Contoh: NILAI dan MATAKULIAH keduanya punya kolom kode_mk
 NILAI ⋈ MATAKULIAH
 ```
 
-### G.3 INTERSECTION — ∩ (irisan)
+### G.3 INTERSECTION: ∩ (irisan)
 
 Mengambil tuple yang **ada di kedua** relasi. Bisa dibentuk dari union & set difference.
 
@@ -216,7 +216,7 @@ Mengambil tuple yang **ada di kedua** relasi. Bisa dibentuk dari union & set dif
 R ∩ S  ≡  R − (R − S)
 ```
 
-### G.4 DIVISION — ÷
+### G.4 DIVISION: ÷
 
 Digunakan untuk query yang bersifat "untuk **semua**" (mis. nama mahasiswa yang mengambil *semua* matakuliah). Simbol: **÷**. Operasi paling sulit di AR dan sering menjadi soal.
 
@@ -226,7 +226,7 @@ R ÷ S
 
 <div class="callout callout--amber">
   <span class="callout__label">Kapan Pakai DIVISION?</span>
-  <p>Pakailah <code>÷</code> untuk pertanyaan seperti <em>"cari mahasiswa yang mengambil <strong>semua</strong> matakuliah"</em>. Jika pertanyaannya hanya "mengambil matakuliah tertentu (X) atau (Y)", cukup gunakan <code>σ</code> + <code>⋈</code> — bukan division.</p>
+  <p>Pakailah <code>÷</code> untuk pertanyaan seperti <em>"cari mahasiswa yang mengambil <strong>semua</strong> matakuliah"</em>. Jika pertanyaannya hanya "mengambil matakuliah tertentu (X) atau (Y)", cukup gunakan <code>σ</code> + <code>⋈</code>, bukan division.</p>
 </div>
 
 ## H. Cheat Sheet: Ringkasan Simbol AR
@@ -251,15 +251,15 @@ R ÷ S
 Query dalam AR disusun sebagai **rangkaian ekspresi**. Ikuti strategi berikut:
 
 <ol class="steps">
-  <li><strong>Identifikasi tabel sumber</strong> — relasi apa saja yang menyimpan data yang diminta.</li>
-  <li><strong>Tentukan kolom hasil</strong> — atribut apa yang ingin ditampilkan (ini menjadi <code>π</code> terluar).</li>
-  <li><strong>Tentukan kondisi penyaringan</strong> — syarat baris (ini menjadi <code>σ</code>).</li>
-  <li><strong>Hubungkan tabel</strong> — jika melibatkan banyak tabel, gunakan <code>⋈</code> (atau <code>×</code> lalu <code>σ</code>).</li>
-  <li><strong>Periksa kata "semua"</strong> — jika ada, pertimbangkan <code>÷</code>.</li>
-  <li><strong>Susun dari dalam ke luar</strong> — kerjakan operasi paling dalam pertama, seperti kurung pada matematika.</li>
+  <li><strong>Identifikasi tabel sumber</strong>: relasi apa saja yang menyimpan data yang diminta.</li>
+  <li><strong>Tentukan kolom hasil</strong>: atribut apa yang ingin ditampilkan (ini menjadi <code>π</code> terluar).</li>
+  <li><strong>Tentukan kondisi penyaringan</strong>: syarat baris (ini menjadi <code>σ</code>).</li>
+  <li><strong>Hubungkan tabel</strong>: jika melibatkan banyak tabel, gunakan <code>⋈</code> (atau <code>×</code> lalu <code>σ</code>).</li>
+  <li><strong>Periksa kata "semua"</strong>: jika ada, pertimbangkan <code>÷</code>.</li>
+  <li><strong>Susun dari dalam ke luar</strong>: kerjakan operasi paling dalam pertama, seperti kurung pada matematika.</li>
 </ol>
 
-### I.1 Contoh 1 — Query Sederhana
+### I.1 Contoh 1: Query Sederhana
 
 > Tampilkan nama mahasiswa prodi Informatika.
 
@@ -273,7 +273,7 @@ Query dalam AR disusun sebagai **rangkaian ekspresi**. Ikuti strategi berikut:
 SELECT nama FROM mahasiswa WHERE prodi = 'Informatika';
 ```
 
-### I.2 Contoh 2 — Melibatkan Dua Tabel
+### I.2 Contoh 2: Melibatkan Dua Tabel
 
 > Tampilkan nama mahasiswa beserta nilai yang ia peroleh.
 
@@ -291,7 +291,7 @@ FROM mahasiswa
 JOIN nilai ON mahasiswa.nim = nilai.nim;
 ```
 
-### I.3 Contoh 3 — Tiga Tabel
+### I.3 Contoh 3: Tiga Tabel
 
 > Tampilkan nama mahasiswa dan nama matakuliah untuk semua nilai yang ia peroleh.
 

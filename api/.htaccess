@@ -9,3 +9,6 @@
   order allow,deny
   deny from all
 </Files>
+
+# Matikan daftar direktori pada folder api
+Options -Indexes

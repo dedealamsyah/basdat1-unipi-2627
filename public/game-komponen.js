@@ -5,7 +5,7 @@
 
   var QUESTIONS = [
     { q: "Server dan storage yang menyimpan file basis data.", a: "HARDWARE" },
-    { q: "MySQL — perangkat lunak yang mengelola tabel dan index.", a: "SOFTWARE" },
+    { q: "MySQL: perangkat lunak yang mengelola tabel dan index.", a: "SOFTWARE" },
     { q: "SOP backup harian yang wajib dijalankan DBA.", a: "PROSEDUR" },
     { q: "Mahasiswa yang login ke SIAKAD untuk melihat nilai.", a: "PENGGUNA" },
     { q: "Kumpulan record nilai mahasiswa yang terintegrasi.", a: "DATA" },

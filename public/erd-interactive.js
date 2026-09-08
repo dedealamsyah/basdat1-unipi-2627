@@ -1,5 +1,5 @@
 /* =====================================================================
-   erd-interactive.js — Interaktivitas Diagram ERD
+   erd-interactive.js · Interaktivitas Diagram ERD
    - Hover garis relasi  → sorot 2 entitas terhubung + tooltip info
    - Hover kotak entitas → sorot semua garis relasinya
    - Klik garis relasi    → pin/sematkan tooltip (klik lagi utk melepas)

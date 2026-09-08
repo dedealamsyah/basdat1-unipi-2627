@@ -1,5 +1,5 @@
 /* =====================================================================
-   auth.js — Otentikasi & progres belajar Portal Basis Data UNIPI
+   auth.js · Otentikasi & progres belajar Portal Basis Data UNIPI
    Menyediakan window.APIAuth + memperbarui UI akun/progres di sidebar.
    Dipanggil dari setiap halaman via layout (BaseLayout.astro).
    ===================================================================== */
@@ -138,7 +138,7 @@
     if (!count || !fill) return;
 
     if (!p || !p.logged_in || (p.user && p.user.role === "admin")) {
-      count.textContent = "—";
+      count.textContent = "–";
       fill.style.width = "0%";
       return;
     }

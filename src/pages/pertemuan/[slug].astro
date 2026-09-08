@@ -42,7 +42,7 @@ const isActive = !pertemuan.data.locked;
         <span class="chip">{pertemuan.data.meta.cpmk}</span>
         <span class="chip">⏱ {pertemuan.data.meta.alokasi}</span>
         <span class="chip chip--amber">BOBOT {pertemuan.data.meta.bobot}</span>
-        {isActive && <span class="chip" id="progressChip">—</span>}
+        {isActive && <span class="chip" id="progressChip">–</span>}
       </div>
     )}
   </div>
@@ -150,7 +150,7 @@ const isActive = !pertemuan.data.locked;
 
       if (!p.logged_in) {
         showGate('login', contentGate);
-        setChip(progressChip, '—');
+        setChip(progressChip, '–');
         return;
       }
       if (p.user && p.user.role === 'admin') {

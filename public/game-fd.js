@@ -1,5 +1,5 @@
 /* =====================================================================
-   game-fd.js — Latihan klasifikasi Functional Dependency (Pertemuan 5)
+   game-fd.js · Latihan klasifikasi Functional Dependency (Pertemuan 5)
    - Menampilkan satu pernyataan FD; pemain memilih FULL / PARTIAL / TRANSITIVE
    - Konvensi markup:
      #fdStmt, #fdHint, #fdStart, .fd-btn[data-val], #fdFeedback,

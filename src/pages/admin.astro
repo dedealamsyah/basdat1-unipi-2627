@@ -16,7 +16,7 @@ import Sidebar from '../components/Sidebar.astro';
   <section class="block">
     <h2>Import Akun Mahasiswa</h2>
     <p class="muted" style="margin-bottom:8px;">
-      Tempel data per baris dengan format <code>nim,nama,kelas</code> — contoh:
+      Tempel data per baris dengan format <code>nim,nama,kelas</code>. Contoh:
       <code>22104001,Faris Alamsyah,IF3A</code>. Password awal = NIM.
     </p>
     <textarea id="importText" class="wks-input" rows="6" spellcheck="false" placeholder="22104001,Faris Alamsyah,IF3A&#10;22104002,Nadya Azzahra,IF3A"></textarea>
@@ -49,7 +49,7 @@ import Sidebar from '../components/Sidebar.astro';
     <div class="grade-box" id="gradeBox">
       <h3>Nilai Manual &amp; Akhir</h3>
       <div class="grade-grid">
-        <label class="grade-item">Kuis (%)<span class="grade-readonly" id="gKuis">—</span></label>
+        <label class="grade-item">Kuis (%)<span class="grade-readonly" id="gKuis">–</span></label>
         <label class="grade-item">PTS
           <input type="number" min="0" max="100" id="gPts" class="wks-input" />
         </label>
@@ -62,8 +62,8 @@ import Sidebar from '../components/Sidebar.astro';
         <label class="grade-item">Kehadiran
           <input type="number" min="0" max="100" id="gHadir" class="wks-input" />
         </label>
-        <label class="grade-item">Nilai Akhir<span class="grade-readonly" id="gAkhir">—</span></label>
-        <label class="grade-item">Huruf<span class="grade-readonly" id="gHuruf">—</span></label>
+        <label class="grade-item">Nilai Akhir<span class="grade-readonly" id="gAkhir">–</span></label>
+        <label class="grade-item">Huruf<span class="grade-readonly" id="gHuruf">–</span></label>
       </div>
       <p class="muted" style="font-size:11px; margin-top:8px;">
         Rumus: 40% kuis + 30% PTS + 30% UAS. Nilai akhir muncul saat ketiganya terisi.
@@ -156,7 +156,7 @@ import Sidebar from '../components/Sidebar.astro';
       statusEl.textContent = 'Memuat data…';
       api('/api/admin.php').then(function (d) {
         if (!d.ok) {
-          fail((d.error || 'Akses ditolak.') + ' — hubungi admin atau login sebagai admin.');
+          fail((d.error || 'Akses ditolak.') + ' – hubungi admin atau login sebagai admin.');
           return;
         }
         totalActive = d.data.total;
@@ -182,8 +182,8 @@ import Sidebar from '../components/Sidebar.astro';
           '<td>' + esc(s.kelas) + '</td>' +
           '<td>' + s.done_count + ' / ' + s.total + '</td>' +
           '<td>' + s.persen + '%</td>' +
-          '<td>' + (s.akhir != null ? s.akhir : '—') + '</td>' +
-          '<td>' + (s.huruf ? '<strong>' + esc(s.huruf) + '</strong>' : '—') + '</td>' +
+          '<td>' + (s.akhir != null ? s.akhir : '–') + '</td>' +
+          '<td>' + (s.huruf ? '<strong>' + esc(s.huruf) + '</strong>' : '–') + '</td>' +
           '<td><button class="btn-sim" data-view="' + esc(s.nim) + '" style="background:#1C3B30;">Lihat</button> ' +
           '<button class="btn-sim" data-del="' + esc(s.nim) + '" style="background:#C9584F;">Hapus</button></td>';
         tbody.appendChild(tr);
@@ -203,13 +203,13 @@ import Sidebar from '../components/Sidebar.astro';
 
         // isi nilai
         var n = d.data.nilai || {};
-        document.getElementById('gKuis').textContent = n.kuis_pct != null ? n.kuis_pct + '%' : '—';
+        document.getElementById('gKuis').textContent = n.kuis_pct != null ? n.kuis_pct + '%' : '–';
         document.getElementById('gPts').value = n.pts != null ? n.pts : '';
         document.getElementById('gUas').value = n.uas != null ? n.uas : '';
         document.getElementById('gTugas').value = n.tugas != null ? n.tugas : '';
         document.getElementById('gHadir').value = n.hadir != null ? n.hadir : '';
-        document.getElementById('gAkhir').textContent = n.akhir != null ? n.akhir : '—';
-        document.getElementById('gHuruf').textContent = n.huruf || '—';
+        document.getElementById('gAkhir').textContent = n.akhir != null ? n.akhir : '–';
+        document.getElementById('gHuruf').textContent = n.huruf || '–';
 
         dtbody.innerHTML = '';
         d.data.progress.forEach(function (p) {
@@ -221,7 +221,7 @@ import Sidebar from '../components/Sidebar.astro';
             '<td>' + stText + '</td>' +
             '<td>' + p.quiz_score + (p.quiz_total ? ' / ' + p.quiz_total : '') + '</td>' +
             '<td>' + p.attempts + '</td>' +
-            '<td>' + (p.completed_at ? p.completed_at.slice(0, 10) : '—') + '</td>' +
+            '<td>' + (p.completed_at ? p.completed_at.slice(0, 10) : '–') + '</td>' +
             '<td><button class="btn-sim" data-toggle="' + p.pertemuan_id + '" style="background:' + (st === 'done' ? '#C9584F;' : '#2A7A61;') + '" data-nim="' + esc(nim) + '">' + (st === 'done' ? 'Batal' : 'Tandai Tuntas') + '</button></td>';
           dtbody.appendChild(tr);
         });
@@ -352,7 +352,7 @@ import Sidebar from '../components/Sidebar.astro';
       var r = new FileReader();
       r.onload = function () {
         document.getElementById('importText').value = r.result;
-        document.getElementById('importResult').textContent = 'File dibaca — klik "Impor Mahasiswa".';
+        document.getElementById('importResult').textContent = 'File dibaca: klik "Impor Mahasiswa".';
       };
       r.readAsText(f);
       e.target.value = '';

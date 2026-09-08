@@ -1,5 +1,5 @@
 /* =====================================================================
-   service-worker.js — Offline Support for PWA
+   service-worker.js · Offline Support for PWA
    Strategi cache-first dengan runtime cache untuk navigasi & aset.
 ===================================================================== */
 
