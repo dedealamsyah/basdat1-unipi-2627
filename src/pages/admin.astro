@@ -8,32 +8,66 @@ import Sidebar from '../components/Sidebar.astro';
 
   <div class="contentHeader">
     <div class="eyebrow">PANEL ADMIN</div>
-    <h1 class="pageTitle">Dashboard Progres &amp; Nilai</h1>
-    <p class="pageSubtitle">Pantau penyelesaian materi, nilai mahasiswa, impor akun, dan kelola progres per pertemuan.</p>
+    <h1 class="pageTitle">Dashboard Administrasi</h1>
+    <p class="pageSubtitle">Pantau progres belajar, nilai mahasiswa, impor akun, dan kelola menu pertemuan dalam satu tempat.</p>
     <div id="adminStatus" class="muted"></div>
   </div>
 
   <!-- STATISTIK -->
   <section class="block">
-    <h2>Ringkasan</h2>
-    <div class="stat-grid" id="statGrid">
-      <div class="stat-card"><span class="stat-num" id="stTotal">–</span><span class="stat-label">Mahasiswa</span></div>
-      <div class="stat-card"><span class="stat-num" id="stProgres">–</span><span class="stat-label">Rata-rata Progres</span></div>
-      <div class="stat-card"><span class="stat-num" id="stNilai">–</span><span class="stat-label">Rata-rata Nilai</span></div>
-      <div class="stat-card"><span class="stat-num" id="stTuntas">–</span><span class="stat-label">Tuntas 100%</span></div>
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">1</span> Ringkasan</h2>
+      <span class="muted">Pembaruan otomatis dari data terkini</span>
     </div>
 
-    <div style="margin-top:16px;">
-      <h3 style="font-family:var(--font-display);color:var(--navy-800);margin:0 0 10px;font-size:15px;">Distribusi Nilai</h3>
-      <div id="distBox" class="dist-box">
-        <p class="muted">Memuat…</p>
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card stat-card--gold">
+        <span class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <span class="stat-num" id="stTotal">–</span>
+        <span class="stat-label">Mahasiswa Terdaftar</span>
+      </div>
+      <div class="stat-card stat-card--green">
+        <span class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </span>
+        <span class="stat-num" id="stProgres">–</span>
+        <span class="stat-label">Rata-rata Progres</span>
+      </div>
+      <div class="stat-card stat-card--navy">
+        <span class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+        </span>
+        <span class="stat-num" id="stNilai">–</span>
+        <span class="stat-label">Rata-rata Nilai</span>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <span class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </span>
+        <span class="stat-num" id="stTuntas">–</span>
+        <span class="stat-label">Tuntas 100%</span>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3 class="mini-title">Rekap per Kelas</h3>
+        <div id="kelasBox" class="kelas-grid"><p class="muted">Memuat…</p></div>
+      </div>
+      <div>
+        <h3 class="mini-title">Distribusi Nilai</h3>
+        <div id="distBox" class="dist-box"><p class="muted">Memuat…</p></div>
       </div>
     </div>
   </section>
 
   <!-- FILTER -->
   <section class="block">
-    <h2>Pencarian &amp; Filter</h2>
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">2</span> Pencarian &amp; Filter</h2>
+    </div>
     <div class="filter-row">
       <input type="text" id="qNim" class="wks-input" placeholder="Cari NIM atau nama…" style="flex:2;" />
       <select id="qKelas" class="wks-input" style="flex:1;">
@@ -45,15 +79,15 @@ import Sidebar from '../components/Sidebar.astro';
 
   <!-- KELOLA PERTEMUAN -->
   <section class="block">
-    <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
-      <h2 style="margin:0;">Kelola Menu Pertemuan</h2>
-      <span class="muted" style="font-size:11.5px;">Perubahan langsung tampil di portal (sidebar &amp; beranda) tanpa rebuild.</span>
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">3</span> Kelola Menu Pertemuan</h2>
+      <span class="muted" style="font-size:11.5px;">Perubahan langsung tampil di portal tanpa rebuild.</span>
     </div>
-    <p class="muted" style="font-size:12px; margin-top:6px;">
-      Edit judul, sub-judul, posisi, alokasi, bobot, dan status tampil (centang = muncul, kosong = disembunyikan).
+    <p class="muted" style="font-size:12px; margin-top:2px;">
+      Edit judul, sub-judul, posisi, alokasi, bobot, dan status tampil. Kosongkan centang <b>Tampil</b> untuk menyembunyikan.
     </p>
     <div style="overflow-x:auto; margin-top:12px;">
-      <table class="dtable" id="ptTable">
+      <table class="dtable tbl-scroll" id="ptTable">
         <thead><tr><th>ID</th><th>Judul</th><th>Sub Judul</th><th>Posisi</th><th>Alokasi</th><th>Bobot</th><th>Tampil</th></tr></thead>
         <tbody id="ptTbody"><tr><td colspan="7" class="muted">Memuat…</td></tr></tbody>
       </table>
@@ -67,10 +101,12 @@ import Sidebar from '../components/Sidebar.astro';
 
   <!-- IMPORT -->
   <section class="block">
-    <h2>Import Akun Mahasiswa</h2>
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">4</span> Import Akun Mahasiswa</h2>
+    </div>
     <p class="muted" style="margin-bottom:8px;">
-      Tempel data per baris dengan format <code>nim,nama,kelas</code>. Contoh:
-      <code>26105100,Fulan Bin Fulan,IF3A</code>. Password awal = NIM.
+      Tempel data per baris format <code>nim,nama,kelas</code> — contoh
+      <code>26105100,Fulan Bin Fulan,IF3A</code>. Password awal = NIM (wajib diganti saat login).
     </p>
     <textarea id="importText" class="wks-input" rows="6" spellcheck="false" placeholder="26105100,Fulan Bin Fulan,IF3A&#10;26105101,Fulanah Binti Fulan,IF3A"></textarea>
     <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
@@ -85,13 +121,25 @@ import Sidebar from '../components/Sidebar.astro';
 
   <!-- DAFTAR -->
   <section class="block">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-      <h2 style="margin:0;">Daftar Mahasiswa <span id="rowCount" class="muted" style="font-size:12px;"></span></h2>
-      <button class="btn-sim" id="exportCsv" style="background:#1C3B30;">⬇ Ekspor CSV Nilai</button>
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">5</span> Daftar Mahasiswa</h2>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span id="rowCount" class="muted" style="font-size:12px;"></span>
+        <button class="btn-sim" id="exportCsv" style="background:#1C3B30;">⬇ Ekspor CSV</button>
+      </div>
     </div>
     <div style="overflow-x:auto;">
-      <table class="dtable" id="adminTable">
-        <thead><tr><th>NIM</th><th>Nama</th><th>Kelas</th><th>Tuntas</th><th>%</th><th>Nilai Akhir</th><th>Huruf</th><th>Kelola</th></tr></thead>
+      <table class="dtable tbl-scroll tbl-sort" id="adminTable">
+        <thead><tr>
+          <th data-key="nim">NIM</th>
+          <th data-key="nama">Nama</th>
+          <th data-key="kelas">Kelas</th>
+          <th data-key="done_count">Tuntas</th>
+          <th data-key="persen">%</th>
+          <th data-key="akhir">Nilai Akhir</th>
+          <th data-key="huruf">Huruf</th>
+          <th>Kelola</th>
+        </tr></thead>
         <tbody id="adminTbody"><tr><td colspan="8" class="muted">Memuat…</td></tr></tbody>
       </table>
     </div>
@@ -99,7 +147,10 @@ import Sidebar from '../components/Sidebar.astro';
 
   <!-- DETAIL -->
   <section class="block" id="detailBox" hidden>
-    <h2 id="detailTitle">Detail Progres</h2>
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">›</span> <span id="detailTitle">Detail Progres</span></h2>
+      <button class="btn-sim" id="detailClose" style="background:#1C3B30;">Tutup Detail</button>
+    </div>
 
     <div class="grade-box" id="gradeBox">
       <h3>Nilai Manual &amp; Akhir</h3>
@@ -125,12 +176,11 @@ import Sidebar from '../components/Sidebar.astro';
       </p>
       <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
         <button class="btn-sim" id="gradeSave" style="background:#2A7A61;">Simpan Nilai</button>
-        <button class="btn-sim" id="detailClose" style="background:#1C3B30;">Tutup Detail</button>
       </div>
     </div>
 
     <div style="overflow-x:auto; margin-top:16px;">
-      <table class="dtable" id="detailTable">
+      <table class="dtable tbl-scroll" id="detailTable">
         <thead><tr><th>Pertemuan</th><th>Status</th><th>Skor Kuis</th><th>Attempts</th><th>Tgl Tuntas</th><th>Kelola</th></tr></thead>
         <tbody id="detailTbody"></tbody>
       </table>
@@ -139,39 +189,123 @@ import Sidebar from '../components/Sidebar.astro';
 </BaseLayout>
 
 <style is:global>
-  .admin-stat { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 0; }
-  .admin-stat .chip { margin: 0; }
-  .st-done { color: #1F5F4B; font-weight: 700; }
-  .st-locked { color: var(--amber-400); font-weight: 600; }
-  td select, td input { padding: 5px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 12px; }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    color: var(--navy-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--navy-700);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0 6px;
+  }
+  .mini-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--navy-700);
+    margin: 0 0 10px;
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 20px;
+  }
+  @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
 
   .stat-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 12px;
   }
   .stat-card {
     background: var(--card);
     box-shadow: var(--neu-shadow-sm);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 16px 14px;
-    text-align: center;
+    text-align: left;
+    border-top: 4px solid var(--teal-500);
+    position: relative;
   }
+  .stat-card--gold { border-top-color: #C9A227; }
+  .stat-card--green { border-top-color: #2A7A61; }
+  .stat-card--navy { border-top-color: #1C3B30; }
+  .stat-card--amber { border-top-color: #B4552D; }
+  .stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .stat-card--gold .stat-icon { background: #C9A227; }
+  .stat-card--green .stat-icon { background: #2A7A61; }
+  .stat-card--navy .stat-icon { background: #1C3B30; }
+  .stat-card--amber .stat-icon { background: #B4552D; }
   .stat-num {
     display: block;
     font-family: var(--font-display);
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 700;
+    line-height: 1;
     color: var(--navy-800);
-    margin-bottom: 2px;
+    margin-bottom: 6px;
   }
   .stat-label {
     font-family: var(--font-body);
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: .04em;
+    letter-spacing: .03em;
     text-transform: uppercase;
     color: var(--ink-soft);
+  }
+
+  .kelas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .kelas-card {
+    background: var(--card);
+    box-shadow: var(--neu-shadow-sm);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .kelas-card b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--navy-800);
+  }
+  .kelas-card span {
+    display: block;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
   }
 
   .dist-box { display: flex; flex-direction: column; gap: 6px; }
@@ -183,22 +317,22 @@ import Sidebar from '../components/Sidebar.astro';
     font-size: 12px;
   }
   .dist-row span:first-child { font-family: var(--font-body); font-weight: 700; color: var(--navy-800); }
-  .dist-bar {
-    height: 14px;
-    border-radius: 7px;
-    background: var(--teal-100);
-    overflow: hidden;
-  }
+  .dist-bar { height: 14px; border-radius: 7px; background: var(--teal-100); overflow: hidden; }
   .dist-bar i {
-    display: block;
-    height: 100%;
-    border-radius: 7px;
+    display: block; height: 100%; border-radius: 7px;
     background: linear-gradient(90deg, #1F5F4B, #2A7A61);
   }
   .dist-row span:last-child { text-align: right; color: var(--ink-soft); }
 
   .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .filter-row .wks-input { margin-bottom: 0; }
+
+  /* Tabel profesional */
+  .tbl-scroll { max-height: 480px; }
+  .tbl-scroll thead th { position: sticky; top: 0; z-index: 2; }
+  .tbl-sort th { cursor: pointer; user-select: none; white-space: nowrap; }
+  .tbl-sort th:hover { background: var(--navy-800); }
+  .tbl-sort th.sorted { background: var(--teal-500); color: #221A02 !important; }
 
   .grade-box {
     margin-top: 4px;
@@ -279,6 +413,8 @@ import Sidebar from '../components/Sidebar.astro';
     var totalActive = 0;
     var kelasOptions = [];
     var allStudents = [];
+    var sortKey = 'nim';
+    var sortDir = 1;
 
     function fail(msg) {
       statusEl.textContent = '';
@@ -299,28 +435,46 @@ import Sidebar from '../components/Sidebar.astro';
         allStudents.forEach(function (s) { if (s.kelas && kelasOptions.indexOf(s.kelas) === -1) kelasOptions.push(s.kelas); });
         fillKelas();
         renderStats(allStudents);
-        renderRows(allStudents);
+        applyFilter();
       }).catch(function () {
         fail('Gagal memuat data. Pastikan API tersedia (/api/admin.php).');
       });
     }
 
-    /* ---- statistik & distribusi ---- */
     function renderStats(sts) {
       var total = sts.length;
-      var sumP = 0, sumN = 0, nN = 0, tuntas = 0, dist = {};
+      var sumP = 0, sumN = 0, nN = 0, tuntas = 0, dist = {}, kelas = {};
       sts.forEach(function (s) {
         sumP += s.persen;
         if (s.akhir != null) { sumN += s.akhir; nN++; }
         if (s.persen >= 100) tuntas++;
         var h = s.huruf || '–';
         dist[h] = (dist[h] || 0) + 1;
+        var k = s.kelas || '?';
+        kelas[k] = kelas[k] || { n: 0, sp: 0, sn: 0, nn: 0 };
+        kelas[k].n++;
+        kelas[k].sp += s.persen;
+        if (s.akhir != null) { kelas[k].sn += s.akhir; kelas[k].nn++; }
       });
       document.getElementById('stTotal').textContent = total;
       document.getElementById('stProgres').textContent = total ? Math.round(sumP / total) + '%' : '–';
       document.getElementById('stNilai').textContent = nN ? Math.round(sumN / nN) : '–';
       document.getElementById('stTuntas').textContent = tuntas;
 
+      // rekap kelas
+      var kb = document.getElementById('kelasBox');
+      kb.innerHTML = '';
+      Object.keys(kelas).sort().forEach(function (k) {
+        var d = kelas[k];
+        var el = document.createElement('div');
+        el.className = 'kelas-card';
+        el.innerHTML = '<b>' + esc(k) + '</b><span>' + d.n + ' mhs · progres ' + Math.round(d.sp / d.n) + '%</span>' +
+          (d.nn ? '<span>nilai Ø ' + Math.round(d.sn / d.nn) + '</span>' : '');
+        kb.appendChild(el);
+      });
+      if (!Object.keys(kelas).length) kb.innerHTML = '<p class="muted">Belum ada data.</p>';
+
+      // distribusi
       var order = ['A', 'AB', 'B', 'BC', 'C', 'D', 'E'];
       var box = document.getElementById('distBox');
       var max = 1;
@@ -335,37 +489,42 @@ import Sidebar from '../components/Sidebar.astro';
       });
     }
 
-    /* ---- filter ---- */
     function fillKelas() {
       var sel = document.getElementById('qKelas');
       sel.innerHTML = '<option value="">Semua kelas</option>';
       kelasOptions.sort().forEach(function (k) {
         var o = document.createElement('option');
-        o.value = k;
-        o.textContent = k;
+        o.value = k; o.textContent = k;
         sel.appendChild(o);
       });
     }
+
     function applyFilter() {
       var q = (document.getElementById('qNim').value || '').toLowerCase().trim();
       var kl = document.getElementById('qKelas').value;
       var rows = allStudents.filter(function (s) {
         if (kl && s.kelas !== kl) return false;
-        if (q && (s.nim.toLowerCase().indexOf(q) === -1) && (s.nama.toLowerCase().indexOf(q) === -1)) return false;
+        if (q && s.nim.toLowerCase().indexOf(q) === -1 && s.nama.toLowerCase().indexOf(q) === -1) return false;
         return true;
       });
+      renderStats(rows);
       document.getElementById('rowCount').textContent = '(' + rows.length + ' dari ' + allStudents.length + ')';
       renderRows(rows);
     }
 
-    function renderRows(students) {
+    renderRows = function (students) {
       window.__students = students;
-      if (!students.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="muted">Tidak ada data sesuai filter. Impor data terlebih dahulu.</td></tr>';
+      var rows = students.slice().sort(function (a, b) {
+        var x = a[sortKey], y = b[sortKey];
+        if (typeof x === 'number' && typeof y === 'number') return (x - y) * sortDir;
+        return String(x == null ? '' : x).localeCompare(String(y == null ? '' : y)) * sortDir;
+      });
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="muted">Tidak ada data sesuai filter.</td></tr>';
         return;
       }
       tbody.innerHTML = '';
-      students.forEach(function (s) {
+      rows.forEach(function (s) {
         var tr = document.createElement('tr');
         tr.innerHTML =
           '<td>' + esc(s.nim) + '</td>' +
@@ -379,7 +538,7 @@ import Sidebar from '../components/Sidebar.astro';
           '<button class="btn-sim" data-del="' + esc(s.nim) + '" style="background:#C9584F;">Hapus</button></td>';
         tbody.appendChild(tr);
       });
-    }
+    };
 
     function esc(s) {
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -393,7 +552,6 @@ import Sidebar from '../components/Sidebar.astro';
         if (!d.ok) { alert(d.error || 'Gagal memuat detail.'); detailBox.hidden = true; return; }
         document.getElementById('detailTitle').textContent = 'Detail Progres: ' + nim;
         window.__curNim = nim;
-
         var n = d.data.nilai || {};
         document.getElementById('gKuis').textContent = n.kuis_pct != null ? n.kuis_pct + '%' : '–';
         document.getElementById('gPts').value = n.pts != null ? n.pts : '';
@@ -402,7 +560,6 @@ import Sidebar from '../components/Sidebar.astro';
         document.getElementById('gHadir').value = n.hadir != null ? n.hadir : '';
         document.getElementById('gAkhir').textContent = n.akhir != null ? n.akhir : '–';
         document.getElementById('gHuruf').textContent = n.huruf || '–';
-
         dtbody.innerHTML = '';
         d.data.progress.forEach(function (p) {
           var st = p.status;
@@ -423,7 +580,6 @@ import Sidebar from '../components/Sidebar.astro';
       });
     }
 
-    /* ---- klik tabel utama ---- */
     tbody.addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-view]');
       if (btn) { loadDetail(btn.getAttribute('data-view')); return; }
@@ -439,7 +595,6 @@ import Sidebar from '../components/Sidebar.astro';
       }
     });
 
-    /* ---- klik baris detail pertemuan ---- */
     dtbody.addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-toggle]');
       if (!btn) return;
@@ -454,18 +609,15 @@ import Sidebar from '../components/Sidebar.astro';
       });
     });
 
-    /* ---- tutup detail ---- */
     document.getElementById('detailClose').addEventListener('click', function () { detailBox.hidden = true; });
 
-    /* ---- simpan nilai manual ---- */
     document.getElementById('gradeSave').addEventListener('click', function () {
       var nim = window.__curNim;
       if (!nim) return;
       var comps = [{ k: 'pts', el: gEl('gPts') }, { k: 'uas', el: gEl('gUas') },
                    { k: 'tugas', el: gEl('gTugas') }, { k: 'hadir', el: gEl('gHadir') }];
       var btn = document.getElementById('gradeSave');
-      btn.disabled = true;
-      btn.textContent = 'Menyimpan…';
+      btn.disabled = true; btn.textContent = 'Menyimpan…';
       var chain = Promise.resolve();
       comps.forEach(function (c) {
         chain = chain.then(function () {
@@ -475,19 +627,13 @@ import Sidebar from '../components/Sidebar.astro';
         });
       });
       chain.then(function (res) {
-        btn.disabled = false;
-        btn.textContent = 'Simpan Nilai';
-        if (res && res.ok) {
-          loadDetail(nim);
-          loadAdmin();
-        } else {
-          alert((res && res.error) || 'Gagal menyimpan.');
-        }
+        btn.disabled = false; btn.textContent = 'Simpan Nilai';
+        if (res && res.ok) { loadDetail(nim); loadAdmin(); }
+        else { alert((res && res.error) || 'Gagal menyimpan.'); }
       });
     });
     function gEl(id) { return document.getElementById(id); }
 
-    /* ---- ekspor CSV ---- */
     document.getElementById('exportCsv').addEventListener('click', function () {
       var sts = window.__students || allStudents;
       if (!sts.length) { alert('Belum ada data untuk diekspor.'); return; }
@@ -505,46 +651,35 @@ import Sidebar from '../components/Sidebar.astro';
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'nilai-' + new Date().toISOString().slice(0, 10) + '.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(a.href);
     });
 
-    /* ---- import ---- */
     function doImport() {
       var text = document.getElementById('importText').value.trim();
       if (!text) { document.getElementById('importResult').textContent = 'Isi kolom data dulu.'; return; }
       document.getElementById('importResult').textContent = 'Mengimpor…';
       api('/api/import_users.php', { method: 'POST', body: text, headers: { 'Content-Type': 'text/plain' } }).then(function (d) {
-        if (!d.ok) {
-          document.getElementById('importResult').textContent = 'Gagal: ' + (d.error || '?');
-          return;
-        }
+        if (!d.ok) { document.getElementById('importResult').textContent = 'Gagal: ' + (d.error || '?'); return; }
         document.getElementById('importResult').textContent =
           'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' diperbarui. Password awal = NIM.';
         document.getElementById('importText').value = '';
         loadAdmin();
       });
     }
-
     document.getElementById('importBtn').addEventListener('click', function () { doImport(); });
     document.getElementById('importResetPass').addEventListener('click', function () {
       var text = document.getElementById('importText').value.trim();
-      if (!text) {
-        document.getElementById('importResult').textContent = 'Tempel data mahasiswa (nim,nama,kelas) lalu klik impor + reset.';
-        return;
-      }
+      if (!text) { document.getElementById('importResult').textContent = 'Tempel data mahasiswa lalu klik impor + reset.'; return; }
       document.getElementById('importResult').textContent = 'Mengimpor + reset password…';
       api('/api/import_users.php?reset=1', { method: 'POST', body: text, headers: { 'Content-Type': 'text/plain' } }).then(function (d) {
         document.getElementById('importResult').textContent = d.ok
-          ? 'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' direset password ke NIM.'
+          ? 'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' direset.'
           : 'Gagal: ' + (d.error || '?');
         document.getElementById('importText').value = '';
         loadAdmin();
       });
     });
-
     document.getElementById('importCsv').addEventListener('change', function (e) {
       var f = e.target.files && e.target.files[0];
       if (!f) return;
@@ -557,7 +692,6 @@ import Sidebar from '../components/Sidebar.astro';
       e.target.value = '';
     });
 
-    /* ---- filter events ---- */
     document.getElementById('qNim').addEventListener('input', applyFilter);
     document.getElementById('qKelas').addEventListener('change', applyFilter);
     document.getElementById('resetFilter').addEventListener('click', function () {
@@ -566,19 +700,33 @@ import Sidebar from '../components/Sidebar.astro';
       applyFilter();
     });
 
-    /* ---- kelola menu pertemuan ---- */
+    // sorting kolom
+    document.querySelectorAll('#adminTable thead th[data-key]').forEach(function (th) {
+      th.addEventListener('click', function () {
+        var k = th.getAttribute('data-key');
+        if (sortKey === k) { sortDir = -sortDir; } else { sortKey = k; sortDir = 1; }
+        document.querySelectorAll('#adminTable thead th').forEach(function (t) { t.classList.remove('sorted'); });
+        th.classList.add('sorted');
+        th.textContent = th.getAttribute('data-key') === 'huruf' ? 'Huruf' : th.textContent;
+        renderRows(allStudents.filter(function (s) {
+          var kl = document.getElementById('qKelas').value;
+          var q = (document.getElementById('qNim').value || '').toLowerCase().trim();
+          if (kl && s.kelas !== kl) return false;
+          if (q && s.nim.toLowerCase().indexOf(q) === -1 && s.nama.toLowerCase().indexOf(q) === -1) return false;
+          return true;
+        }));
+      });
+    });
+
     var ptTbody = document.getElementById('ptTbody');
     var ptRows = [];
-
     function loadPertemuan() {
       ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Memuat…</td></tr>';
       api('/api/pertemuan.php').then(function (d) {
         if (!d.ok) { ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Gagal memuat.</td></tr>'; return; }
-        ptRows = d.data.pertemuan;
-        renderPt();
+        ptRows = d.data.pertemuan; renderPt();
       });
     }
-
     function renderPt() {
       ptTbody.innerHTML = '';
       ptRows.forEach(function (p) {
@@ -596,38 +744,33 @@ import Sidebar from '../components/Sidebar.astro';
         ptTbody.appendChild(tr);
       });
     }
-
     function collectPt() {
       var updates = [];
       ptTbody.querySelectorAll('tr[data-ptid]').forEach(function (tr) {
         var id = parseInt(tr.getAttribute('data-ptid'), 10);
-        var title = tr.querySelector('[data-f="title"]').value;
-        var subtitle = tr.querySelector('[data-f="subtitle"]').value;
-        var posisi = parseInt(tr.querySelector('[data-f="posisi"]').value, 10) || 0;
-        var alokasi = tr.querySelector('[data-f="alokasi"]').value;
-        var bobot = tr.querySelector('[data-f="bobot"]').value;
-        var aktif = tr.querySelector('[data-f="aktif"]').checked ? 1 : 0;
-        updates.push({ id: id, title: title, subtitle: subtitle, posisi: posisi, alokasi: alokasi, bobot: bobot, aktif: aktif });
+        updates.push({
+          id: id,
+          title: tr.querySelector('[data-f="title"]').value,
+          subtitle: tr.querySelector('[data-f="subtitle"]').value,
+          posisi: parseInt(tr.querySelector('[data-f="posisi"]').value, 10) || 0,
+          alokasi: tr.querySelector('[data-f="alokasi"]').value,
+          bobot: tr.querySelector('[data-f="bobot"]').value,
+          aktif: tr.querySelector('[data-f="aktif"]').checked ? 1 : 0
+        });
       });
       return updates;
     }
-
     document.getElementById('ptSave').addEventListener('click', function () {
-      var updates = collectPt();
       var btn = document.getElementById('ptSave');
       var msg = document.getElementById('ptMsg');
-      btn.disabled = true;
-      btn.textContent = 'Menyimpan…';
-      api('/api/pertemuan.php', { method: 'POST', body: { updates: updates } }).then(function (d) {
-        btn.disabled = false;
-        btn.textContent = 'Simpan Menu Pertemuan';
+      btn.disabled = true; btn.textContent = 'Menyimpan…';
+      api('/api/pertemuan.php', { method: 'POST', body: { updates: collectPt() } }).then(function (d) {
+        btn.disabled = false; btn.textContent = 'Simpan Menu Pertemuan';
         if (!d.ok) { msg.textContent = 'Gagal: ' + (d.error || '?'); return; }
         msg.textContent = 'Menu pertemuan tersimpan dan langsung tampil di portal.';
-        ptRows = d.data.pertemuan;
-        renderPt();
+        ptRows = d.data.pertemuan; renderPt();
       });
     });
-
     document.getElementById('ptReset').addEventListener('click', function () {
       document.getElementById('ptMsg').textContent = '';
       loadPertemuan();
