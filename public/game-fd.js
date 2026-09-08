@@ -26,11 +26,21 @@
     { stmt: "id_produk \u2192 harga", ans: "PARTIAL", why: "'harga' ditentukan oleh sebagian PK (id_produk)." }
   ];
 
-  var idx = 0, score = 0, started = false;
+  var idx = 0, score = 0, started = false, fdTimer = null;
+
+  function fdFeedback(msg, color) {
+    feedback.innerHTML = "";
+    if (!msg) return;
+    var span = document.createElement("span");
+    span.style.color = color;
+    span.textContent = msg;
+    feedback.appendChild(span);
+  }
 
   function show(i) {
+    fdTimer = null;
     stmt.textContent = ITEMS[i].stmt;
-    feedback.innerHTML = "";
+    fdFeedback("", "");
   }
 
   function enable(flag) {
@@ -46,6 +56,7 @@
 
   if (start) {
     start.addEventListener("click", function () {
+      if (fdTimer) { clearTimeout(fdTimer); fdTimer = null; }
       started = true;
       idx = 0; score = 0;
       scoreEl.textContent = "0";
@@ -65,17 +76,22 @@
         if (val === item.ans) {
           score++;
           scoreEl.textContent = String(score);
-          feedback.innerHTML = '<span style="color:#166534;">[Benar] ' + item.why + "</span>";
+          fdFeedback("[Benar] " + item.why, "#166534");
         } else {
-          feedback.innerHTML = '<span style="color:#991b1b;">[Kurang tepat] Jawaban: ' + item.ans + ". " + item.why + "</span>";
+          fdFeedback("[Kurang tepat] Jawaban: " + item.ans + ". " + item.why, "#991b1b");
         }
         idx++;
         if (idx < ITEMS.length) {
-          setTimeout(show, 350, idx);
+          if (fdTimer) { clearTimeout(fdTimer); }
+          fdTimer = setTimeout(show, 350, idx);
         } else {
           finish();
         }
       });
     })(btns[b]);
   }
+
+  window.addEventListener("astro:before-swap", function () {
+    if (fdTimer) { clearTimeout(fdTimer); fdTimer = null; }
+  });
 })();

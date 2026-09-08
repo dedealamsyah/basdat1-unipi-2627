@@ -97,7 +97,7 @@ const studyCases = [
     </p>
     <div id="entitasRows"></div>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="entitasAdd" style="background:#2BA6A0;">+ Tambah Entitas</button>
+      <button class="btn-sim" id="entitasAdd" style="background:#2A7A61;">+ Tambah Entitas</button>
       <button class="btn-sim" id="entitasClear" style="background:#C9584F;">Bersihkan</button>
     </div>
   </section>
@@ -109,7 +109,7 @@ const studyCases = [
       Untuk setiap entitas (kolom pertama diisi otomatis dari langkah C), tentukan atribut, primary key (PK), dan foreign key (FK).
     </p>
     <div id="atributRows"></div>
-    <div class="sim-box" style="margin-top:12px; background:#E7F0F1; border-color:#2BA6A0;">
+    <div class="sim-box" style="margin-top:12px; background:var(--teal-100);">
       <p style="margin:0; font-size:12.5px;">
         <strong>PK</strong> = Primary Key (identitas unik) &nbsp;·&nbsp; <strong>FK</strong> = Foreign Key (penunjuk ke entitas lain)
       </p>
@@ -122,7 +122,7 @@ const studyCases = [
     <p>Tentukan hubungan antar entitas beserta kardinalitasnya.</p>
     <div id="relasiRows"></div>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="relasiAdd" style="background:#2BA6A0;">+ Tambah Relasi</button>
+      <button class="btn-sim" id="relasiAdd" style="background:#2A7A61;">+ Tambah Relasi</button>
       <button class="btn-sim" id="relasiClear" style="background:#C9584F;">Bersihkan</button>
     </div>
     <div class="callout" style="margin-top:16px;">
@@ -145,7 +145,7 @@ const studyCases = [
       Jalankan pemeriksaan otomatis untuk memastikan worksheet sudah lengkap dan konsisten sebelum dikumpulkan.
     </p>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="wksValidate" style="background:#2BA6A0;">✓ Validasi Worksheet</button>
+      <button class="btn-sim" id="wksValidate" style="background:#2A7A61;">✓ Validasi Worksheet</button>
     </div>
     <div id="wksValidation" style="margin-top:14px;"></div>
   </section>
@@ -157,8 +157,8 @@ const studyCases = [
       Bagikan isian worksheet ke kelompok lain (untuk review silang atau lanjutan di rumah) dalam format JSON.
     </p>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="wksExport" style="background:#1F3864;">⬇ Ekspor Data (.json)</button>
-      <button class="btn-sim" id="wksImport" style="background:#6699CC;">⬆ Impor Data</button>
+      <button class="btn-sim" id="wksExport" style="background:#1C3B30;">Ekspor Data (.json)</button>
+      <button class="btn-sim" id="wksImport" style="background:#4D8B6E;">Impor Data</button>
       <input type="file" id="wksImportFile" accept=".json" style="display:none;">
     </div>
   </section>
@@ -168,8 +168,8 @@ const studyCases = [
     <h2>I. Simpan, Unduh & Cetak</h2>
     <p>Isian terdokumentasi otomatis. Gunakan tombol di bawah untuk memproduksi laporan:</p>
     <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
-      <button class="btn-sim" id="wksSave" style="background:#2BA6A0;">💾 Simpan & Unduh Laporan (.txt)</button>
-      <button class="btn-sim" id="wksPrint" style="background:#1F3864;">🖨 Cetak / Simpan PDF</button>
+      <button class="btn-sim" id="wksSave" style="background:#2A7A61;">Simpan & Unduh Laporan (.txt)</button>
+      <button class="btn-sim" id="wksPrint" style="background:#1C3B30;">Cetak / Simpan PDF</button>
       <button class="btn-sim" id="wksReset" style="background:#C9584F;">Reset Semua</button>
     </div>
     <div id="wksFeedback" style="margin-top:14px;"></div>
@@ -185,17 +185,18 @@ const studyCases = [
   .wks-input {
     width: 100%;
     padding: 10px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--line);
+    border-radius: 10px;
+    border: none;
     background: var(--card);
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: 12.5px;
     margin-bottom: 6px;
     outline: none;
-    transition: border-color 0.2s;
+    box-shadow: var(--neu-inset-sm);
+    transition: box-shadow 0.2s;
   }
-  .wks-input:focus { border-color: var(--teal-500); }
+  .wks-input:focus { box-shadow: var(--neu-inset-sm), 0 0 0 2px var(--teal-500); }
   .wks-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
   .wks-table th {
     background: var(--navy-700); color: #fff; font-family: var(--font-mono);
@@ -223,8 +224,8 @@ const studyCases = [
     margin-bottom: 8px;
     font-size: 13px;
   }
-  .v-item.ok { border-left-color: #2BA6A0; }
-  .v-item.warn { border-left-color: #E7A83D; }
+  .v-item.ok { border-left-color: #1F5F4B; }
+  .v-item.warn { border-left-color: #C9A227; }
   .v-item.err { border-left-color: #C9584F; }
   .v-item.__label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing:.04em; }
   .v-score { font-size: 22px; font-weight: 800; }
@@ -262,11 +263,17 @@ const studyCases = [
     try {
       var raw = localStorage.getItem(LS_KEY);
       if (raw) state = Object.assign(state, JSON.parse(raw));
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Gagal memuat data worksheet dari localStorage:", e);
+    }
   }
+  var saveTimer = null;
   function save() {
-    localStorage.setItem(LS_KEY, JSON.stringify(state));
-    $("wksFeedback") && ($("wksFeedback").innerHTML = '<span class="muted">✓ Tersimpan otomatis.</span>');
+    if (saveTimer) { clearTimeout(saveTimer); }
+    saveTimer = setTimeout(function() {
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      $("wksFeedback") && ($("wksFeedback").innerHTML = '<span class="muted">✓ Tersimpan otomatis.</span>');
+    }, 300);
   }
   function $(id) { return document.getElementById(id); }
 
@@ -488,9 +495,20 @@ const studyCases = [
         var id = this.getAttribute("data-sc");
         state.studiKasus = id;
         var title = this.textContent;
-        $("caseNarasi").innerHTML = '<p style="margin:0 0 6px;"><strong>' + title + '</strong></p><p style="margin:0;">' + (NAR[id] || "") + "</p>";
+        var narasiBox = $("caseNarasi");
+        narasiBox.innerHTML = "";
+        var strong = document.createElement("strong");
+        strong.textContent = title;
+        var p1 = document.createElement("p");
+        p1.style.cssText = "margin:0 0 6px;";
+        p1.appendChild(strong);
+        narasiBox.appendChild(p1);
+        var p2 = document.createElement("p");
+        p2.style.margin = "0";
+        p2.textContent = NAR[id] || "";
+        narasiBox.appendChild(p2);
         document.querySelectorAll(".case-btn").forEach(function (x) {
-          x.style.background = x === b ? "#E7A83D" : "var(--navy-700)";
+          x.style.background = x === b ? "#C9A227" : "var(--navy-700)";
         });
         save();
       });

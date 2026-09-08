@@ -17,6 +17,9 @@
   window.__erdInteractiveLoaded = true;
 
   function initDiagram(container) {
+    if (container.dataset.erdReady) return;
+    container.dataset.erdReady = '1';
+
     var inner = container.querySelector(".diagram-inner");
     var svg = inner ? inner.querySelector("svg") : null;
     if (!svg) return;
@@ -88,17 +91,28 @@
       var desc = line.getAttribute("data-desc") || "";
       var part = line.getAttribute("data-participation") || "";
       var cls = line.classList.contains("erd-junction") ? "erd-tip-card erd-tip-junction" : "erd-tip-card";
-      return (
-        '<div class="' + cls + '">' +
-        '<div class="erd-tip-title">' + card + "</div>" +
-        '<div class="erd-tip-desc">' + desc + "</div>" +
-        (part ? '<div class="erd-tip-part">Partisipasi: ' + part + "</div>" : "") +
-        "</div>"
-      );
+      var div = document.createElement("div");
+      div.className = cls;
+      var title = document.createElement("div");
+      title.className = "erd-tip-title";
+      title.textContent = card;
+      div.appendChild(title);
+      var descEl = document.createElement("div");
+      descEl.className = "erd-tip-desc";
+      descEl.textContent = desc;
+      div.appendChild(descEl);
+      if (part) {
+        var partEl = document.createElement("div");
+        partEl.className = "erd-tip-part";
+        partEl.textContent = "Partisipasi: " + part;
+        div.appendChild(partEl);
+      }
+      return div;
     }
 
     function showTip(line, e) {
-      tip.innerHTML = tooltipHTML(line);
+      tip.innerHTML = "";
+      tip.appendChild(tooltipHTML(line));
       tip.style.display = "block";
       moveTip(e);
     }
@@ -151,7 +165,8 @@
         } else {
           pinned = line;
           highlightPair(line);
-          tip.innerHTML = tooltipHTML(line);
+          tip.innerHTML = "";
+          tip.appendChild(tooltipHTML(line));
           tip.classList.add("erd-tooltip-pinned");
           tip.style.display = "block";
           pinAt(line);
@@ -169,11 +184,7 @@
 
     // Klik area kosong di SVG → lepas pin
     svg.addEventListener("click", function (e) {
-      if (e.target === svg || !e.target.closest) {
-        if (pinned) unpin();
-        return;
-      }
-      if (!(e.target.closest(".rel-line") || e.target.closest(".entity-box"))) {
+      if (e.target === svg || !(e.target.closest && (e.target.closest(".rel-line") || e.target.closest(".entity-box")))) {
         if (pinned) unpin();
       }
     });

@@ -14,12 +14,21 @@
     { q: "phpMyAdmin sebagai aplikasi pendukung administrasi.", a: "SOFTWARE" }
   ];
 
-  var order = [], current = 0, score = 0;
+  var order = [], current = 0, score = 0, gTimer = null;
   var qEl = document.getElementById('gameQuestion');
   var sEl = document.getElementById('gameScore');
   var tEl = document.getElementById('gameTotal');
   var fEl = document.getElementById('gameFeedback');
   var compBtns = document.querySelectorAll('.comp-btn');
+
+  function gameFeedback(msg, color) {
+    fEl.innerHTML = '';
+    if (!msg) return;
+    var span = document.createElement('span');
+    span.style.color = color;
+    span.textContent = msg;
+    fEl.appendChild(span);
+  }
 
   compBtns.forEach(function(b) { b.disabled = true; });
 
@@ -32,19 +41,21 @@
   }
 
   function showQuestion() {
+    gTimer = null;
     if (current >= order.length) {
       qEl.textContent = "Skor akhir: " + score + "/" + order.length;
-      fEl.innerHTML = '';
+      gameFeedback('', '');
       gameStartBtn.textContent = "Ulangi";
       gameStartBtn.disabled = false;
       compBtns.forEach(function(b) { b.disabled = true; });
       return;
     }
     qEl.textContent = "(" + (current + 1) + "/" + order.length + ") " + order[current].q;
-    fEl.innerHTML = '';
+    gameFeedback('', '');
   }
 
   gameStartBtn.onclick = function() {
+    if (gTimer) { clearTimeout(gTimer); gTimer = null; }
     order = shuffle(QUESTIONS.slice());
     current = 0; score = 0;
     sEl.textContent = '0';
@@ -61,12 +72,17 @@
       if (correct) {
         score++;
         sEl.textContent = score;
-        fEl.innerHTML = '<span style="color:#166534">[Benar]</span>';
+        gameFeedback('[Benar]', '#166534');
       } else {
-        fEl.innerHTML = '<span style="color:#991b1b">[Salah] Jawaban: <strong>' + order[current].a + '</strong></span>';
+        gameFeedback('[Salah] Jawaban: ' + order[current].a, '#991b1b');
       }
       current++;
-      setTimeout(showQuestion, 900);
+      if (gTimer) { clearTimeout(gTimer); }
+      gTimer = setTimeout(showQuestion, 900);
     };
+  });
+
+  window.addEventListener('astro:before-swap', function() {
+    if (gTimer) { clearTimeout(gTimer); gTimer = null; }
   });
 })();

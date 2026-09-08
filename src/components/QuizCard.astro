@@ -5,7 +5,7 @@ interface Props {
 }
 
 const { question, id } = Astro.props;
-const quizId = id || `quiz-${Math.random().toString(36).slice(2, 8)}`;
+const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
 ---
 
 <div class="interactive-card" data-quiz={quizId}>
@@ -28,13 +28,20 @@ const quizId = id || `quiz-${Math.random().toString(36).slice(2, 8)}`;
           opt.classList.remove('correct', 'wrong');
         });
 
+        feedback.textContent = '';
         if (isCorrect) {
           this.classList.add('correct');
-          var explanation = this.getAttribute('data-explanation');
-          feedback.innerHTML = '<span style="color:#166534">[Benar] ' + explanation + '</span>';
+          var explanation = this.getAttribute('data-explanation') || '';
+          var span = document.createElement('span');
+          span.style.color = '#166534';
+          span.textContent = '[Benar] ' + explanation;
+          feedback.appendChild(span);
         } else {
           this.classList.add('wrong');
-          feedback.innerHTML = '<span style="color:#991b1b">[Kurang tepat] Coba perhatikan kembali konsepnya.</span>';
+          var span2 = document.createElement('span');
+          span2.style.color = '#991b1b';
+          span2.textContent = '[Kurang tepat] Coba perhatikan kembali konsepnya.';
+          feedback.appendChild(span2);
         }
       };
     });

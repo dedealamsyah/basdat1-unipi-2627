@@ -7,6 +7,7 @@ declare module "sql.js" {
   interface Database {
     exec(sql: string): QueryExecResult[];
     run(sql: string): void;
+    close(): void;
   }
 
   interface SqlJsStatic {

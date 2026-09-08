@@ -8,13 +8,12 @@ export async function getStaticPaths() {
   const allPertemuan = await getCollection('pertemuan');
   return allPertemuan.map(p => ({
     params: { slug: String(p.data.id) },
-    props: { pertemuan: p }
+    props: { pertemuan: p, allPertemuan }
   }));
 }
 
-const { pertemuan } = Astro.props;
+const { pertemuan, allPertemuan } = Astro.props;
 const { Content } = await render(pertemuan);
-const allPertemuan = await getCollection('pertemuan');
 const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
 const currentIndex = sorted.findIndex(p => p.data.id === pertemuan.data.id);
 const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
@@ -71,12 +70,13 @@ const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
 </BaseLayout>
 
 <script is:inline>
-  // Update mobile header title
-  document.addEventListener('DOMContentLoaded', function() {
+  function updateMobileHeader() {
     const title = document.querySelector('.pageTitle');
     const mobileTitle = document.getElementById('mobileHeaderTitle');
     if (title && mobileTitle) {
       mobileTitle.textContent = title.textContent.substring(0, 30) + (title.textContent.length > 30 ? '...' : '');
     }
-  });
+  }
+  document.addEventListener('DOMContentLoaded', updateMobileHeader);
+  document.addEventListener('astro:page-load', updateMobileHeader);
 </script>

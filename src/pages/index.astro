@@ -5,7 +5,6 @@ import { getCollection } from 'astro:content';
 
 const allPertemuan = await getCollection('pertemuan');
 const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
-const firstAvailable = sorted.find(p => !p.data.locked);
 ---
 
 <BaseLayout title="Basis Data · Portal Materi UNIPI">
@@ -19,7 +18,7 @@ const firstAvailable = sorted.find(p => !p.data.locked);
     </p>
     <div class="chipRow">
       <span class="chip">Semester 3 · TA 2026/2027</span>
-      <span class="chip chip--amber">16 Pertemuan</span>
+      <span class="chip chip--amber">{sorted.length} Pertemuan</span>
     </div>
   </div>
 
@@ -45,7 +44,7 @@ const firstAvailable = sorted.find(p => !p.data.locked);
       Lembar kerja interaktif untuk praktikum perancangan ERD. Cocok digunakan di dalam kelas bersama dosen.
     </p>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <a class="navBtn" href="/praktikum" style="background:#E7A83D; color:#0D1B30; font-weight:700;">🧪 Buka Worksheet Praktikum</a>
+      <a class="navBtn" href="/praktikum" style="background:#C9A227; color:#262119; font-weight:700;">Buka Worksheet Praktikum</a>
     </div>
   </section>
 
@@ -55,7 +54,7 @@ const firstAvailable = sorted.find(p => !p.data.locked);
       Latihan query SQL langsung di browser (SQLite via WASM), lengkap dengan data contoh relasional dan contoh query yang siap dijalankan.
     </p>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <a class="navBtn" href="/playground" style="background:#2BA6A0; color:#fff; font-weight:700;">▸ Buka SQL Playground</a>
+      <a class="navBtn" href="/playground" style="background:#1F5F4B; color:#fff; font-weight:700;">Buka SQL Playground</a>
     </div>
   </section>
 

@@ -30,15 +30,15 @@ import Sidebar from '../components/Sidebar.astro';
         <option value="krs">krs (perkuliahan)</option>
         <option value="nilai">nilai</option>
       </select>
-      <button class="btn-sim" id="pgViewTable" style="background:#2BA6A0;">Lihat Isi</button>
+      <button class="btn-sim" id="pgViewTable" style="background:#2A7A61;">Lihat Isi</button>
     </div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
       <span style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);">QUERY EDITOR (menjalankan &lt;Ctrl|Cmd&gt; + Enter)</span>
       <div style="display:flex; gap:6px;">
-        <button class="btn-sim" id="pgRun" style="background:#2BA6A0;">▶ Jalankan SQL</button>
+        <button class="btn-sim" id="pgRun" style="background:#2A7A61;">▶ Jalankan SQL</button>
         <button class="btn-sim" id="pgReset" style="background:#C9584F;">Reset Data</button>
-        <button class="btn-sim" id="pgClear" style="background:#1F3864;">Bersihkan Editor</button>
+        <button class="btn-sim" id="pgClear" style="background:#1C3B30;">Bersihkan Editor</button>
       </div>
     </div>
 
@@ -80,29 +80,45 @@ import Sidebar from '../components/Sidebar.astro';
     width: 100%;
     min-height: 220px;
     padding: 14px;
-    border-radius: 8px;
-    border: 1px solid var(--line);
-    background: #0D1B30;
-    color: #E2E8F0;
+    border-radius: 12px;
+    border: none;
+    background: #202A26;
+    color: #E8E4DA;
     font-family: var(--font-mono);
     font-size: 13px;
     line-height: 1.6;
     resize: vertical;
     outline: none;
     white-space: pre;
+    box-shadow: inset 4px 4px 9px rgba(0,0,0,.4), inset -4px -4px 9px rgba(255,255,255,.04);
+    transition: box-shadow 0.2s;
   }
-  .pg-editor:focus { border-color: var(--teal-500); }
+  .pg-editor:focus { box-shadow: inset 4px 4px 9px rgba(0,0,0,.4), inset -4px -4px 9px rgba(255,255,255,.04), 0 0 0 2px var(--teal-500); }
   .pg-select {
-    padding: 7px 10px; border-radius: 6px;
-    border: 1px solid var(--line); background: var(--card); color: var(--ink);
-    font-family: var(--font-mono); font-size: 12px; outline: none; cursor: pointer;
+    padding: 8px 11px;
+    border-radius: 10px;
+    border: none;
+    background: var(--card);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    box-shadow: var(--neu-shadow-sm);
   }
   .pg-preset {
-    padding: 6px 10px; border-radius: 20px; border: 1px solid var(--line);
-    background: var(--card); color: var(--teal-400); font-family: var(--font-mono);
-    font-size: 11.5px; cursor: pointer; transition: background 0.2s;
+    padding: 7px 12px;
+    border-radius: 20px;
+    border: none;
+    background: var(--card);
+    color: var(--navy-700);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    cursor: pointer;
+    box-shadow: var(--neu-shadow-sm);
+    transition: box-shadow 0.2s;
   }
-  .pg-preset:hover { background: var(--navy-700); color: #fff; }
+  .pg-preset:hover { box-shadow: var(--neu-inset-sm); color: var(--teal-500); }
 
   .pg-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
   .pg-table th {
@@ -111,7 +127,7 @@ import Sidebar from '../components/Sidebar.astro';
     padding: 8px 10px; text-align: left; position: sticky; top: 0;
   }
   .pg-table td { padding: 6px 10px; border-bottom: 1px solid var(--line); }
-  .pg-table tr:nth-child(even) td { background: rgba(43,166,160,0.05); }
+  .pg-table tr:nth-child(even) td { background: rgba(201,162,39,0.06); }
 
   @media print {
     .pg-editor, .pg-select, #pgRun, #pgReset, #pgClear,
@@ -159,6 +175,14 @@ import Sidebar from '../components/Sidebar.astro';
   let db: Database | null = null;
   let SQL: SqlJsStatic | null = null;
 
+  function esc(s: string): string {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function renderResult(res: QueryExecResult[]) {
     if (!res || res.length === 0) {
       $pg("pgResult").innerHTML = '<span class="muted">(No rows returned)</span>';
@@ -168,11 +192,11 @@ import Sidebar from '../components/Sidebar.astro';
     res.forEach(function(r) {
       if (!r.columns.length) return;
       html += '<table class="pg-table"><thead><tr>';
-      r.columns.forEach(c => { html += "<th>" + (c==null?"":String(c)) + "</th>"; });
+      r.columns.forEach(c => { html += "<th>" + esc(c == null ? "" : String(c)) + "</th>"; });
       html += "</tr></thead><tbody>";
       r.values.forEach(row => {
         html += "<tr>";
-        row.forEach(v => { html += "<td>" + (v==null?"NULL":String(v)) + "</td>"; });
+        row.forEach(v => { html += "<td>" + esc(v == null ? "NULL" : String(v)) + "</td>"; });
         html += "</tr>";
       });
       html += "</tbody></table>";
@@ -181,21 +205,26 @@ import Sidebar from '../components/Sidebar.astro';
     $pg("pgResult").innerHTML = html;
   }
 
+  function setStatus(msg: string, ok: boolean) {
+    $pg("pgStatus").innerHTML = '<span style="color:' + (ok ? '#166534' : '#C9584F') + ';">' + esc(msg) + "</span>";
+  }
+
   function runSql(sql: string) {
     if (!db) return;
     try {
       const res = db.exec(sql);
-      $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ Query berhasil dijalankan.</span>';
+      setStatus("✓ Query berhasil dijalankan.", true);
       renderResult(res);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Error: ' + msg + "</span>";
+      setStatus("✗ Error: " + msg, false);
       $pg("pgResult").innerHTML = "";
     }
   }
 
   function setupDB() {
     if (!SQL) return;
+    if (db) { try { db.close(); } catch (e) {} }
     const instance = new SQL.Database();
     db = instance;
     const seeded = schemaInit();
@@ -205,13 +234,12 @@ import Sidebar from '../components/Sidebar.astro';
   function initPresets() {
     const box = $pg("pgPresets");
     if (!box) return;
-    const items = (typeof PRESETS !== "undefined") ? PRESETS : [];
-    items.forEach(p => {
+    PRESETS.forEach(p => {
       const b = document.createElement("button");
       b.className = "pg-preset";
       b.textContent = p.label;
       b.addEventListener("click", () => {
-        if (!db) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">SQLite belum siap, tunggu sebentar lalu coba lagi.</span>'; return; }
+        if (!db) { setStatus("SQLite belum siap, tunggu sebentar lalu coba lagi.", false); return; }
         $pg<HTMLTextAreaElement>("pgEditor").value = p.sql; runSql(p.sql);
       });
       box.appendChild(b);
@@ -223,33 +251,36 @@ import Sidebar from '../components/Sidebar.astro';
     try {
       SQL = await initSqlJs({ locateFile: () => "/sql-wasm.wasm" });
       setupDB();
-      $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ SQLite siap (berjalan di browser). Jalankan query untuk mulai.</span>';
+      setStatus("✓ SQLite siap (berjalan di browser). Jalankan query untuk mulai.", true);
       $pg<HTMLTextAreaElement>("pgEditor").value = PRESETS[0].sql;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">✗ Gagal memuat SQLite: ' + msg + "</span>";
+      setStatus("✗ Gagal memuat SQLite: " + msg, false);
     }
   }
 
   document.addEventListener("DOMContentLoaded", init);
 
   $pg("pgRun").addEventListener("click", () => {
-    if (!db) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">Database belum siap.</span>'; return; }
+    if (!db) { setStatus("Database belum siap.", false); return; }
     runSql($pg<HTMLTextAreaElement>("pgEditor").value);
   });
 
   $pg("pgReset").addEventListener("click", () => {
     setupDB();
-    $pg("pgStatus").innerHTML = '<span style="color:#166534;">✓ Data contoh di-reset ke kondisi awal.</span>';
+    setStatus("✓ Data contoh di-reset ke kondisi awal.", true);
     $pg("pgResult").innerHTML = "";
   });
 
   $pg("pgClear").addEventListener("click", () => { $pg<HTMLTextAreaElement>("pgEditor").value = ""; $pg("pgResult").innerHTML = ""; });
 
+  const ALLOWED_TABLES = new Set(["mahasiswa", "dosen", "matakuliah", "krs", "nilai"]);
+
   $pg("pgViewTable").addEventListener("click", () => {
     const t = $pg<HTMLSelectElement>("pgTable").value;
-    if (!t) { $pg("pgStatus").innerHTML = '<span style="color:#C9584F;">Pilih tabel terlebih dahulu.</span>'; return; }
-    runSql("SELECT * FROM " + t + ";");
+    if (!t) { setStatus("Pilih tabel terlebih dahulu.", false); return; }
+    if (!ALLOWED_TABLES.has(t)) { setStatus("Tabel tidak valid.", false); return; }
+    runSql("SELECT * FROM \"" + t + "\";");
   });
 
   $pg("pgEditor").addEventListener("keydown", (e) => {

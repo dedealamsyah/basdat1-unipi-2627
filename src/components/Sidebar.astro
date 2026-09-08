@@ -12,9 +12,10 @@ const available = sorted.filter(p => !p.data.locked).length;
 ---
 
 <div class="sidebar__brand">
-  <div class="sidebar__status"><span class="dot"></span>terhubung · basis_data_db</div>
+  <img src="/logo-unipi.png" alt="Logo Universitas Persatuan Islam (UNIPI)" class="sidebar__logo" width="52" height="52" />
   <p class="sidebar__title">Basis Data</p>
-  <p class="sidebar__sub">Program Studi S1 Informatika · UNIPI</p>
+  <p class="sidebar__status">S1 Informatika · UNIPI</p>
+  <p class="sidebar__sub">Portal materi interaktif mata kuliah Basis Data untuk mahasiswa Program Studi S1 Informatika, Universitas Persatuan Islam (UNIPI) — Semester 3 · Tahun Akademik 2026/2027.</p>
 </div>
 
 <div class="sidebar__progress">
@@ -23,32 +24,33 @@ const available = sorted.filter(p => !p.data.locked).length;
     <span>{available} / {sorted.length}</span>
   </div>
   <div class="sidebar__progress-bar">
-    <div class="sidebar__progress-fill" style={`width: ${(available / sorted.length) * 100}%`}></div>
+    <div class="sidebar__progress-fill" style={`width: ${sorted.length > 0 ? (available / sorted.length) * 100 : 0}%`}></div>
   </div>
 </div>
 
 <div style="padding:8px 12px;">
+  <label for="sidebarSearch" class="visually-hidden">Cari materi</label>
   <input 
     type="text" 
     id="sidebarSearch" 
     placeholder="Cari materi..." 
-    style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#E2E8F0; font-family:var(--font-mono); font-size:12px; outline:none; transition:border-color 0.2s;"
+    style="width:100%; padding:8px 12px; border-radius:10px; border:none; background:rgba(255,255,255,.05); color:#F0EFE8; font-family:var(--font-body); font-size:12.5px; box-shadow: inset 3px 3px 6px rgba(0,0,0,.35), inset -3px -3px 6px rgba(255,255,255,.05); outline:none; transition:box-shadow 0.2s;"
   />
 </div>
 
 <ul class="sidebar__list" id="sidebarList">
   <li class="row praktikum-link" data-kind="praktikum" data-title="worksheet praktikum perancangan erd">
-    <span class="row__pk" style="background:#E7A83D; color:#03211D;">🧪</span>
+    <span class="row__pk" style="background:#D8B64C; color:#221A02;">✎</span>
     <span class="row__text">
       <span class="row__num">PRAKTIKUM</span>
-      <span class="row__title" style="color:#FCD34D;">Worksheet Perancangan ERD</span>
+      <span class="row__title" style="color:#F0E7C2;">Worksheet Perancangan ERD</span>
     </span>
   </li>
   <li class="row playground-link" data-kind="playground" data-title="sql playground interaktif lab sql query">
-    <span class="row__pk" style="background:#2BA6A0; color:#03211D;">▸</span>
+    <span class="row__pk" style="background:#2A7A61; color:#F3F1E8;">❯</span>
     <span class="row__text">
       <span class="row__num">LAB</span>
-      <span class="row__title" style="color:#5FD3CB;">SQL Playground</span>
+      <span class="row__title" style="color:#A5D6B2;">SQL Playground</span>
     </span>
   </li>
   {sorted.map((p) => (
@@ -56,6 +58,8 @@ const available = sorted.filter(p => !p.data.locked).length;
       class={`row ${p.data.locked ? 'locked' : ''} ${p.data.id === activeId ? 'active' : ''}`}
       data-id={p.data.id}
       data-title={p.data.title.toLowerCase()}
+      tabindex={p.data.locked ? "-1" : "0"}
+      aria-disabled={p.data.locked ? "true" : undefined}
     >
       <span class="row__pk">{String(p.data.id).padStart(2, '0')}</span>
       <span class="row__text">
@@ -69,9 +73,9 @@ const available = sorted.filter(p => !p.data.locked).length;
 </ul>
 
 <div class="sidebar__footer">
-  <p class="sidebar__credit">© 2026 · Developed by Dede Alamsyah</p>
+  <p class="sidebar__credit">&copy; {new Date().getFullYear()} &middot; Developed by Dede Alamsyah</p>
   <div style="display:flex; align-items:center; gap:8px;">
-    <button id="themeToggle" class="zoom-btn" style="width:100%; padding:8px 12px; background:#1F3864; color:#E2E8F0; border:1px solid rgba(255,255,255,.1); font-size:12px; cursor:pointer; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:6px;">
+    <button id="themeToggle" class="zoom-btn" style="width:100%; padding:8px 12px; background:#1C3B30; color:#F3F1E8; border:1px solid rgba(255,255,255,.06); font-size:12px; cursor:pointer; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:none;">
       <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
     </button>
   </div>

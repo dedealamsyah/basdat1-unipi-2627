@@ -83,7 +83,7 @@ self.addEventListener("fetch", function(event) {
         if (event.request.mode === "navigate") {
           return caches.match("./index.html");
         }
-        return new Response("", { status: 408, statusText: "Request Timeout" });
+        return new Response("", { status: 503, statusText: "Service Unavailable" });
       });
     })
   );

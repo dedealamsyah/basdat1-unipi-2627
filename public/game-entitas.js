@@ -12,28 +12,38 @@
     { q: "ITEM_TAGIHAN (bergantung pada TAGIHAN)", a: "LEMAH" }
   ];
 
-  var entityOrder = [], entityCur = 0, entityScore = 0;
+  var entityOrder = [], entityCur = 0, entityScore = 0, entityTimer = null;
   var entityQ = document.getElementById('entityQ');
   var entityS = document.getElementById('entityScore');
   var entityT = document.getElementById('entityTotal');
   var entityF = document.getElementById('entityFeedback');
   var entityBtns = document.querySelectorAll('.entity-btn');
 
+  function entityFeedback(msg, color) {
+    entityF.innerHTML = '';
+    var span = document.createElement('span');
+    span.style.color = color;
+    span.textContent = msg;
+    entityF.appendChild(span);
+  }
+
   entityBtns.forEach(function(b) { b.disabled = true; });
 
   function entityShow() {
+    entityTimer = null;
     if (entityCur >= entityOrder.length) {
       entityQ.textContent = 'Selesai! Skor: ' + entityScore + '/' + entityOrder.length;
-      entityF.innerHTML = '';
+      entityFeedback('', '');
       entityBtns.forEach(function(b) { b.disabled = true; });
       entityStartBtn.disabled = false;
       return;
     }
     entityQ.textContent = '(' + (entityCur + 1) + '/' + entityOrder.length + ') ' + entityOrder[entityCur].q;
-    entityF.innerHTML = '';
+    entityFeedback('', '');
   }
 
   entityStartBtn.onclick = function() {
+    if (entityTimer) { clearTimeout(entityTimer); entityTimer = null; }
     entityOrder = ENTITY_QS.slice().sort(function() { return Math.random() - 0.5; });
     entityCur = 0;
     entityScore = 0;
@@ -51,12 +61,17 @@
       if (ok) {
         entityScore++;
         entityS.textContent = entityScore;
-        entityF.innerHTML = '<span style="color:#166534">Benar!</span>';
+        entityFeedback('Benar!', '#166534');
       } else {
-        entityF.innerHTML = '<span style="color:#991b1b">Salah! Jawaban: <strong>' + entityOrder[entityCur].a + '</strong></span>';
+        entityFeedback('Salah! Jawaban: ' + entityOrder[entityCur].a, '#991b1b');
       }
       entityCur++;
-      setTimeout(entityShow, 900);
+      if (entityTimer) { clearTimeout(entityTimer); }
+      entityTimer = setTimeout(entityShow, 900);
     };
+  });
+
+  window.addEventListener('astro:before-swap', function() {
+    if (entityTimer) { clearTimeout(entityTimer); entityTimer = null; }
   });
 })();

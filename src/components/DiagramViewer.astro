@@ -1,18 +1,17 @@
 ---
 interface Props {
-  label?: string;
   source?: string;
 }
 
-const { label = "Diagram", source } = Astro.props;
+const { source } = Astro.props;
 ---
 
 <div class="diagram-container">
   <div class="diagram-zoom-controls">
-    <button class="zoom-btn zoom-out">−</button>
+    <button class="zoom-btn zoom-out" aria-label="Zoom out">&minus;</button>
     <span class="zoom-btn zoom-level" style="background:#EEF2F5;color:#3A4A63;cursor:default;">100%</span>
-    <button class="zoom-btn zoom-in">+</button>
-    <button class="zoom-btn zoom-reset">Reset</button>
+    <button class="zoom-btn zoom-in" aria-label="Zoom in">+</button>
+    <button class="zoom-btn zoom-reset" aria-label="Reset zoom">Reset</button>
   </div>
   <div class="diagram-wrapper">
     <div class="diagram-inner">
@@ -24,6 +23,8 @@ const { label = "Diagram", source } = Astro.props;
 
 <script is:inline>
   document.querySelectorAll('.diagram-container').forEach(container => {
+    if (container.dataset.zoomReady) return;
+    container.dataset.zoomReady = '1';
     const inner = container.querySelector('.diagram-inner');
     const zoomLabel = container.querySelector('.zoom-level');
     if (!inner) return;
