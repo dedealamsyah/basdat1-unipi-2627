@@ -6,20 +6,20 @@
  */
 declare(strict_types=1);
 
-const DB_HOST = 'YOUR_DB_HOST';
-const DB_NAME = 'YOUR_DB_NAME';
-const DB_USER = 'YOUR_DB_USER';
-const DB_PASS = 'YOUR_DB_PASS';
+const DB_HOST = 'sql308.byethost33.com';
+const DB_NAME = 'b33_42859006_basdat1';
+const DB_USER = 'b33_42859006';
+const DB_PASS = 'Basdat1!';
 
 /** Default password akun saat diimpor = NIM */
 const DO_NOT_LOG = true;
 
 /** Token satu-kali untuk setup database (ubah setelah setup) */
-const SETUP_TOKEN = 'YOUR_SETUP_TOKEN';
+const SETUP_TOKEN = 'Basdat1UNIPI2026';
 
 /** Akun admin awal yang dibuat saat setup */
 const ADMIN_DEFAULT_NIM = 'admin';
-const ADMIN_DEFAULT_PASS = 'YOUR_ADMIN_PASS';
+const ADMIN_DEFAULT_PASS = 'AdminUNIPI2026';
 
 function db(): PDO
 {
@@ -94,12 +94,11 @@ function login_too_many(string $username): bool
         $pdo->prepare(
             'DELETE FROM login_attempts WHERE attempted_at < (NOW() - INTERVAL ' . LOGIN_WINDOW_MINUTES . ' MINUTE)'
         )->execute();
+        // throttle berbasis username (akurat; IP di hosting bersama tidak dapat-diandalkan)
         $st = $pdo->prepare(
-            'SELECT COUNT(*) c FROM login_attempts
-             WHERE (ip = ? OR username = ?) AND ok = 0'
+            'SELECT COUNT(*) c FROM login_attempts WHERE username = ? AND ok = 0'
         );
-        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        $st->execute(array($ip, strtolower($username)));
+        $st->execute(array(strtolower($username)));
         return (int) $st->fetchColumn() >= LOGIN_MAX_ATTEMPTS;
     } catch (Throwable $e) {
         return false; // tabel belum tersedia migrasi? biarkan login berjalan
@@ -121,8 +120,8 @@ function login_log_clear(string $username): void
 {
     try {
         db()->prepare(
-            'DELETE FROM login_attempts WHERE ip = ? OR username = ?'
-        )->execute(array($_SERVER['REMOTE_ADDR'] ?? 'unknown', strtolower($username)));
+            'DELETE FROM login_attempts WHERE username = ?'
+        )->execute(array(strtolower($username)));
     } catch (Throwable $e) {
         // abaikan bila tabel belum ada
     }
@@ -140,10 +139,27 @@ function require_auth(string $role = 'mahasiswa'): array
     return $u;
 }
 
-/** Daftar id pertemuan aktif (konten tersedia), urut progresi */
+/** Daftar id pertemuan aktif (konten tersedia), urut progresi.
+ *  Berasal dari tabel `pertemuan` (aktif=1, urut posisi) agar sinkron
+ *  dengan menu yang diedit admin; fallback ke daftar statis bila tabel belum ada. */
 function active_pertemuan(): array
 {
-    return array(1, 2, 3, 4, 5, 6, 7, 9, 10);
+    static $cache = null;
+    if ($cache !== null) {
+        return $cache;
+    }
+    try {
+        $st = db()->query('SELECT id FROM pertemuan WHERE aktif = 1 ORDER BY posisi ASC, id ASC');
+        $out = array();
+        foreach ($st as $r) {
+            $out[] = (int) $r['id'];
+        }
+        $cache = $out; // kosong pun sah (admin menonaktifkan semua)
+        return $cache;
+    } catch (Throwable $e) {
+        $cache = array(1, 2, 3, 4, 5, 6, 7, 9, 10);
+        return $cache;
+    }
 }
 
 /** Set pertemuan yang sudah tuntas seorang mahasiswa */

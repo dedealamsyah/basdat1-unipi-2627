@@ -18,12 +18,36 @@ const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
   (function() {
     var card = document.querySelector('[data-quiz="' + quizId + '"]');
     if (!card) return;
-    
+
+    // Pelacak tuntas per pertemuan: hanya lapor bila SEMUA kuis benar
+    if (!window.__quizTracker) {
+      window.__quizTracker = {
+        report: function(qid, pid) {
+          if (!pid) return;
+          var st = window.__quizState = window.__quizState || {};
+          var key = String(pid);
+          st[key] = st[key] || { done: {}, reported: false };
+          st[key].done[qid] = true;
+          var total = document.querySelectorAll('.interactive-card[data-quiz]').length;
+          var done = Object.keys(st[key].done).length;
+          if (total > 0 && done >= total && !st[key].reported) {
+            st[key].reported = true;
+            if (typeof window.APIAuth !== 'undefined') {
+              window.APIAuth.complete(pid, done, total).then(function(res) {
+                if (res && res.progress && window.APIAuth.refresh) window.APIAuth.refresh();
+              });
+            }
+          }
+        },
+        reset: function() { window.__quizState = {}; }
+      };
+    }
+
     card.querySelectorAll('.quiz-option').forEach(function(btn) {
       btn.onclick = function() {
         var isCorrect = this.getAttribute('data-correct') === 'true';
         var feedback = card.querySelector('.quiz-feedback');
-        
+
         card.querySelectorAll('.quiz-option').forEach(function(opt) {
           opt.classList.remove('correct', 'wrong');
         });
@@ -36,7 +60,11 @@ const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
           span.style.color = '#166534';
           span.textContent = '[Benar] ' + explanation;
           feedback.appendChild(span);
-          reportComplete();
+          var meta = document.getElementById('pageMeta');
+          if (meta) {
+            var pid = parseInt(meta.getAttribute('data-pertemuan'), 10);
+            window.__quizTracker.report(quizId, pid);
+          }
         } else {
           this.classList.add('wrong');
           var span2 = document.createElement('span');
@@ -45,18 +73,11 @@ const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
           feedback.appendChild(span2);
         }
       };
+    });
 
-      function reportComplete() {
-        if (typeof window.APIAuth === 'undefined') return;
-        var meta = document.getElementById('pageMeta');
-        if (!meta) return;
-        var pid = parseInt(meta.getAttribute('data-pertemuan'), 10);
-        if (!pid) return;
-        window.APIAuth.complete(pid, 1, 1).then(function(res) {
-          if (!res || !res.progress) return;
-          if (window.APIAuth.refresh) window.APIAuth.refresh();
-        });
-      }
+    // Reset tracker saat navigasi dalam situs (pergantian halaman)
+    document.addEventListener('astro:before-swap', function() {
+      if (window.__quizTracker) window.__quizTracker.reset();
     });
   })();
 </script>

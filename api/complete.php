@@ -33,6 +33,10 @@ if ($u['role'] !== 'admin') {
     if ($statusNow === 'locked') {
         json_out(array('ok' => false, 'error' => 'Selesaikan pertemuan sebelumnya terlebih dahulu.'), 422);
     }
+    // Mahasiswa hanya "tuntas" bila SEMUA kuis pertemuan dijawab benar
+    if ($quizTotal < 1 || $quizScore < $quizTotal) {
+        json_out(array('ok' => false, 'error' => 'Jawab semua kuis pada pertemuan ini dengan benar untuk menuntaskannya.'), 422);
+    }
 }
 
 $pdo = db();
