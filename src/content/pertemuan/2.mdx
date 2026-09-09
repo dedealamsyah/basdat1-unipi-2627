@@ -11,7 +11,7 @@ meta:
   cpmk: "CPMK-1"
 kuis:
   latihan: 3
-  evaluasi: 4
+  evaluasi: 15
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
@@ -41,6 +41,72 @@ export const EVAL_P2 = [
     "Hanya sebagian entitas yang wajib berelasi",
     "Semua instance entitas wajib terlibat dalam relasi",
     "Relasi bersifat opsional bagi kedua entitas"
+  ], benar: 2 },
+  { soal: "Atribut yang dapat mengidentifikasi setiap instance entitas secara unik adalah...", opsi: [
+    "Composite attribute",
+    "Derived attribute",
+    "Primary key",
+    "Multivalued attribute"
+  ], benar: 2 },
+  { soal: "Contoh entitas kuat yang paling tepat adalah...", opsi: [
+    "TANGGUNGAN yang bergantung pada karyawan",
+    "MATAKULIAH yang punya primary key KodeMK",
+    "GAMBAR yang hanya ada jika milik entitas lain",
+    "DETAIL_ORDER yang tak berdiri sendiri"
+  ], benar: 1 },
+  { soal: "Relasi M:N umumnya harus dipecah menjadi...", opsi: [
+    "Tabel penghubung yang menyimpan foreign key kedua entitas",
+    "Tabel baru tanpa primary key",
+    "Satu kolom tambahan pada entitas pertama",
+    "Atribut multivalued pada entitas kedua"
+  ], benar: 0 },
+  { soal: "Partisipasi parsial pada relasi berarti...", opsi: [
+    "Semua instance entitas wajib berelasi",
+    "Tidak semua instance entitas wajib terlibat dalam relasi",
+    "Relasi hanya digambar tanpa kardinalitas",
+    "Entitas tidak boleh memiliki relasi"
+  ], benar: 1 },
+  { soal: "Pada notasi Crow's Foot, sisi 'banyak' (many) dari sebuah relasi digambarkan dengan...", opsi: [
+    "Satu garis lurus",
+    "Kaki burung / crow's foot (tiga cabang)",
+    "Lingkaran kecil",
+    "Garis putus-putus"
+  ], benar: 1 },
+  { soal: "Atribut yang nilainya bisa dihitung/diturunkan dari atribut lain, misalnya umur dari tanggal lahir, disebut...", opsi: [
+    "Stored attribute",
+    "Derived attribute",
+    "Key attribute",
+    "Simple attribute"
+  ], benar: 1 },
+  { soal: "Relasi yang melibatkan tiga entitas (misal PESANAN, PRODUK, KASIR) disebut relasi...", opsi: [
+    "Unary (derajat 1)",
+    "Binary (derajat 2)",
+    "Ternary (derajat 3)",
+    "Quaternary (derajat 4)"
+  ], benar: 2 },
+  { soal: "Entitas lemah (weak entity) diidentifikasi dengan gabungan antara...", opsi: [
+    "Partial key miliknya + primary key entitas kuat pemiliknya",
+    "Hanya atribut biasa",
+    "Foreign key dari entitas lain saja",
+    "Nama entitasnya"
+  ], benar: 0 },
+  { soal: "Atribut 'Alamat' yang terdiri atas Jalan, Kota, dan Provinsi termasuk atribut...", opsi: [
+    "Composite",
+    "Derived",
+    "Multivalued",
+    "Simple"
+  ], benar: 0 },
+  { soal: "Tujuan utama pembuatan model konseptual (ERD) sebelum implementasi adalah...", opsi: [
+    "Menentukan tipe data setiap kolom",
+    "Menggambarkan kebutuhan data dan hubungannya tanpa detail penyimpanan fisik",
+    "Langsung membuat database",
+    "Menulis query SQL"
+  ], benar: 1 },
+  { soal: "Kardinalitas MAHASISWA dan MATAKULIAH (seorang mahasiswa dapat mengambil banyak matakuliah dan sebaliknya) adalah...", opsi: [
+    "1:1",
+    "1:N",
+    "M:N",
+    "N:0"
   ], benar: 2 }
 ];
 

@@ -11,7 +11,7 @@ meta:
   cpmk: "CPMK-1"
 kuis:
   latihan: 3
-  evaluasi: 4
+  evaluasi: 15
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
@@ -41,6 +41,72 @@ export const EVAL_P1 = [
     "Database mengurangi redundansi dan menjaga konsistensi data",
     "Database tidak membutuhkan perangkat keras apa pun",
     "Database menyimpan data tanpa aturan relasi sama sekali"
+  ], benar: 1 },
+  { soal: "Komponen sistem basis data yang berperan sebagai perangkat lunak pengatur akses terhadap data adalah...", opsi: [
+    "Hardware",
+    "DBMS",
+    "Prosedur",
+    "End-user"
+  ], benar: 1 },
+  { soal: "Basis data didefinisikan sebagai kumpulan data yang...", opsi: [
+    "Saling berkaitan dan terorganisasi secara sistematis",
+    "Berdiri sendiri tanpa keterkaitan",
+    "Hanya berupa angka dan simbol",
+    "Tidak dapat diakses bersama-sama"
+  ], benar: 0 },
+  { soal: "Model data relasional (RDBMS) pertama kali diperkenalkan oleh...", opsi: [
+    "Charles Bachman",
+    "Edgar F. Codd",
+    "Bill Gates",
+    "Larry Ellison"
+  ], benar: 1 },
+  { soal: "Urutan evolusi sistem penyimpanan data yang paling tepat adalah...", opsi: [
+    "Relasional -> file-based -> hierarkis/network",
+    "File-based -> hierarkis/network -> relasional -> NoSQL",
+    "NoSQL -> relasional -> file-based",
+    "Hirarkis -> NoSQL -> file-based -> relasional"
+  ], benar: 1 },
+  { soal: "Data independence berarti...", opsi: [
+    "Perubahan struktur internal tidak memengaruhi pandangan pengguna/aplikasi",
+    "Data dapat dihapus dari mana saja tanpa efek",
+    "DBMS tidak bergantung pada perangkat keras",
+    "Basis data hanya bisa dipakai satu pengguna pada satu waktu"
+  ], benar: 0 },
+  { soal: "Perbedaan mendasar sistem basis data dengan sistem berbasis file adalah...", opsi: [
+    "File-based selalu lebih cepat dalam semua kondisi",
+    "Basis data terintegrasi, dapat dipakai bersama, dan dikendalikan DBMS",
+    "File-based tidak memerlukan perangkat keras",
+    "Basis data tidak memiliki aturan penyimpanan"
+  ], benar: 1 },
+  { soal: "Pernyataan yang benar tentang level Internal pada arsitektur ANSI-SPARC adalah...", opsi: [
+    "Menampilkan data sesuai kebutuhan masing-masing pengguna",
+    "Menggambarkan penyimpanan fisik: file, indeks, dan blok di disk",
+    "Menjabarkan seluruh hubungan logis antar tabel",
+    "Hanya berisi laporan yang dicetak untuk manajemen"
+  ], benar: 1 },
+  { soal: "Pengguna sistem basis data yang bertugas merancang, mengawasi, dan menjaga basis data disebut...", opsi: [
+    "End-user",
+    "Programmer",
+    "DBA (Database Administrator)",
+    "Analis keuangan"
+  ], benar: 2 },
+  { soal: "Kondisi yang paling tepat untuk penggunaan basis data NoSQL adalah...", opsi: [
+    "Data sangat terstruktur dan butuh transaksi ACID ketat",
+    "Volume data sangat besar, tidak terbakukan, dan tumbuh cepat (big data)",
+    "Hanya menyimpan satu tabel kecil",
+    "Menggantikan kebutuhan database relasional sepenuhnya"
+  ], benar: 1 },
+  { soal: "Fungsi utama prosedur dalam sistem basis data adalah...", opsi: [
+    "Menyimpan data secara fisik di harddisk",
+    "Aturan dan SOP penggunaan serta pengelolaan basis data",
+    "Menyusun antarmuka pengguna",
+    "Menghitung kecepatan jaringan"
+  ], benar: 1 },
+  { soal: "Ciri khas basis data yang 'terintegrasi' adalah...", opsi: [
+    "Setiap file disimpan terpisah untuk tiap aplikasi",
+    "Data disimpan sekali dan dapat dipakai bersama banyak aplikasi yang relevan",
+    "Data hanya boleh diakses satu aplikasi",
+    "Tidak ada hubungan antar data"
   ], benar: 1 }
 ];
 

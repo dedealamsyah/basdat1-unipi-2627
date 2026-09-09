@@ -241,13 +241,15 @@ const { pid, data } = Astro.props;
       var btn = document.getElementById('evalSubmit');
       btn.disabled = true; btn.textContent = 'Mengumpulkan…';
 
-      var weight = Math.round(100 / questions.length);
-      var skor = 0, total = 0;
+      var n = questions.length;
+      var base = Math.floor(100 / n);
+      var rem = 100 - base * n;
+      var skor = 0, total = 100;
       var jawaban = [];
       questions.forEach(function (q, qi) {
         jawaban.push(sel[qi]);
-        total += weight;
-        if (sel[qi] === q.benar) skor += weight;
+        var w = base + (qi < rem ? 1 : 0);
+        if (sel[qi] === q.benar) skor += w;
       });
 
       api('/api/evaluasi.php', {
