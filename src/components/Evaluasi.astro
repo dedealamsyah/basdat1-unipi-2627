@@ -185,6 +185,7 @@ const { pid, data } = Astro.props;
     var isActive = false;
     var current = 0;       // indeks soal yang sedang ditampilkan
     var stage = 'intro';   // 'intro' | 'quiz'
+    var preview = false;   // mode admin: pratinjau tanpa penyimpanan
 
     function api(path, opts) {
       if (typeof window.APIAuth !== 'undefined' && window.APIAuth.api) {
@@ -268,9 +269,10 @@ const { pid, data } = Astro.props;
         '<p class="ev-card__q">' + esc(q.soal) + '</p>' +
         '<div class="ev-opts">';
       order[current].forEach(function (orig) {
-        var checked = sel[current] != null && String(sel[current]) === String(orig) ? ' checked' : '';
+        var checked = !preview && sel[current] != null && String(sel[current]) === String(orig) ? ' checked' : '';
+        var disabled = preview ? ' disabled' : '';
         html += '<label class="ev-opt' + (checked ? ' sel' : '') + '" data-qi="' + current + '" data-orig="' + orig + '">' +
-          '<input type="radio" name="ev_opt" value="' + orig + '"' + checked + '>' +
+          '<input type="radio" name="ev_opt" value="' + orig + '"' + checked + disabled + '>' +
           '<span class="ev-opt__label">' + esc(q.opsi[orig]) + '</span></label>';
       });
       html += '</div>';
@@ -278,38 +280,43 @@ const { pid, data } = Astro.props;
 
       var isLast = current === questions.length - 1;
       var nav = document.getElementById('evNav');
-      nav.innerHTML =
-        '<span id="evPos"></span>' +
-        '<div class="ev-nav__right">' +
-        (current > 0 ? '<button class="btn-sim" id="evPrev" style="background:var(--navy-800);">‹ Sebelumnya</button>' : '') +
-        (isLast
-          ? '<button class="btn-sim" id="evSubmit" style="background:var(--amber-400);">Kumpulkan Evaluasi</button>'
-          : '<button class="btn-sim" id="evNext" style="background:var(--green-600);">Selanjutnya ›</button>') +
-        '</div>';
+      var right = '';
+      if (current > 0) right += '<button class="btn-sim" id="evPrev" style="background:var(--navy-800);">‹ Sebelumnya</button>';
+      if (isLast && preview) {
+        right += '<button class="btn-sim" id="evRestart" style="background:var(--navy-800);">⟲ Awal</button>';
+      } else if (isLast) {
+        right += '<button class="btn-sim" id="evSubmit" style="background:var(--amber-400);">Kumpulkan Evaluasi</button>';
+      } else {
+        right += '<button class="btn-sim" id="evNext" style="background:var(--green-600);">Selanjutnya ›</button>';
+      }
+      nav.innerHTML = '<span id="evPos"></span><div class="ev-nav__right">' + right + '</div>';
 
       var left = document.getElementById('evPos');
-      if (left) left.textContent = 'Soal ' + (current + 1) + ' dari ' + questions.length +
-        ' · terjawab ' + answeredCount() + '/' + questions.length;
+      if (left) left.textContent = (preview ? 'Pratinjau · ' : 'Soal ') + (current + 1) + ' dari ' + questions.length;
     }
 
     function bindCard() {
       var card = document.getElementById('evCard');
       if (!card) return;
-      card.querySelectorAll('.ev-opt').forEach(function (lab) {
-        lab.addEventListener('click', function () {
-          var qi = parseInt(lab.getAttribute('data-qi'), 10);
-          var orig = parseInt(lab.getAttribute('data-orig'), 10);
-          sel[qi] = orig;
-          card.querySelectorAll('.ev-opt').forEach(function (o) { o.classList.remove('sel'); });
-          lab.classList.add('sel');
-          savePos();
-          updateTrack();
+      if (!preview) {
+        card.querySelectorAll('.ev-opt').forEach(function (lab) {
+          lab.addEventListener('click', function () {
+            var qi = parseInt(lab.getAttribute('data-qi'), 10);
+            var orig = parseInt(lab.getAttribute('data-orig'), 10);
+            sel[qi] = orig;
+            card.querySelectorAll('.ev-opt').forEach(function (o) { o.classList.remove('sel'); });
+            lab.classList.add('sel');
+            savePos();
+            updateTrack();
+          });
         });
-      });
+      }
       var prev = document.getElementById('evPrev');
       if (prev) prev.addEventListener('click', function () { if (current > 0) { current--; savePos(); draw(); } });
       var next = document.getElementById('evNext');
       if (next) next.addEventListener('click', function () { if (current < questions.length - 1) { current++; savePos(); draw(); } });
+      var rs = document.getElementById('evRestart');
+      if (rs) rs.addEventListener('click', function () { current = 0; draw(); });
       var sb = document.getElementById('evSubmit');
       if (sb) sb.addEventListener('click', submit);
     }
@@ -326,6 +333,12 @@ const { pid, data } = Astro.props;
         if (prog) prog.textContent = 'Pengantar';
         if (cnt) cnt.textContent = '0 / ' + questions.length;
         if (bar) bar.style.width = '0%';
+        return;
+      }
+      if (preview) {
+        if (prog) prog.textContent = 'Pratinjau (mode admin)';
+        if (cnt) cnt.textContent = 'Soal ' + (current + 1) + ' / ' + questions.length;
+        if (bar) bar.style.width = (current + 1) / questions.length * 100 + '%';
         return;
       }
       var n = answeredCount();
@@ -493,18 +506,13 @@ const { pid, data } = Astro.props;
         return false;
       }
       if (p.user && p.user.role === 'admin') {
-        stateEl.innerHTML = '<div class="evaluasi__locked"><b>Mode admin:</b> pratinjau soal evaluasi tanpa penyimpanan. Jawaban dosen tidak direkam.</div>';
+        stateEl.innerHTML = '<div class="evaluasi__locked"><b>Mode admin:</b> pratinjau soal evaluasi satu per satu tanpa penyimpanan. Jawaban dosen tidak direkam.</div>';
+        preview = true;
+        stage = 'quiz';
+        current = 0;
+        sel = {};
         formEl.hidden = false;
-        formEl.innerHTML = '';
-        var ph = '';
-        questions.forEach(function (q, qi) {
-          ph += '<div class="eq-block"><p class="eq-block__q">' + (qi + 1) + '. ' + esc(q.soal) + '</p><div class="eq-block__opts">';
-          q.opsi.forEach(function (o) {
-            ph += '<label class="eq-opt is-locked"><input type="radio" disabled><span class="eq-opt__label">' + esc(o) + '</span></label>';
-          });
-          ph += '</div></div>';
-        });
-        formEl.innerHTML = ph + '<p class="muted" style="font-size:12.5px;margin-top:10px;">Total ' + questions.length + ' soal evaluasi.</p>';
+        draw();
         return false;
       }
       if ((p.progress || {})[pertemuanId] !== 'done') {
