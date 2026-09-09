@@ -240,6 +240,7 @@ const { pid, data } = Astro.props;
       if (stage === 'intro') drawIntro(); else drawQuestion();
       updateTrack();
       bindCard();
+      formEl.onclick = onFormClick;
     }
 
     function drawIntro() {
@@ -259,8 +260,6 @@ const { pid, data } = Astro.props;
         '<button class="btn-sim" id="evStart" style="background:var(--amber-400);">Mulai Evaluasi →</button>' +
         '</div>';
       document.getElementById('evNav').innerHTML = '';
-      var b = document.getElementById('evStart');
-      if (b) b.addEventListener('click', function () { stage = 'quiz'; current = 0; savePos(); draw(); });
     }
 
     function drawQuestion() {
@@ -312,14 +311,18 @@ const { pid, data } = Astro.props;
           });
         });
       }
-      var prev = document.getElementById('evPrev');
-      if (prev) prev.addEventListener('click', function () { if (current > 0) { current--; savePos(); draw(); } });
-      var next = document.getElementById('evNext');
-      if (next) next.addEventListener('click', function () { if (current < questions.length - 1) { current++; savePos(); draw(); } });
-      var rs = document.getElementById('evRestart');
-      if (rs) rs.addEventListener('click', function () { current = 0; draw(); });
-      var sb = document.getElementById('evSubmit');
-      if (sb) sb.addEventListener('click', submit);
+    }
+
+    // Delegasi klik pada semua tombol evaluasi (dipasang sekali, tidak perlu rebind)
+    function onFormClick(e) {
+      var b = e.target && e.target.closest ? e.target.closest('button') : null;
+      if (!b) return;
+      var id = b.id;
+      if (id === 'evStart') { stage = 'quiz'; current = 0; savePos(); draw(); }
+      else if (id === 'evPrev') { if (current > 0) { current--; savePos(); draw(); } }
+      else if (id === 'evNext') { if (current < questions.length - 1) { current++; savePos(); draw(); } }
+      else if (id === 'evRestart') { current = 0; draw(); }
+      else if (id === 'evSubmit') { submit(); }
     }
 
     function answeredCount() {

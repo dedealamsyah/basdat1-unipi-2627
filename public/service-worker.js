@@ -3,7 +3,7 @@
    Strategi cache-first dengan runtime cache untuk navigasi & aset.
 ===================================================================== */
 
-const CACHE_NAME = "basdat-unipi-v1";
+const CACHE_NAME = "basdat-unipi-v2";
 const PRECACHE_ASSETS = [
   "./",
   "./index.html",
@@ -46,7 +46,8 @@ self.addEventListener("activate", function(event) {
   self.clients.claim();
 });
 
-// Fetch: Serve from cache (cache-first), fallback to network
+// Fetch: Navigasi = network-first (konten selalu segar),
+//        aset statis = cache-first (dinamai dengan hash versi di _astro/)
 self.addEventListener("fetch", function(event) {
   if (event.request.method !== "GET") return;
 
@@ -55,10 +56,30 @@ self.addEventListener("fetch", function(event) {
     return;
   }
 
+  // Mode navigasi (halaman): selalu coba jaringan dulu
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).then(function(networkResponse) {
+        if (networkResponse && networkResponse.status === 200) {
+          var responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      }).catch(function() {
+        return caches.match(event.request).then(function(cachedPage) {
+          return cachedPage || caches.match("./index.html");
+        });
+      })
+    );
+    return;
+  }
+
+  // Aset statis: cache-first, perbarui di latar belakang
   event.respondWith(
     caches.match(event.request).then(function(cachedResponse) {
       if (cachedResponse) {
-        // Perbarui cache di latar belakang
         event.waitUntil(
           fetch(event.request).then(function(networkResponse) {
             if (networkResponse && networkResponse.status === 200) {
@@ -81,9 +102,6 @@ self.addEventListener("fetch", function(event) {
         }
         return networkResponse;
       }).catch(function() {
-        if (event.request.mode === "navigate") {
-          return caches.match("./index.html");
-        }
         return new Response("", { status: 503, statusText: "Service Unavailable" });
       });
     })
