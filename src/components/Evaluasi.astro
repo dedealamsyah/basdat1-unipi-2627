@@ -240,7 +240,6 @@ const { pid, data } = Astro.props;
       if (stage === 'intro') drawIntro(); else drawQuestion();
       updateTrack();
       bindCard();
-      formEl.onclick = onFormClick;
     }
 
     function drawIntro() {
@@ -283,7 +282,8 @@ const { pid, data } = Astro.props;
       var right = '';
       if (current > 0) right += '<button class="btn-sim" id="evPrev" style="background:var(--navy-800);">‹ Sebelumnya</button>';
       if (isLast && preview) {
-        right += '<button class="btn-sim" id="evRestart" style="background:var(--navy-800);">⟲ Awal</button>';
+        right += '<button class="btn-sim" id="evRestart" style="background:var(--navy-800);">⟲ Kembali ke Soal 1</button>';
+        right += '<button class="btn-sim" id="evPreviewDone" style="background:var(--teal-400);">✓ Selesai Pratinjau</button>';
       } else if (isLast) {
         right += '<button class="btn-sim" id="evSubmit" style="background:var(--amber-400);">Kumpulkan Evaluasi</button>';
       } else {
@@ -322,6 +322,10 @@ const { pid, data } = Astro.props;
       else if (id === 'evPrev') { if (current > 0) { current--; savePos(); draw(); } }
       else if (id === 'evNext') { if (current < questions.length - 1) { current++; savePos(); draw(); } }
       else if (id === 'evRestart') { current = 0; draw(); }
+      else if (id === 'evPreviewDone') {
+        var m = document.getElementById('evalMsg');
+        if (m) m.textContent = 'Semua ' + questions.length + ' soal telah Anda tinjau (mode pratinjau, tidak disimpan).';
+      }
       else if (id === 'evSubmit') { submit(); }
     }
 
@@ -528,6 +532,10 @@ const { pid, data } = Astro.props;
       }
       return true;
     }
+
+    // listener klik dipasang SEKALI pada kontainer (elektron persisten) agar
+    // tidak pernah hilang meskipun isi kartu di-render ulang.
+    formEl.addEventListener('click', onFormClick);
 
     me().then(function (p) {
       if (gate(p)) renderForm(draft());
