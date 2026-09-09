@@ -125,12 +125,13 @@ const { pid, data } = Astro.props;
   .evaluasi__msg { margin-top: 12px; font-size: 13px; line-height: 1.6; }
 
   .ev-keep {
-    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%);
     z-index: 4000; max-width: min(480px, 92vw);
     background: #221A02; color: #ffefc2;
     border: 1px solid var(--amber-300); border-radius: 12px;
     padding: 12px 16px; font-size: 13px; line-height: 1.5; text-align: center;
     box-shadow: var(--shadow-lg);
+    pointer-events: none;
   }
   .ev-keep b { color: #ffd97a; }
 
@@ -401,6 +402,10 @@ const { pid, data } = Astro.props;
           btn.disabled = false; btn.textContent = 'Kumpulkan Evaluasi';
           msg.textContent = d.error || 'Gagal mengumpulkan evaluasi. Coba lagi.';
         }
+      }).catch(function () {
+        submitting = false;
+        btn.disabled = false; btn.textContent = 'Kumpulkan Evaluasi';
+        msg.textContent = 'Gagal terhubung ke server. Periksa jaringan lalu klik Kumpulkan lagi.';
       });
     }
 
@@ -452,7 +457,6 @@ const { pid, data } = Astro.props;
       document.addEventListener('copy', onCopy, true);
       document.addEventListener('contextmenu', onCtx, true);
       document.addEventListener('visibilitychange', onVis, true);
-      window.addEventListener('blur', onWinBlur, true);
       window.addEventListener('beforeunload', onUnload);
     }
     function disarmAntiCheat() {
@@ -460,7 +464,6 @@ const { pid, data } = Astro.props;
       document.removeEventListener('copy', onCopy, true);
       document.removeEventListener('contextmenu', onCtx, true);
       document.removeEventListener('visibilitychange', onVis, true);
-      window.removeEventListener('blur', onWinBlur, true);
       window.removeEventListener('beforeunload', onUnload);
     }
 
@@ -484,11 +487,6 @@ const { pid, data } = Astro.props;
       if (!isActive || document.visibilityState === 'visible') return;
       blurCount++;
       warnKeep('<b>Berpindah tab/jendela dicatat</b>. ' + blurCount + ' kali. Kerjakan secara mandiri, hindari membuka sumber lain.');
-    }
-    function onWinBlur() {
-      if (!isActive || document.visibilityState !== 'visible') return;
-      blurCount++;
-      warnKeep('Berpindah dari halaman evaluasi dicatat (' + blurCount + ' kali).');
     }
     function onUnload(e) {
       if (!isActive || submitted) return;
