@@ -60,6 +60,31 @@ if (($map[$pertemuanId] ?? 'locked') !== 'done') {
 
 $pdo = db();
 
+// Pastikan tabel tersedia (self-healing) bila migrasi belum dijalankan.
+try {
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS evaluasi (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nim VARCHAR(24) NOT NULL,
+            pertemuan_id INT NOT NULL,
+            skor INT NOT NULL DEFAULT 0,
+            total INT NOT NULL DEFAULT 100,
+            jumlah_soal INT NOT NULL DEFAULT 0,
+            jawaban TEXT NULL,
+            paste_count INT NOT NULL DEFAULT 0,
+            copy_count INT NOT NULL DEFAULT 0,
+            blur_count INT NOT NULL DEFAULT 0,
+            time_spent_ms INT NOT NULL DEFAULT 0,
+            flagged INT NOT NULL DEFAULT 0,
+            submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_eval_nim_ptm (nim, pertemuan_id),
+            KEY idx_eval_ptm (pertemuan_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    );
+} catch (Throwable $e) {
+    // abaikan bila tidak berhak membuat tabel; cek berikutnya akan mengungkap
+}
+
 // Satu percobaan saja per pertemuan.
 $exists = $pdo->prepare('SELECT id FROM evaluasi WHERE nim = ? AND pertemuan_id = ? LIMIT 1');
 $exists->execute(array($u['nim'], $pertemuanId));

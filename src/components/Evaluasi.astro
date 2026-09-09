@@ -188,14 +188,40 @@ const { pid, data } = Astro.props;
     var stage = 'intro';   // 'intro' | 'quiz'
     var preview = false;   // mode admin: pratinjau tanpa penyimpanan
 
+    var _csrf = null;
+    function ensureCsrf() {
+      if (_csrf) return Promise.resolve(_csrf);
+      return fetch('/api/me.php', { credentials: 'same-origin', cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          _csrf = (d && d.data && d.data.csrf) || '';
+          return _csrf;
+        }).catch(function () { return ''; });
+    }
+
     function api(path, opts) {
-      if (typeof window.APIAuth !== 'undefined' && window.APIAuth.api) {
-        return window.APIAuth.api(path, opts).then(function (r) { return r && r.data ? r.data : {}; });
-      }
-      var o = opts || {};
-      o.credentials = 'same-origin';
-      if (o.body && typeof o.body !== 'string') o.body = JSON.stringify(o.body);
-      return fetch(path, o).then(function (r) { return r.json(); });
+      opts = opts || {};
+      var method = (opts.method || 'GET').toUpperCase();
+      var doReq = function () {
+        var o = { method: opts.method, credentials: 'same-origin', cache: 'no-store' };
+        o.headers = Object.assign({}, opts.headers || {});
+        if (opts.body && typeof opts.body !== 'string') {
+          o.headers['Content-Type'] = 'application/json';
+          o.body = JSON.stringify(opts.body);
+        } else {
+          o.body = opts.body;
+        }
+        if (method !== 'GET' && _csrf) o.headers['X-CSRF-Token'] = _csrf;
+        return fetch(path, o).then(function (r) {
+          return r.json().then(function (j) {
+            return j && typeof j === 'object' ? j : { ok: false, error: 'Respon tidak valid.' };
+          }).catch(function () {
+            return { ok: false, error: 'Respon tidak valid.', status: r.status };
+          });
+        });
+      };
+      if (method !== 'GET') return ensureCsrf().then(doReq);
+      return doReq();
     }
 
     function me() {
@@ -370,7 +396,8 @@ const { pid, data } = Astro.props;
       }
       submitting = true;
       var btn = document.getElementById('evalSubmit');
-      btn.disabled = true; btn.textContent = 'Mengumpulkan…';
+      if (btn) { btn.disabled = true; btn.textContent = 'Mengumpulkan…'; }
+      if (msg) msg.textContent = 'Mengirim jawaban ke server…';
 
       var n = questions.length;
       var base = Math.floor(100 / n);
@@ -383,37 +410,46 @@ const { pid, data } = Astro.props;
         if (sel[qi] === q.benar) skor += w;
       });
 
-      api('/api/evaluasi.php', {
-        method: 'POST',
-        body: {
-          pertemuan_id: pertemuanId, skor: skor, total: total,
-          jumlah_soal: questions.length, jawaban: jawaban,
-          paste_count: pasteCount, copy_count: copyCount,
-          blur_count: blurCount, time_spent_ms: Date.now() - startedAt
-        }
-      }).then(function (d) {
+      var payload = {
+        pertemuan_id: pertemuanId, skor: skor, total: total,
+        jumlah_soal: questions.length, jawaban: jawaban,
+        paste_count: pasteCount, copy_count: copyCount,
+        blur_count: blurCount, time_spent_ms: Date.now() - startedAt
+      };
+
+      api('/api/evaluasi.php', { method: 'POST', body: payload }).then(function (d) {
         submitting = false;
         if (d.ok) {
           submitted = true;
           try { localStorage.removeItem(backupKey); } catch (e) {}
           showResult(d.data || { skor: skor, total: total, flagged: 0 });
           if (typeof window.APIAuth !== 'undefined' && window.APIAuth.me) window.APIAuth.me(true);
-        } else if (d.error && /sudah/.test(d.error || '')) {
+          return;
+        }
+        if (d.error && /sudah/.test(d.error || '')) {
           // sudah pernah dikumpulkan -> muat ulang status dari server
           me().then(function (p) {
             var ev = (p.evaluasi || {})[pertemuanId];
             if (ev) showResult({ skor: ev.skor, total: ev.total, flagged: ev.flagged, submitted_at: ev.submitted_at });
             else location.reload();
           });
-        } else {
-          btn.disabled = false; btn.textContent = 'Kumpulkan Evaluasi';
-          msg.textContent = d.error || 'Gagal mengumpulkan evaluasi. Coba lagi.';
+          return;
         }
+        // Server gagal menyimpan -> simpan lokal sebagai cadangan (tetap tampilkan skor)
+        localSaveAndShow(skor, total, d.error || 'Server tidak dapat menyimpan jawaban.');
       }).catch(function () {
         submitting = false;
-        btn.disabled = false; btn.textContent = 'Kumpulkan Evaluasi';
-        msg.textContent = 'Gagal terhubung ke server. Periksa jaringan lalu klik Kumpulkan lagi.';
+        localSaveAndShow(skor, total, 'Tidak dapat terhubung ke server.');
       });
+    }
+
+    function localSaveAndShow(skor, total, alasan) {
+      try { localStorage.setItem('eval_local_p' + pertemuanId, JSON.stringify({ skor: skor, total: total, waktu: Date.now() })); } catch (e) {}
+      showResult({ skor: skor, total: total, flagged: 0, submitted_at: null });
+      var w = document.querySelector('.evaluasi__result .evaluasi__warn');
+      if (w) {
+        w.textContent = alasan + ' Jawaban tersimpan sementara di perangkat Anda dan belum terkirim ke server. Hubungi dosen bila masalah berlanjut.';
+      }
     }
 
     function flagLabels(flagged) {
