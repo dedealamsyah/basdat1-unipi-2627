@@ -79,6 +79,48 @@ const { pid, data } = Astro.props;
   .eq-opt.is-locked, .eq-opt.is-locked:hover { cursor: default; border-color: var(--line); }
   .eq-opt.is-locked input { accent-color: var(--ink-soft); }
 
+  .ev-track { margin-bottom: 14px; }
+  .ev-track__label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    color: var(--ink-soft); text-transform: uppercase;
+  }
+  .ev-track__bar { height: 8px; border-radius: 6px; background: var(--teal-100); margin-top: 6px; overflow: hidden; }
+  [data-theme="dark"] .ev-track__bar { background: rgba(43, 166, 160, .15); }
+  .ev-track__bar i {
+    display: block; height: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, var(--navy-700), var(--teal-400));
+    transition: width .25s ease;
+  }
+  .ev-card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 18px 18px 16px; box-shadow: var(--shadow-sm);
+  }
+  .ev-card__no { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--amber-500); letter-spacing: .05em; margin-bottom: 6px; }
+  .ev-card__q { font-weight: 700; font-size: 15px; color: var(--ink); margin: 0 0 12px; line-height: 1.5; }
+  .ev-opts { display: grid; gap: 8px; }
+  .ev-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px;
+    cursor: pointer; background: var(--paper);
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  [data-theme="dark"] .ev-opt { background: #0f1816; }
+  .ev-opt:hover { border-color: var(--teal-400); }
+  .ev-opt input { margin-top: 3px; accent-color: var(--navy-700); }
+  .ev-opt__label { font-size: 13.5px; color: var(--ink); line-height: 1.5; }
+  .ev-opt.sel { border-color: var(--navy-700); background: var(--teal-100); box-shadow: var(--shadow-sm); }
+  [data-theme="dark"] .ev-opt.sel { background: rgba(43, 166, 160, .16); }
+  .ev-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .ev-nav span { font-size: 12.5px; color: var(--ink-soft); }
+  .ev-nav__right { display: flex; gap: 8px; }
+
+  .ev-intro h3 { font-family: var(--font-display); font-size: 18px; color: var(--navy-800); margin: 0 0 10px; }
+  .ev-intro p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin: 0 0 12px; }
+  .ev-intro ul { margin: 0 0 16px; padding-left: 20px; }
+  .ev-intro li { font-size: 13px; color: var(--ink); line-height: 1.7; margin-bottom: 4px; }
+  .ev-intro .btn-sim { margin-top: 4px; }
+
   .evaluasi__actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
   .evaluasi__msg { margin-top: 12px; font-size: 13px; line-height: 1.6; }
 
@@ -141,6 +183,8 @@ const { pid, data } = Astro.props;
     var submitted = false;
     var submitting = false;
     var isActive = false;
+    var current = 0;       // indeks soal yang sedang ditampilkan
+    var stage = 'intro';   // 'intro' | 'quiz'
 
     function api(path, opts) {
       if (typeof window.APIAuth !== 'undefined' && window.APIAuth.api) {
@@ -171,57 +215,123 @@ const { pid, data } = Astro.props;
       isActive = true;
       stateEl.innerHTML = '';
       formEl.hidden = false;
-      var html = '';
-      questions.forEach(function (q, qi) {
-        html += '<div class="eq-block" data-q="' + qi + '">' +
-          '<p class="eq-block__q">' + (qi + 1) + '. ' + esc(q.soal) + '</p>' +
-          '<div class="eq-block__opts">';
-        order[qi].forEach(function (orig) {
-          var checked = saved && String(saved[qi]) === String(orig) ? ' checked' : '';
-          html += '<label class="eq-opt" data-qi="' + qi + '" data-orig="' + orig + '">' +
-            '<input type="radio" name="eq_' + qi + '" value="' + orig + '"' + checked + '>' +
-            '<span class="eq-opt__label">' + esc(q.opsi[orig]) + '</span></label>';
-        });
-        html += '</div></div>';
-      });
-      html += '<div class="evaluasi__actions">' +
-        '<button class="btn-sim" id="evalSubmit" style="background:var(--amber-400);">Kumpulkan Evaluasi</button>' +
-        '<span class="muted" id="evalCounter" style="font-size:12.5px;"></span></div>' +
-        '<div class="evaluasi__msg" id="evalMsg"></div>';
-      formEl.innerHTML = html;
-      restoreSel();
-      updateCounter();
-
-      formEl.querySelectorAll('.eq-opt').forEach(function (lab) {
-        lab.addEventListener('click', function () {
-          var qi = lab.getAttribute('data-qi');
-          sel[qi] = parseInt(lab.getAttribute('data-orig'), 10);
-          lab.parentNode.querySelectorAll('.eq-opt').forEach(function (o) { o.classList.remove('sel'); });
-          lab.classList.add('sel');
-          try { localStorage.setItem(backupKey, JSON.stringify(sel)); } catch (e) {}
-          updateCounter();
-        });
-      });
-
-      document.getElementById('evalSubmit').addEventListener('click', submit);
+      if (saved && saved.sel) sel = saved.sel;
+      if (saved && saved.current != null) current = saved.current;
+      if (sel && Object.keys(sel).length) stage = 'quiz'; else stage = 'intro';
+      if (current < 0 || current >= questions.length) current = 0;
+      draw();
       armAntiCheat();
     }
 
-    function restoreSel() {
-      Object.keys(sel).forEach(function (qi) {
-        var lab = formEl.querySelector('.eq-opt[data-qi="' + qi + '"][data-orig="' + sel[qi] + '"]');
-        if (lab) {
-          lab.classList.add('sel');
-          var inp = lab.querySelector('input');
-          if (inp) inp.checked = true;
-        }
-      });
+    function savePos() {
+      try { localStorage.setItem(backupKey, JSON.stringify({ sel: sel, current: current, stage: stage })); } catch (e) {}
     }
 
-    function updateCounter() {
-      var answered = Object.keys(sel).length;
-      var el = document.getElementById('evalCounter');
-      if (el) el.textContent = answered + ' dari ' + questions.length + ' soal terjawab';
+    function draw() {
+      formEl.innerHTML =
+        '<div class="ev-track">' +
+        '<span class="ev-track__label"><span id="evProg"></span><span id="evProgCnt"></span></span>' +
+        '<div class="ev-track__bar"><i id="evBar"></i></div></div>' +
+        '<div class="ev-card" id="evCard"></div>' +
+        '<div class="ev-nav" id="evNav"></div>' +
+        '<div class="evaluasi__msg" id="evalMsg"></div>';
+      if (stage === 'intro') drawIntro(); else drawQuestion();
+      updateTrack();
+      bindCard();
+    }
+
+    function drawIntro() {
+      var card = document.getElementById('evCard');
+      card.innerHTML =
+        '<div class="ev-intro">' +
+        '<h3>Selamat datang, evaluasi siap dimulai</h3>' +
+        '<p>Evaluasi ini mengukur pemahaman Anda terhadap materi <strong>Pertemuan ' + pertemuanId + '</strong> setelah menyelesaikan latihan. Bacalah petunjuk berikut sebelum memulai.</p>' +
+        '<ul>' +
+        '<li>Total <strong>' + questions.length + ' soal</strong> pilihan ganda, dikerjakan satu per satu dalam kartu.</li>' +
+        '<li>Hanya <strong>1x percobaan</strong>. Begitu dikumpulkan, tidak bisa dikerjakan ulang.</li>' +
+        '<li>Jawaban benar/salah <strong>tidak ditampilkan</strong>; Anda hanya melihat skor akhir.</li>' +
+        '<li>Aktivitas salin/tempel (copy-paste) <strong>diblokir dan dicatat</strong>.</li>' +
+        '<li>Berpindah tab/jendela selama mengerjakan <strong>dilaporkan ke dosen</strong>.</li>' +
+        '<li>Waktu pengerjaan diukur dari kartu ini dibuka hingga tombol kumpul ditekan.</li>' +
+        '</ul>' +
+        '<button class="btn-sim" id="evStart" style="background:var(--amber-400);">Mulai Evaluasi →</button>' +
+        '</div>';
+      document.getElementById('evNav').innerHTML = '';
+      var b = document.getElementById('evStart');
+      if (b) b.addEventListener('click', function () { stage = 'quiz'; current = 0; savePos(); draw(); });
+    }
+
+    function drawQuestion() {
+      var q = questions[current];
+      var card = document.getElementById('evCard');
+      var html = '<div class="ev-card__no">SOAL ' + (current + 1) + ' / ' + questions.length + '</div>' +
+        '<p class="ev-card__q">' + esc(q.soal) + '</p>' +
+        '<div class="ev-opts">';
+      order[current].forEach(function (orig) {
+        var checked = sel[current] != null && String(sel[current]) === String(orig) ? ' checked' : '';
+        html += '<label class="ev-opt' + (checked ? ' sel' : '') + '" data-qi="' + current + '" data-orig="' + orig + '">' +
+          '<input type="radio" name="ev_opt" value="' + orig + '"' + checked + '>' +
+          '<span class="ev-opt__label">' + esc(q.opsi[orig]) + '</span></label>';
+      });
+      html += '</div>';
+      card.innerHTML = html;
+
+      var isLast = current === questions.length - 1;
+      var nav = document.getElementById('evNav');
+      nav.innerHTML =
+        '<span id="evPos"></span>' +
+        '<div class="ev-nav__right">' +
+        (current > 0 ? '<button class="btn-sim" id="evPrev" style="background:var(--navy-800);">‹ Sebelumnya</button>' : '') +
+        (isLast
+          ? '<button class="btn-sim" id="evSubmit" style="background:var(--amber-400);">Kumpulkan Evaluasi</button>'
+          : '<button class="btn-sim" id="evNext" style="background:var(--green-600);">Selanjutnya ›</button>') +
+        '</div>';
+
+      var left = document.getElementById('evPos');
+      if (left) left.textContent = 'Soal ' + (current + 1) + ' dari ' + questions.length +
+        ' · terjawab ' + answeredCount() + '/' + questions.length;
+    }
+
+    function bindCard() {
+      var card = document.getElementById('evCard');
+      if (!card) return;
+      card.querySelectorAll('.ev-opt').forEach(function (lab) {
+        lab.addEventListener('click', function () {
+          var qi = parseInt(lab.getAttribute('data-qi'), 10);
+          var orig = parseInt(lab.getAttribute('data-orig'), 10);
+          sel[qi] = orig;
+          card.querySelectorAll('.ev-opt').forEach(function (o) { o.classList.remove('sel'); });
+          lab.classList.add('sel');
+          savePos();
+          updateTrack();
+        });
+      });
+      var prev = document.getElementById('evPrev');
+      if (prev) prev.addEventListener('click', function () { if (current > 0) { current--; savePos(); draw(); } });
+      var next = document.getElementById('evNext');
+      if (next) next.addEventListener('click', function () { if (current < questions.length - 1) { current++; savePos(); draw(); } });
+      var sb = document.getElementById('evSubmit');
+      if (sb) sb.addEventListener('click', submit);
+    }
+
+    function answeredCount() {
+      return Object.keys(sel).filter(function (qi) { return sel[qi] != null; }).length;
+    }
+
+    function updateTrack() {
+      var prog = document.getElementById('evProg');
+      var cnt = document.getElementById('evProgCnt');
+      var bar = document.getElementById('evBar');
+      if (stage === 'intro') {
+        if (prog) prog.textContent = 'Pengantar';
+        if (cnt) cnt.textContent = '0 / ' + questions.length;
+        if (bar) bar.style.width = '0%';
+        return;
+      }
+      var n = answeredCount();
+      if (prog) prog.textContent = 'Evaluasi Pertemuan ' + pertemuanId;
+      if (cnt) cnt.textContent = n + ' / ' + questions.length + ' terjawab';
+      if (bar) bar.style.width = (current + 1) / questions.length * 100 + '%';
     }
 
     function draft() {
@@ -409,9 +519,6 @@ const { pid, data } = Astro.props;
       }
       return true;
     }
-
-    // state lokal tersimpan (draft) dimuat bila ada
-    try { sel = JSON.parse(localStorage.getItem(backupKey) || '{}'); } catch (e) { sel = {}; }
 
     me().then(function (p) {
       if (gate(p)) renderForm(draft());
