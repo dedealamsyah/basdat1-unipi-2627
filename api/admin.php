@@ -41,9 +41,14 @@ if ($nim !== '') {
             'completed_at' => isset($done[$id]) ? $done[$id]['completed_at'] : null,
         );
     }
+    $evalRows = array();
+    foreach (evaluasi_rows($nim) as $pid => $e) {
+        $evalRows[] = array_merge(array('pertemuan_id' => $pid), $e);
+    }
     json_out(array('ok' => true, 'data' => array(
         'nim' => $nim,
         'progress' => $detail,
+        'evaluasi' => $evalRows,
         'nilai' => compute_nilai($nim),
     )));
 }
@@ -72,4 +77,8 @@ foreach ($st as $r) {
     );
 }
 
-json_out(array('ok' => true, 'data' => array('students' => $students, 'total' => $total)));
+json_out(array('ok' => true, 'data' => array(
+    'students' => $students,
+    'total' => $total,
+    'evaluasi' => evaluasi_list(),
+)));

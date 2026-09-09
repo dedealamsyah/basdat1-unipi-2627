@@ -19,8 +19,70 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
     <div class="chipRow">
       <span class="chip">Semester 3 · TA 2026/2027</span>
       <span class="chip chip--amber">{sorted.length} Pertemuan</span>
+      <span class="chip">S1 Informatika</span>
     </div>
   </div>
+
+  <section class="home-hero">
+    <div class="home-hero__content">
+      <span class="home-hero__badge">KURIKULUM 2026</span>
+      <h2 class="home-hero__title">Belajar Basis Data, dari Konsep hingga SQL</h2>
+      <p class="home-hero__text">Materi terstruktur per pertemuan, latihan ERD interaktif, dan SQL playground langsung di browser — semua progres tercatat otomatis.</p>
+      <div class="home-hero__actions">
+        <a class="btn-sim" href="#daftar">Mulai Belajar</a>
+        <a class="btn-sim home-hero__btn-ghost" href="/praktikum">Buka Praktikum</a>
+      </div>
+    </div>
+    <div class="home-hero__fact">
+      <span class="home-hero__fact-num">{sorted.length}</span>
+      <span class="home-hero__fact-label">Pertemuan terstruktur</span>
+    </div>
+  </section>
+
+  <div class="col-2">
+    <a class="feature-card" href="/praktikum">
+      <span class="feature-card__icon" style="background:var(--teal-100); color:#7A6210;">✎</span>
+      <div>
+        <h3 class="feature-card__title">Worksheet Praktikum ERD</h3>
+        <p class="feature-card__desc">Lembar kerja interaktif perancangan model data, tersimpan otomatis dan siap dicetak.</p>
+      </div>
+      <span class="feature-card__arrow">→</span>
+    </a>
+    <a class="feature-card" href="/playground">
+      <span class="feature-card__icon" style="background:var(--green-100); color:var(--navy-700);">▷</span>
+      <div>
+        <h3 class="feature-card__title">SQL Playground</h3>
+        <p class="feature-card__desc">Latihan query SQL langsung di browser (SQLite via WASM) dengan data contoh relasional.</p>
+      </div>
+      <span class="feature-card__arrow">→</span>
+    </a>
+  </div>
+
+  <section class="block" id="daftar">
+    <h2>Daftar Pertemuan</h2>
+    <div style="display:grid; gap:6px; margin-top:14px;" id="pertemuanList">
+      {sorted.map((p) => (
+        <a 
+          href={p.data.locked ? '#' : `/pertemuan/${p.data.id}`}
+          data-id={p.data.id}
+          class={`row ${p.data.locked ? 'locked' : ''}`}
+          style={`text-decoration:none; ${p.data.locked ? 'pointer-events:none; opacity:0.5;' : ''}`}
+        >
+          <span class="row__pk">{String(p.data.id).padStart(2, '0')}</span>
+          <span class="row__text">
+            <span class="row__num">PERTEMUAN {p.data.id}</span>
+            <span class="row__title">{p.data.title}</span>
+          </span>
+          {!p.data.locked && p.data.kuis && (
+            <span class="row__meta">
+              {(p.data.kuis.latihan ?? 0) > 0 && <span class="chip chip--sm">📝 {p.data.kuis.latihan} Latihan</span>}
+              {(p.data.kuis.evaluasi ?? 0) > 0 && <span class="chip chip--sm chip--amber">📋 {p.data.kuis.evaluasi} Evaluasi</span>}
+            </span>
+          )}
+        </a>
+      ))}
+    </div>
+  </section>
 
   <section class="block">
     <h2>Selamat Datang</h2>
@@ -36,46 +98,6 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
       <li>Studi kasus dari dunia nyata</li>
       <li>Referensi akademik dari literatur terkemuka</li>
     </ul>
-  </section>
-
-  <section class="block">
-    <h2>Praktikum</h2>
-    <p>
-      Lembar kerja interaktif untuk praktikum perancangan ERD. Cocok digunakan di dalam kelas bersama dosen.
-    </p>
-    <div style="display:flex; gap:8px; margin-top:12px;">
-      <a class="navBtn" href="/praktikum" style="background:#C9A227; color:#262119; font-weight:700;">Buka Worksheet Praktikum</a>
-    </div>
-  </section>
-
-  <section class="block">
-    <h2>SQL Playground</h2>
-    <p>
-      Latihan query SQL langsung di browser (SQLite via WASM), lengkap dengan data contoh relasional dan contoh query yang siap dijalankan.
-    </p>
-    <div style="display:flex; gap:8px; margin-top:12px;">
-      <a class="navBtn" href="/playground" style="background:#1F5F4B; color:#fff; font-weight:700;">Buka SQL Playground</a>
-    </div>
-  </section>
-
-  <section class="block">
-    <h2>Daftar Pertemuan</h2>
-    <div style="display:grid; gap:12px; margin-top:16px;" id="pertemuanList">
-      {sorted.map((p) => (
-        <a 
-          href={p.data.locked ? '#' : `/pertemuan/${p.data.id}`}
-          data-id={p.data.id}
-          class={`row ${p.data.locked ? 'locked' : ''}`}
-          style={`text-decoration:none; ${p.data.locked ? 'pointer-events:none; opacity:0.5;' : ''}`}
-        >
-          <span class="row__pk">{String(p.data.id).padStart(2, '0')}</span>
-          <span class="row__text">
-            <span class="row__num">PERTEMUAN {p.data.id}</span>
-            <span class="row__title">{p.data.title}</span>
-          </span>
-        </a>
-      ))}
-    </div>
   </section>
 
   <section class="block">

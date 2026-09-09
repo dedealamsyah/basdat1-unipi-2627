@@ -97,8 +97,8 @@ const studyCases = [
     </p>
     <div id="entitasRows"></div>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="entitasAdd" style="background:#2A7A61;">+ Tambah Entitas</button>
-      <button class="btn-sim" id="entitasClear" style="background:#C9584F;">Bersihkan</button>
+      <button class="btn-sim" id="entitasAdd" style="background:var(--green-600);">+ Tambah Entitas</button>
+      <button class="btn-sim" id="entitasClear" style="background:var(--red-600);">Bersihkan</button>
     </div>
   </section>
 
@@ -122,8 +122,8 @@ const studyCases = [
     <p>Tentukan hubungan antar entitas beserta kardinalitasnya.</p>
     <div id="relasiRows"></div>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="relasiAdd" style="background:#2A7A61;">+ Tambah Relasi</button>
-      <button class="btn-sim" id="relasiClear" style="background:#C9584F;">Bersihkan</button>
+      <button class="btn-sim" id="relasiAdd" style="background:var(--green-600);">+ Tambah Relasi</button>
+      <button class="btn-sim" id="relasiClear" style="background:var(--red-600);">Bersihkan</button>
     </div>
     <div class="callout" style="margin-top:16px;">
       <span class="callout__label">Total Partisipasi vs Parsial</span>
@@ -145,7 +145,7 @@ const studyCases = [
       Jalankan pemeriksaan otomatis untuk memastikan worksheet sudah lengkap dan konsisten sebelum dikumpulkan.
     </p>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="wksValidate" style="background:#2A7A61;">✓ Validasi Worksheet</button>
+      <button class="btn-sim" id="wksValidate" style="background:var(--green-600);">✓ Validasi Worksheet</button>
     </div>
     <div id="wksValidation" style="margin-top:14px;"></div>
   </section>
@@ -157,8 +157,8 @@ const studyCases = [
       Bagikan isian worksheet ke kelompok lain (untuk review silang atau lanjutan di rumah) dalam format JSON.
     </p>
     <div style="display:flex; gap:8px; margin-top:12px;">
-      <button class="btn-sim" id="wksExport" style="background:#1C3B30;">Ekspor Data (.json)</button>
-      <button class="btn-sim" id="wksImport" style="background:#4D8B6E;">Impor Data</button>
+      <button class="btn-sim" id="wksExport" style="background:var(--navy-800);">Ekspor Data (.json)</button>
+      <button class="btn-sim" id="wksImport" style="background:var(--green-500);">Impor Data</button>
       <input type="file" id="wksImportFile" accept=".json" style="display:none;">
     </div>
   </section>
@@ -168,9 +168,9 @@ const studyCases = [
     <h2>I. Simpan, Unduh & Cetak</h2>
     <p>Isian terdokumentasi otomatis. Gunakan tombol di bawah untuk memproduksi laporan:</p>
     <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">
-      <button class="btn-sim" id="wksSave" style="background:#2A7A61;">Simpan & Unduh Laporan (.txt)</button>
-      <button class="btn-sim" id="wksPrint" style="background:#1C3B30;">Cetak / Simpan PDF</button>
-      <button class="btn-sim" id="wksReset" style="background:#C9584F;">Reset Semua</button>
+      <button class="btn-sim" id="wksSave" style="background:var(--green-600);">Simpan & Unduh Laporan (.txt)</button>
+      <button class="btn-sim" id="wksPrint" style="background:var(--navy-800);">Cetak / Simpan PDF</button>
+      <button class="btn-sim" id="wksReset" style="background:var(--red-600);">Reset Semua</button>
     </div>
     <div id="wksFeedback" style="margin-top:14px;"></div>
   </section>
@@ -182,21 +182,6 @@ const studyCases = [
 </BaseLayout>
 
 <style is:global>
-  .wks-input {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: none;
-    background: var(--card);
-    color: var(--ink);
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    margin-bottom: 6px;
-    outline: none;
-    box-shadow: var(--neu-inset-sm);
-    transition: box-shadow 0.2s;
-  }
-  .wks-input:focus { box-shadow: var(--neu-inset-sm), 0 0 0 2px var(--teal-500); }
   .wks-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
   .wks-table th {
     background: var(--navy-700); color: #fff; font-family: var(--font-mono);
@@ -211,22 +196,22 @@ const studyCases = [
   }
   .wks-table select { cursor: pointer; }
   .wks-del {
-    background: #C9584F; border: none; border-radius: 4px; color: #fff;
+    background: var(--red-600); border: none; border-radius: 4px; color: #fff;
     width: 26px; height: 26px; cursor: pointer; font-size: 14px; line-height: 1;
   }
-  .wks-del:hover { background: #a8433b; }
+  .wks-del:hover { background: #A9332A; }
 
   .v-item {
     padding: 8px 12px;
     border-radius: 6px;
-    border-left: 4px solid var(--teal-500);
+    border-left: 4px solid var(--line-strong);
     background: var(--card);
     margin-bottom: 8px;
     font-size: 13px;
   }
-  .v-item.ok { border-left-color: #1F5F4B; }
-  .v-item.warn { border-left-color: #C9A227; }
-  .v-item.err { border-left-color: #C9584F; }
+  .v-item.ok { border-left-color: var(--green-600); }
+  .v-item.warn { border-left-color: var(--teal-500); }
+  .v-item.err { border-left-color: var(--red-600); }
   .v-item.__label { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing:.04em; }
   .v-score { font-size: 22px; font-weight: 800; }
 
@@ -508,7 +493,7 @@ const studyCases = [
         p2.textContent = NAR[id] || "";
         narasiBox.appendChild(p2);
         document.querySelectorAll(".case-btn").forEach(function (x) {
-          x.style.background = x === b ? "#C9A227" : "var(--navy-700)";
+          x.style.background = x === b ? "var(--teal-400)" : "var(--navy-700)";
         });
         save();
       });
@@ -527,7 +512,7 @@ const studyCases = [
     // relasi add/clear
     $("relasiAdd").addEventListener("click", function () {
       if (state.entitas.length < 2) {
-        $("wksFeedback").innerHTML = '<span style="color:#C9584F;">Minimal 2 entitas untuk membuat relasi.</span>';
+        $("wksFeedback").innerHTML = '<span style="color:var(--red-600);">Minimal 2 entitas untuk membuat relasi.</span>';
         return;
       }
       state.relasi.push({ entitasA: state.entitas[0].nama, relasi: "1:N", entitasB: state.entitas[1].nama, partisipasi: "Total" });
@@ -582,7 +567,7 @@ const studyCases = [
           }
           $("wksFeedback").innerHTML = '<span style="color:#166534;">✓ Data berhasil diimpor.</span>';
         } catch (err) {
-          $("wksFeedback").innerHTML = '<span style="color:#C9584F;">✗ Gagal mengimpor file. Pastikan file JSON ekspor dari worksheet ini.</span>';
+          $("wksFeedback").innerHTML = '<span style="color:var(--red-600);">✗ Gagal mengimpor file. Pastikan file JSON ekspor dari worksheet ini.</span>';
         }
         e.target.value = "";
       };

@@ -71,21 +71,24 @@ import Sidebar from '../components/Sidebar.astro';
     width: 100%;
     max-width: 440px;
     background: var(--card);
-    box-shadow: var(--neu-shadow);
-    border-radius: 18px;
-    padding: 34px 32px 28px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+    padding: 36px 34px 30px;
   }
 
   .login-head { text-align: center; margin-bottom: 24px; }
   .login-logo {
-    border-radius: 50%;
-    box-shadow: var(--neu-shadow-sm);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
     margin-bottom: 14px;
   }
   .login-title {
     font-family: var(--font-display);
     font-size: 24px;
-    color: var(--navy-800);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--ink);
     margin: 0 0 6px;
   }
   .login-sub {
@@ -98,9 +101,9 @@ import Sidebar from '../components/Sidebar.astro';
   .field__label {
     display: block;
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: .05em;
+    letter-spacing: .07em;
     text-transform: uppercase;
     color: var(--navy-700);
     margin: 0 0 6px 4px;
@@ -113,26 +116,27 @@ import Sidebar from '../components/Sidebar.astro';
   .field__icon {
     position: absolute;
     left: 14px;
-    color: var(--ink-soft);
+    color: var(--ink-faint);
     display: flex;
     pointer-events: none;
   }
   .field__input {
     width: 100%;
     padding: 13px 46px 13px 42px;
-    border: none;
+    border: 1px solid var(--line);
     border-radius: 12px;
     background: var(--card);
     color: var(--ink);
     font-family: var(--font-body);
     font-size: 14px;
     outline: none;
-    box-shadow: var(--neu-inset-sm);
-    transition: box-shadow 0.2s;
+    box-shadow: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .field__input::placeholder { color: #A8A294; }
+  .field__input::placeholder { color: var(--ink-faint); }
   .field__input:focus {
-    box-shadow: var(--neu-inset-sm), 0 0 0 2px var(--teal-500);
+    border-color: var(--navy-700);
+    box-shadow: 0 0 0 3px rgba(23, 107, 77, .12);
   }
   .field__toggle {
     position: absolute;
@@ -167,11 +171,11 @@ import Sidebar from '../components/Sidebar.astro';
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: var(--neu-shadow-sm);
-    transition: box-shadow .2s, transform .05s;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .2s, transform .06s, filter .2s;
   }
-  .login-btn:hover { box-shadow: var(--neu-shadow-sm), inset 2px 2px 4px rgba(0,0,0,.18); }
-  .login-btn:active { box-shadow: var(--neu-inset-sm); transform: translateY(1px); }
+  .login-btn:hover { box-shadow: var(--shadow-md); filter: brightness(1.06); }
+  .login-btn:active { transform: translateY(1px); }
   .login-btn:disabled { opacity: .6; cursor: wait; }
 
   .login-back {
@@ -190,17 +194,18 @@ import Sidebar from '../components/Sidebar.astro';
     margin: 0 0 12px;
     text-align: center;
   }
-  .login-msg.error { color: #b03a2e; font-weight: 600; }
-  .login-msg.ok { color: #1F5F4B; font-weight: 600; }
+  .login-msg.error { color: var(--red-600); font-weight: 600; }
+  .login-msg.ok { color: var(--navy-700); font-weight: 600; }
 
   .login-info {
     margin-top: 22px;
     padding: 14px 16px;
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: var(--teal-100);
+    border: 1px solid rgba(176, 141, 28, .22);
     font-size: 12.5px;
     line-height: 1.6;
-    color: var(--navy-800);
+    color: var(--ink);
   }
   .login-info strong {
     display: block;

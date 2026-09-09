@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "5%"
   cpmk: "CPMK-1"
+kuis:
+  latihan: 4
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P3 = [
+  { soal: "Langkah pertama yang paling tepat dalam perancangan ERD berbasis narasi bisnis adalah...", opsi: [
+    "Langsung menggambar relasi antara tabel",
+    "Menganalisis narasi untuk mengidentifikasi entitas dan kebutuhan data",
+    "Menentukan tipe data setiap kolom",
+    "Membuat database sebelum menentukan entitas"
+  ], benar: 1 },
+  { soal: "Dalam studi kasus E-Commerce, relasi antara PRODUK dan KATEGORI (satu kategori punya banyak produk) adalah...", opsi: [
+    "1:1",
+    "1:N",
+    "M:N",
+    "N:N:1"
+  ], benar: 1 },
+  { soal: "Fungsi utama tabel penghubung pada relasi M:N seperti PESANAN-PRODUK adalah...", opsi: [
+    "Mengurangi jumlah relasi dalam database",
+    "Menyimpan foreign key dari kedua entitas agar relasi M:N dapat direpresentasikan",
+    "Menghapus kebutuhan primary key",
+    "Menyimpan data hanya dari satu entitas"
+  ], benar: 1 },
+  { soal: "Validasi ERD dianggap lengkap bila...", opsi: [
+    "Semua entitas memiliki minimal satu relasi dan atribut yang jelas",
+    "Diagram hanya berisi entitas tanpa relasi",
+    "Nama entitas boleh sama dan deskripsi tidak wajib",
+    "Kardinalitas tidak perlu ditentukan"
+  ], benar: 0 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -471,6 +502,8 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
 - Studi kasus E-Commerce: pola 1:N (Pelanggan-Order) dan tabel penghubung ORDER_DETAIL
 - Studi kasus Rumah Sakit: relasi kompleks dengan RESEP_DETAIL sebagai tabel penghubung
 - **Validasi ERD** sangat penting untuk memastikan diagram sesuai kebutuhan bisnis
+
+<Evaluasi pid={3} data={EVAL_P3} />
 
 ## K. Referensi
 

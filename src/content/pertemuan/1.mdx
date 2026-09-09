@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "1%"
   cpmk: "CPMK-1"
+kuis:
+  latihan: 3
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P1 = [
+  { soal: "Manakah yang paling tepat menggambarkan hubungan antara informasi dan data?", opsi: [
+    "Informasi adalah data yang belum diolah sehingga tidak berguna",
+    "Informasi adalah hasil pengolahan data yang bermakna bagi penerimanya",
+    "Data dan informasi adalah dua istilah yang sama persis",
+    "Informasi hanya bisa dihasilkan dari database, bukan dari data biasa"
+  ], benar: 1 },
+  { soal: "Perintah kerja sistem basis data saat aplikasi meminta baca data adalah...", opsi: [
+    "DBMS -> Aplikasi -> Basis Data",
+    "Basis Data -> Aplikasi -> DBMS",
+    "Aplikasi -> DBMS -> Basis Data",
+    "Basis Data -> DBMS -> Aplikasi"
+  ], benar: 2 },
+  { soal: "Pada three-schema architecture (ANSI-SPARC), level yang menggambarkan struktur logis seluruh basis data tanpa detail penyimpanan adalah...", opsi: [
+    "External level",
+    "Internal level",
+    "Conceptual level",
+    "Physical level"
+  ], benar: 2 },
+  { soal: "Keunggulan utama basis data dibanding sistem berbasis file yang paling tepat adalah...", opsi: [
+    "Database selalu lebih murah daripada file biasa",
+    "Database mengurangi redundansi dan menjaga konsistensi data",
+    "Database tidak membutuhkan perangkat keras apa pun",
+    "Database menyimpan data tanpa aturan relasi sama sekali"
+  ], benar: 1 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -217,6 +248,8 @@ Standar ANSI-SPARC membagi arsitektur basis data menjadi tiga tingkat pandangan:
 - Sistem basis data terdiri atas lima komponen utama: data, hardware, software, prosedur, dan pengguna
 - Arsitektur *three-schema* menjaga *data independence* antara pengguna dan detail penyimpanan fisik
 - Model RDBMS menjadi fokus utama mata kuliah ini
+
+<Evaluasi pid={1} data={EVAL_P1} />
 
 ## G. Referensi
 

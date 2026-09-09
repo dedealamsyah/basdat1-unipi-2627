@@ -33,6 +33,25 @@ CREATE TABLE IF NOT EXISTS grades (
   PRIMARY KEY (nim, komponen)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Hasil evaluasi per pertemuan (1x per mahasiswa + telemetri integritas)
+CREATE TABLE IF NOT EXISTS evaluasi (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nim VARCHAR(24) NOT NULL,
+  pertemuan_id INT NOT NULL,
+  skor INT NOT NULL DEFAULT 0,
+  total INT NOT NULL DEFAULT 100,
+  jumlah_soal INT NOT NULL DEFAULT 0,
+  jawaban TEXT NULL,
+  paste_count INT NOT NULL DEFAULT 0,
+  copy_count INT NOT NULL DEFAULT 0,
+  blur_count INT NOT NULL DEFAULT 0,
+  time_spent_ms INT NOT NULL DEFAULT 0,
+  flagged INT NOT NULL DEFAULT 0,
+  submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_eval_nim_ptm (nim, pertemuan_id),
+  KEY idx_eval_ptm (pertemuan_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Akun admin awal (dibuat oleh setup_db.php bila belum ada):
 --   nim = 'admin' / password = 'AdminUNIPI2026'
 -- Mohon segera diganti setelah login pertama.

@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "4%"
   cpmk: "CPMK-2"
+kuis:
+  latihan: 5
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P9 = [
+  { soal: "XAMPP menggabungkan beberapa komponen. Komponen DBMS MySQL-nya diakses lewat...", opsi: [
+    "Aplikasi XAMPP root",
+    "Modul Apache",
+    "Modul MySQL/MariaDB (default port 3306)",
+    "File Explorer XAMPP"
+  ], benar: 2 },
+  { soal: "Perintah SQL untuk membuat sebuah database baru adalah...", opsi: [
+    "USE nama_db;",
+    "CREATE DATABASE nama_db;",
+    "CREATE TABLE nama_db;",
+    "SELECT nama_db;"
+  ], benar: 1 },
+  { soal: "Kelompok perintah yang termasuk DML (Data Manipulation Language) adalah...", opsi: [
+    "CREATE, ALTER, DROP",
+    "SELECT, INSERT, UPDATE, DELETE",
+    "GRANT, REVOKE",
+    "COMMIT, ROLLBACK"
+  ], benar: 1 },
+  { soal: "Untuk mengakses MySQL secara interaktif dari command line, perintah yang benar adalah...", opsi: [
+    "mysql -u root -p",
+    "start mysql",
+    "run mysql --gui",
+    "mysql-open"
+  ], benar: 0 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -286,6 +317,8 @@ SELECT * FROM catatan;
 - XAMPP adalah paket cepat untuk memulai MySQL/MariaDB (port default 3306)
 - Buat basis data dengan `CREATE DATABASE` lalu aktifkan dengan `USE`
 - Latihan tanpa instal: gunakan **SQL Playground**, DB Fiddle, atau SQLite Online
+
+<Evaluasi pid={9} data={EVAL_P9} />
 
 ## J. Referensi
 

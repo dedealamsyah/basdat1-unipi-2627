@@ -67,6 +67,26 @@ $pdo->exec(
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 );
 
+$pdo->exec(
+    "CREATE TABLE IF NOT EXISTS evaluasi (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nim VARCHAR(24) NOT NULL,
+        pertemuan_id INT NOT NULL,
+        skor INT NOT NULL DEFAULT 0,
+        total INT NOT NULL DEFAULT 100,
+        jumlah_soal INT NOT NULL DEFAULT 0,
+        jawaban TEXT NULL,
+        paste_count INT NOT NULL DEFAULT 0,
+        copy_count INT NOT NULL DEFAULT 0,
+        blur_count INT NOT NULL DEFAULT 0,
+        time_spent_ms INT NOT NULL DEFAULT 0,
+        flagged INT NOT NULL DEFAULT 0,
+        submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_eval_nim_ptm (nim, pertemuan_id),
+        KEY idx_eval_ptm (pertemuan_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+);
+
 // Kolom kewajiban ganti password (bila belum ada) → paksa akun lama saat pertama migrasi
 $cols = $pdo->query('SHOW COLUMNS FROM users')->fetchAll();
 $hasMcp = false;
@@ -106,6 +126,16 @@ if ($cnt === 0) {
     foreach ($seed as $s) {
         $ins->execute($s);
     }
+}
+
+// Akun dummy untuk pengujian (idempoten): nim/nama = mhs_dummy, password = dummy
+$stDummy = $pdo->prepare('SELECT 1 FROM users WHERE nim = ?');
+$stDummy->execute(array('mhs_dummy'));
+if (!$stDummy->fetch()) {
+    $pdo->prepare(
+        'INSERT INTO users (nim, nama, kelas, role, pass_hash, must_change_password)
+         VALUES (?, ?, ?, "mahasiswa", ?, 0)'
+    )->execute(array('mhs_dummy', 'mhs_dummy', 'IF3A', password_hash('dummy', PASSWORD_DEFAULT)));
 }
 
 json_out(array('ok' => true, 'data' => array('status' => 'migrasi selesai')));

@@ -1,0 +1,422 @@
+---
+interface EvaluasiSoal {
+  soal: string;
+  opsi: string[];
+  benar: number;
+}
+
+interface Props {
+  pid: number;
+  data: EvaluasiSoal[];
+}
+
+const { pid, data } = Astro.props;
+---
+
+<section class="evaluasi" id="evaluasiBox" data-pid={pid}>
+  <div class="evaluasi__head">
+    <span class="evaluasi__badge">EVALUASI PERTEMUAN {pid}</span>
+    <p>
+      Jawab <strong>semua soal</strong> dengan pemahaman Anda sendiri. Hasil hanya
+      ditampilkan sebagai skor, tanpa kunci jawaban, dan <strong>hanya 1x percobaan</strong>.
+    </p>
+  </div>
+  <div class="evaluasi__state" id="evaluasiState"><p class="muted">Memeriksa akses evaluasi…</p></div>
+  <div class="evaluasi__form" id="evaluasiForm" hidden></div>
+</section>
+
+<style is:global>
+  .evaluasi {
+    margin: 28px 0;
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--amber-300);
+    background: linear-gradient(180deg, var(--card), var(--paper));
+    box-shadow: var(--shadow-md);
+  }
+  [data-theme="dark"] .evaluasi { background: linear-gradient(180deg, var(--card), #0b1311); }
+  .evaluasi__head { margin-bottom: 14px; }
+  .evaluasi__head p { margin: 8px 0 0; font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+  .evaluasi__badge {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--amber-400);
+    background: var(--amber-50);
+    border: 1px solid var(--amber-200);
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+  [data-theme="dark"] .evaluasi__badge { background: rgba(231, 168, 61, .12); border-color: rgba(231, 168, 61, .35); }
+
+  .eq-block {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .eq-block__q { font-weight: 700; font-size: 14.5px; color: var(--ink); margin: 0 0 10px; }
+  .eq-block__opts { display: grid; gap: 8px; }
+  .eq-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: var(--paper);
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  [data-theme="dark"] .eq-opt { background: #0f1816; }
+  .eq-opt:hover { border-color: var(--teal-400); }
+  .eq-opt.sel { border-color: var(--navy-700); background: var(--teal-100); box-shadow: var(--shadow-sm); }
+  [data-theme="dark"] .eq-opt.sel { background: rgba(43, 166, 160, .16); }
+  .eq-opt input { margin-top: 3px; accent-color: var(--navy-700); }
+  .eq-opt__label { font-size: 13.5px; color: var(--ink); line-height: 1.5; }
+
+  .eq-opt.is-locked, .eq-opt.is-locked:hover { cursor: default; border-color: var(--line); }
+  .eq-opt.is-locked input { accent-color: var(--ink-soft); }
+
+  .evaluasi__actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+  .evaluasi__msg { margin-top: 12px; font-size: 13px; line-height: 1.6; }
+
+  .ev-keep {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    z-index: 4000; max-width: min(480px, 92vw);
+    background: #221A02; color: #ffefc2;
+    border: 1px solid var(--amber-300); border-radius: 12px;
+    padding: 12px 16px; font-size: 13px; line-height: 1.5; text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .ev-keep b { color: #ffd97a; }
+
+  .evaluasi__result {
+    background: var(--green-50); border: 1.5px solid var(--green-400);
+    border-radius: var(--radius); padding: 18px; text-align: center;
+  }
+  [data-theme="dark"] .evaluasi__result { background: rgba(34, 160, 100, .12); }
+  .evaluasi__result .big { font-family: var(--font-display); font-size: 34px; font-weight: 700; color: var(--green-700); }
+  [data-theme="dark"] .evaluasi__result .big { color: var(--green-400); }
+  .evaluasi__result .sub { color: var(--ink-soft); font-size: 12.5px; margin-top: 6px; }
+  .evaluasi__warn {
+    margin-top: 10px; background: #FBEFDC; border: 1px solid #E7A83D;
+    border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #7a5510; line-height: 1.5;
+  }
+  .evaluasi__locked {
+    background: var(--navy-50); border: 1.5px dashed var(--navy-600);
+    border-radius: var(--radius); padding: 16px; text-align: center; font-size: 13.5px;
+  }
+  [data-theme="dark"] .evaluasi__locked { background: rgba(19, 36, 31, .5); }
+  .evaluasi__locked b { color: var(--navy-800); }
+</style>
+
+<script is:inline define:vars={{ pid, data }}>
+  (function () {
+    var box = document.getElementById('evaluasiBox');
+    if (!box) return;
+
+    var stateEl = document.getElementById('evaluasiState');
+    var formEl = document.getElementById('evaluasiForm');
+    var pertemuanId = pid;
+    var questions = data || [];
+
+    if (!questions.length) { stateEl.textContent = ''; return; }
+
+    // urutan acak opsi per soal (ditentukan saat halaman dimuat)
+    var order = questions.map(function (q) {
+      var idx = q.opsi.map(function (_, i) { return i; });
+      for (var i = idx.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+      }
+      return idx;
+    });
+
+    var sel = {};          // qi -> original option index
+    var backupKey = 'eval_draft_p' + pertemuanId;
+    var startedAt = Date.now();
+    var pasteCount = 0, copyCount = 0, blurCount = 0;
+    var submitted = false;
+    var submitting = false;
+    var isActive = false;
+
+    function api(path, opts) {
+      if (typeof window.APIAuth !== 'undefined' && window.APIAuth.api) {
+        return window.APIAuth.api(path, opts).then(function (r) { return r && r.data ? r.data : {}; });
+      }
+      var o = opts || {};
+      o.credentials = 'same-origin';
+      if (o.body && typeof o.body !== 'string') o.body = JSON.stringify(o.body);
+      return fetch(path, o).then(function (r) { return r.json(); });
+    }
+
+    function me() {
+      return api('/api/me.php').then(function (d) {
+        return d.data || {};
+      });
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function setState(html) {
+      stateEl.innerHTML = html;
+      formEl.hidden = true;
+    }
+
+    function renderForm(saved) {
+      isActive = true;
+      stateEl.innerHTML = '';
+      formEl.hidden = false;
+      var html = '';
+      questions.forEach(function (q, qi) {
+        html += '<div class="eq-block" data-q="' + qi + '">' +
+          '<p class="eq-block__q">' + (qi + 1) + '. ' + esc(q.soal) + '</p>' +
+          '<div class="eq-block__opts">';
+        order[qi].forEach(function (orig) {
+          var checked = saved && String(saved[qi]) === String(orig) ? ' checked' : '';
+          html += '<label class="eq-opt" data-qi="' + qi + '" data-orig="' + orig + '">' +
+            '<input type="radio" name="eq_' + qi + '" value="' + orig + '"' + checked + '>' +
+            '<span class="eq-opt__label">' + esc(q.opsi[orig]) + '</span></label>';
+        });
+        html += '</div></div>';
+      });
+      html += '<div class="evaluasi__actions">' +
+        '<button class="btn-sim" id="evalSubmit" style="background:var(--amber-400);">Kumpulkan Evaluasi</button>' +
+        '<span class="muted" id="evalCounter" style="font-size:12.5px;"></span></div>' +
+        '<div class="evaluasi__msg" id="evalMsg"></div>';
+      formEl.innerHTML = html;
+      restoreSel();
+      updateCounter();
+
+      formEl.querySelectorAll('.eq-opt').forEach(function (lab) {
+        lab.addEventListener('click', function () {
+          var qi = lab.getAttribute('data-qi');
+          sel[qi] = parseInt(lab.getAttribute('data-orig'), 10);
+          lab.parentNode.querySelectorAll('.eq-opt').forEach(function (o) { o.classList.remove('sel'); });
+          lab.classList.add('sel');
+          try { localStorage.setItem(backupKey, JSON.stringify(sel)); } catch (e) {}
+          updateCounter();
+        });
+      });
+
+      document.getElementById('evalSubmit').addEventListener('click', submit);
+      armAntiCheat();
+    }
+
+    function restoreSel() {
+      Object.keys(sel).forEach(function (qi) {
+        var lab = formEl.querySelector('.eq-opt[data-qi="' + qi + '"][data-orig="' + sel[qi] + '"]');
+        if (lab) {
+          lab.classList.add('sel');
+          var inp = lab.querySelector('input');
+          if (inp) inp.checked = true;
+        }
+      });
+    }
+
+    function updateCounter() {
+      var answered = Object.keys(sel).length;
+      var el = document.getElementById('evalCounter');
+      if (el) el.textContent = answered + ' dari ' + questions.length + ' soal terjawab';
+    }
+
+    function draft() {
+      try { return JSON.parse(localStorage.getItem(backupKey) || 'null'); } catch (e) { return null; }
+    }
+
+    function submit() {
+      if (submitting || submitted) return;
+      var missing = 0;
+      questions.forEach(function (_, qi) { if (sel[qi] == null) missing++; });
+      var msg = document.getElementById('evalMsg');
+      if (missing > 0) {
+        msg.textContent = 'Masih ada ' + missing + ' soal belum dijawab. Periksa kembali.';
+        return;
+      }
+      submitting = true;
+      var btn = document.getElementById('evalSubmit');
+      btn.disabled = true; btn.textContent = 'Mengumpulkan…';
+
+      var weight = Math.round(100 / questions.length);
+      var skor = 0, total = 0;
+      var jawaban = [];
+      questions.forEach(function (q, qi) {
+        jawaban.push(sel[qi]);
+        total += weight;
+        if (sel[qi] === q.benar) skor += weight;
+      });
+
+      api('/api/evaluasi.php', {
+        method: 'POST',
+        body: {
+          pertemuan_id: pertemuanId, skor: skor, total: total,
+          jumlah_soal: questions.length, jawaban: jawaban,
+          paste_count: pasteCount, copy_count: copyCount,
+          blur_count: blurCount, time_spent_ms: Date.now() - startedAt
+        }
+      }).then(function (d) {
+        submitting = false;
+        if (d.ok) {
+          submitted = true;
+          try { localStorage.removeItem(backupKey); } catch (e) {}
+          showResult(d.data || { skor: skor, total: total, flagged: 0 });
+          if (typeof window.APIAuth !== 'undefined' && window.APIAuth.me) window.APIAuth.me(true);
+        } else if (d.error && /sudah/.test(d.error || '')) {
+          // sudah pernah dikumpulkan -> muat ulang status dari server
+          me().then(function (p) {
+            var ev = (p.evaluasi || {})[pertemuanId];
+            if (ev) showResult({ skor: ev.skor, total: ev.total, flagged: ev.flagged, submitted_at: ev.submitted_at });
+            else location.reload();
+          });
+        } else {
+          btn.disabled = false; btn.textContent = 'Kumpulkan Evaluasi';
+          msg.textContent = d.error || 'Gagal mengumpulkan evaluasi. Coba lagi.';
+        }
+      });
+    }
+
+    function flagLabels(flagged) {
+      var labels = [];
+      if (flagged & 1) labels.push('terdeteksi aktivitas salin/tempel');
+      if (flagged & 2) labels.push('sering berpindah tab');
+      if (flagged & 4) labels.push('waktu mengerjakan sangat singkat');
+      return labels;
+    }
+
+    function showResult(ev) {
+      isActive = false;
+      disarmAntiCheat();
+      var pct = ev.total > 0 ? Math.round(ev.skor / ev.total * 100) : 0;
+      var html = '<div class="evaluasi__result">' +
+        '<div class="big">' + ev.skor + ' / ' + ev.total + '</div>' +
+        '<div class="sub">Skor evaluasi pertemuan ' + pertemuanId + ' · ' + pct +
+        '%' + (ev.submitted_at ? ' · dikumpulkan ' + String(ev.submitted_at).slice(0, 10) : '') + '</div>';
+      if (ev.flagged) {
+        var lab = flagLabels(ev.flagged);
+        html += '<div class="evaluasi__warn">Catatan integritas (' + lab.join(', ') +
+          '). Ini dilaporkan ke dosen dan dapat memengaruhi penilaian.</div>';
+      } else {
+        html += '<div class="evaluasi__warn" style="border-color:var(--green-300);background:var(--green-50);color:#14532d;">' +
+          'Jawaban sudah tersimpan. Tidak ada kunci jawaban yang ditampilkan; tunggu pengumuman dosen.</div>';
+      }
+      html += '</div>';
+      stateEl.innerHTML = html;
+      formEl.innerHTML = '';
+      formEl.hidden = true;
+    }
+
+    var keepTimer = null;
+    function warnKeep(txt) {
+      clearTimeout(keepTimer);
+      var old = document.getElementById('evKeep');
+      if (old) old.remove();
+      var d = document.createElement('div');
+      d.className = 'ev-keep';
+      d.id = 'evKeep';
+      d.innerHTML = txt;
+      document.body.appendChild(d);
+      keepTimer = setTimeout(function () { d.remove(); }, 4200);
+    }
+
+    function armAntiCheat() {
+      document.addEventListener('paste', onPaste, true);
+      document.addEventListener('copy', onCopy, true);
+      document.addEventListener('contextmenu', onCtx, true);
+      document.addEventListener('visibilitychange', onVis, true);
+      window.addEventListener('blur', onWinBlur, true);
+      window.addEventListener('beforeunload', onUnload);
+    }
+    function disarmAntiCheat() {
+      document.removeEventListener('paste', onPaste, true);
+      document.removeEventListener('copy', onCopy, true);
+      document.removeEventListener('contextmenu', onCtx, true);
+      document.removeEventListener('visibilitychange', onVis, true);
+      window.removeEventListener('blur', onWinBlur, true);
+      window.removeEventListener('beforeunload', onUnload);
+    }
+
+    function onPaste(e) {
+      if (!isActive) return;
+      pasteCount++;
+      e.preventDefault();
+      warnKeep('<b>Menempel (paste) dilarang</b> pada evaluasi dan telah dicatat. Kerjakan dengan pemahaman sendiri.');
+    }
+    function onCopy(e) {
+      if (!isActive) return;
+      copyCount++;
+      e.preventDefault();
+      warnKeep('Aktivitas salin (copy) dicatat pada evaluasi ini.');
+    }
+    function onCtx(e) {
+      if (!isActive) return;
+      e.preventDefault();
+    }
+    function onVis() {
+      if (!isActive || document.visibilityState === 'visible') return;
+      blurCount++;
+      warnKeep('<b>Berpindah tab/jendela dicatat</b>. ' + blurCount + ' kali. Kerjakan secara mandiri, hindari membuka sumber lain.');
+    }
+    function onWinBlur() {
+      if (!isActive || document.visibilityState !== 'visible') return;
+      blurCount++;
+      warnKeep('Berpindah dari halaman evaluasi dicatat (' + blurCount + ' kali).');
+    }
+    function onUnload(e) {
+      if (!isActive || submitted) return;
+      var answered = Object.keys(sel).length;
+      if (answered < questions.length) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    }
+
+    function gate(p) {
+      if (!p.logged_in) {
+        setState('<div class="evaluasi__locked">Evaluasi hanya untuk mahasiswa yang masuk. ' +
+          '<a href="/login?next=' + encodeURIComponent(location.pathname) + '">Login</a> untuk melanjutkan.</div>');
+        return false;
+      }
+      if (p.user && p.user.role === 'admin') {
+        stateEl.innerHTML = '<div class="evaluasi__locked"><b>Mode admin:</b> pratinjau soal evaluasi tanpa penyimpanan. Jawaban dosen tidak direkam.</div>';
+        formEl.hidden = false;
+        formEl.innerHTML = '';
+        var ph = '';
+        questions.forEach(function (q, qi) {
+          ph += '<div class="eq-block"><p class="eq-block__q">' + (qi + 1) + '. ' + esc(q.soal) + '</p><div class="eq-block__opts">';
+          q.opsi.forEach(function (o) {
+            ph += '<label class="eq-opt is-locked"><input type="radio" disabled><span class="eq-opt__label">' + esc(o) + '</span></label>';
+          });
+          ph += '</div></div>';
+        });
+        formEl.innerHTML = ph + '<p class="muted" style="font-size:12.5px;margin-top:10px;">Total ' + questions.length + ' soal evaluasi.</p>';
+        return false;
+      }
+      if ((p.progress || {})[pertemuanId] !== 'done') {
+        setState('<div class="evaluasi__locked"><b>Evaluasi terkunci.</b> Selesaikan Latihan pertemuan ' +
+          pertemuanId + ' (jawab semua soal latihan dengan benar) untuk membuka evaluasi.</div>');
+        return false;
+      }
+      var ev = (p.evaluasi || {})[pertemuanId];
+      if (ev) {
+        showResult(ev);
+        return false;
+      }
+      return true;
+    }
+
+    // state lokal tersimpan (draft) dimuat bila ada
+    try { sel = JSON.parse(localStorage.getItem(backupKey) || '{}'); } catch (e) { sel = {}; }
+
+    me().then(function (p) {
+      if (gate(p)) renderForm(draft());
+    });
+
+    document.addEventListener('astro:before-swap', function () {
+      if (typeof window.__quizTracker !== 'undefined' && window.__quizTracker) window.__quizTracker.reset();
+    });
+  })();
+</script>

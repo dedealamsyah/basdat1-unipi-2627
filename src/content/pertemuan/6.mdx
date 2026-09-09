@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "5%"
   cpmk: "CPMK-1"
+kuis:
+  latihan: 5
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P6 = [
+  { soal: "Celah yang ditutup oleh BCNF tetapi tidak oleh 3NF adalah...", opsi: [
+    "Adanya partial dependency pada PK gabungan",
+    "Ada determinan yang bukan candidate key (celah 'atau dependennya prime')",
+    "Adanya atribut multivalued",
+    "Tabel tanpa primary key"
+  ], benar: 1 },
+  { soal: "Definisi formal BCNF yang paling tepat adalah...", opsi: [
+    "Untuk setiap FD X -> A, X harus merupakan candidate key",
+    "Semua atribut harus bernilai atomik",
+    "Tidak boleh ada foreign key",
+    "Setiap kolom harus bernilai unik"
+  ], benar: 0 },
+  { soal: "Studi kasus PENGAMPUAN (nim, kode_mk, nip) berada di 3NF namun bukan BCNF karena...", opsi: [
+    "Ada ketergantungan transitif",
+    "Ada determinan non-prime yang bukan candidate key (misal nip menentukan kode_mk)",
+    "Ada atribut multivalued",
+    "Tidak ada candidate key sama sekali"
+  ], benar: 1 },
+  { soal: "Dekomposisi yang dijamin tidak kehilangan informasi saat penggabungan kembali disebut dekomposisi...", opsi: [
+    "Dependency preserving",
+    "Lossless-join",
+    "Overlapping",
+    "Partial"
+  ], benar: 1 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -276,6 +307,8 @@ Gunakan poin-poin berikut untuk memutuskan:
 - **Dekomposisi BCNF** berdasar FD pelanggar: `(X, A)` dan `(selebihnya, X)`
 - Dekomposisi dijamin *lossless-join*, tetapi **belum tentu** *dependency-preserving*
 - Keputusan 3NF vs BCNF adalah keputusan rekayasa: seimbangkan antara keterbacaan, integritas, dan aturan bisnis
+
+<Evaluasi pid={6} data={EVAL_P6} />
 
 ## L. Referensi
 

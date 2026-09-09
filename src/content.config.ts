@@ -14,6 +14,10 @@ const pertemuanCollection = defineCollection({
       bobot: z.string(),
       cpmk: z.string()
     }).optional(),
+    kuis: z.object({
+      latihan: z.number().optional(),
+      evaluasi: z.number().optional()
+    }).optional(),
     order: z.number()
   })
 });

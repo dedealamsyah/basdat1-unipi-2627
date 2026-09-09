@@ -30,15 +30,15 @@ import Sidebar from '../components/Sidebar.astro';
         <option value="krs">krs (perkuliahan)</option>
         <option value="nilai">nilai</option>
       </select>
-      <button class="btn-sim" id="pgViewTable" style="background:#2A7A61;">Lihat Isi</button>
+      <button class="btn-sim" id="pgViewTable" style="background:var(--green-600);">Lihat Isi</button>
     </div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
       <span style="font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);">QUERY EDITOR (menjalankan &lt;Ctrl|Cmd&gt; + Enter)</span>
-      <div style="display:flex; gap:6px;">
-        <button class="btn-sim" id="pgRun" style="background:#2A7A61;">▶ Jalankan SQL</button>
-        <button class="btn-sim" id="pgReset" style="background:#C9584F;">Reset Data</button>
-        <button class="btn-sim" id="pgClear" style="background:#1C3B30;">Bersihkan Editor</button>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-sim" id="pgRun" style="background:var(--green-600);">▶ Jalankan SQL</button>
+        <button class="btn-sim" id="pgReset" style="background:var(--red-600);">Reset Data</button>
+        <button class="btn-sim" id="pgClear" style="background:var(--navy-800);">Bersihkan Editor</button>
       </div>
     </div>
 
@@ -81,8 +81,8 @@ import Sidebar from '../components/Sidebar.astro';
     min-height: 220px;
     padding: 14px;
     border-radius: 12px;
-    border: none;
-    background: #202A26;
+    border: 1px solid #20303E;
+    background: #0F1821;
     color: #E8E4DA;
     font-family: var(--font-mono);
     font-size: 13px;
@@ -90,35 +90,37 @@ import Sidebar from '../components/Sidebar.astro';
     resize: vertical;
     outline: none;
     white-space: pre;
-    box-shadow: inset 4px 4px 9px rgba(0,0,0,.4), inset -4px -4px 9px rgba(255,255,255,.04);
-    transition: box-shadow 0.2s;
+    box-shadow: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .pg-editor:focus { box-shadow: inset 4px 4px 9px rgba(0,0,0,.4), inset -4px -4px 9px rgba(255,255,255,.04), 0 0 0 2px var(--teal-500); }
+  .pg-editor:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(39, 160, 119, .2); }
   .pg-select {
     padding: 8px 11px;
     border-radius: 10px;
-    border: none;
+    border: 1px solid var(--line);
     background: var(--card);
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: 12px;
     outline: none;
     cursor: pointer;
-    box-shadow: var(--neu-shadow-sm);
+    box-shadow: none;
+    transition: border-color 0.2s;
   }
+  .pg-select:focus { border-color: var(--navy-700); }
   .pg-preset {
     padding: 7px 12px;
     border-radius: 20px;
-    border: none;
+    border: 1px solid var(--line);
     background: var(--card);
     color: var(--navy-700);
     font-family: var(--font-mono);
     font-size: 11.5px;
     cursor: pointer;
-    box-shadow: var(--neu-shadow-sm);
-    transition: box-shadow 0.2s;
+    box-shadow: none;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
   }
-  .pg-preset:hover { box-shadow: var(--neu-inset-sm); color: var(--teal-500); }
+  .pg-preset:hover { border-color: var(--navy-700); background: var(--card-2); color: var(--teal-500); }
 
   .pg-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
   .pg-table th {
@@ -206,7 +208,7 @@ import Sidebar from '../components/Sidebar.astro';
   }
 
   function setStatus(msg: string, ok: boolean) {
-    $pg("pgStatus").innerHTML = '<span style="color:' + (ok ? '#166534' : '#C9584F') + ';">' + esc(msg) + "</span>";
+    $pg("pgStatus").innerHTML = '<span style="color:' + (ok ? 'var(--green-600)' : 'var(--red-600)') + ';">' + esc(msg) + "</span>";
   }
 
   function runSql(sql: string) {

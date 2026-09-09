@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "4%"
   cpmk: "CPMK-2"
+kuis:
+  latihan: 5
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P10 = [
+  { soal: "Operasi Aljabar Relasional untuk memilih baris (record) yang memenuhi kondisi tertentu dilambangkan dengan...", opsi: [
+    "Projection (π)",
+    "Selection (σ)",
+    "Rename (ρ)",
+    "Cartesian product (×)"
+  ], benar: 1 },
+  { soal: "Query AR yang setara dengan SELECT NAMA FROM MAHASISWA WHERE KELAS = 'IF3A' adalah...", opsi: [
+    "σ_NAMA(π_KELAS='IF3A'(MAHASISWA))",
+    "π_NAMA(σ_KELAS='IF3A'(MAHASISWA))",
+    "π_KELAS(σ_NAMA(MAHASISWA))",
+    "σ_KELAS(π_NAMA(MAHASISWA))"
+  ], benar: 1 },
+  { soal: "Union (∪) pada dua relasi hanya sah bila kedua relasi memiliki...", opsi: [
+    "Jumlah baris yang sama",
+    "Skema/atribut yang kompatibel (union-compatible)",
+    "Primary key yang sama",
+    "Nama tabel yang sama"
+  ], benar: 1 },
+  { soal: "Query 'anggota yang meminjam SEMUA buku' paling tepat diekspresikan dengan operasi...", opsi: [
+    "Division (÷)",
+    "Projection (π)",
+    "Rename (ρ)",
+    "Inner join (⋈)"
+  ], benar: 0 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -408,6 +439,8 @@ Konsepnya: bagi daftar peminjaman dengan daftar seluruh buku; hasilnya adalah an
 - Query "untuk semua" dijawab dengan **division (÷)**
 - Strategi pemecahan: identifikasi sumber data → kolom hasil → kondisi → penghubung antar tabel → susun dari dalam keluar
 - Setiap ekspresi AR dapat **diterjemahkan ke SQL** dan diverifikasi di SQL Playground
+
+<Evaluasi pid={10} data={EVAL_P10} />
 
 ## M. Referensi
 

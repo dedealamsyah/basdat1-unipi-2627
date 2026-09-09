@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "5%"
   cpmk: "CPMK-1"
+kuis:
+  latihan: 5
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P7 = [
+  { soal: "Urutan jenjang pemodelan yang benar adalah...", opsi: [
+    "PDM -> LDM -> CDM",
+    "CDM -> LDM -> PDM",
+    "LDM -> CDM -> PDM",
+    "CDM -> PDM -> LDM"
+  ], benar: 1 },
+  { soal: "Constraint yang menjamin nilai pada kolom tidak boleh kosong adalah...", opsi: [
+    "UNIQUE",
+    "FOREIGN KEY",
+    "NOT NULL",
+    "DEFAULT"
+  ], benar: 2 },
+  { soal: "Untuk menyimpan nilai uang (misal 9999999.99) di MySQL, tipe data yang paling tepat adalah...", opsi: [
+    "INT",
+    "DECIMAL(9,2)",
+    "VARCHAR(20)",
+    "BOOLEAN"
+  ], benar: 1 },
+  { soal: "FOREIGN KEY pada tabel anak menghubungkan ke...", opsi: [
+    "Primary key pada tabel induk",
+    "Kolom berisi NULL",
+    "Tabel lain tanpa PK",
+    "Kolom dengan tipe berbeda"
+  ], benar: 0 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -328,6 +359,8 @@ PDM adalah jembatan menuju implementasi. Rangkaian praktikum berikutnya mengikut
 - Constraint (PRIMARY KEY, NOT NULL, UNIQUE, DEFAULT, CHECK, FOREIGN KEY) menjaga integritas
 - Struktur tabel PDM **sama** dengan LDM hasil normalisasi: hanya detail fisiknya yang ditambahkan
 - PDM siap dieksekusi menjadi DDL pada praktikum DBMS (Pertemuan 9–15) dan dinilai pada UTS (proyek tahap 1)
+
+<Evaluasi pid={7} data={EVAL_P7} />
 
 ## L. Referensi
 

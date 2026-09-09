@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "3%"
   cpmk: "CPMK-1"
+kuis:
+  latihan: 3
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P2 = [
+  { soal: "Dalam ERD, entitas yang keberadaannya bergantung pada entitas lain dan tidak memiliki key sendiri disebut...", opsi: [
+    "Entitas kuat",
+    "Entitas asosiatif",
+    "Entitas lemah",
+    "Entitas campuran"
+  ], benar: 2 },
+  { soal: "Notasi kardinalitas yang berarti satu entitas A berhubungan dengan banyak entitas B adalah...", opsi: [
+    "1:1",
+    "1:N",
+    "M:N",
+    "N:1:1"
+  ], benar: 1 },
+  { soal: "Atribut yang nilainya menyimpan lebih dari satu nilai untuk satu entitas disebut atribut...", opsi: [
+    "Single-valued",
+    "Multivalued",
+    "Composite",
+    "Derived"
+  ], benar: 1 },
+  { soal: "Partisipasi total pada relasi berarti...", opsi: [
+    "Setiap entitas boleh tidak memiliki relasi",
+    "Hanya sebagian entitas yang wajib berelasi",
+    "Semua instance entitas wajib terlibat dalam relasi",
+    "Relasi bersifat opsional bagi kedua entitas"
+  ], benar: 2 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -186,6 +217,8 @@ Atribut mendeskripsikan properti dari entitas. Klasifikasi menurut **Silberschat
 - Komponen dasar: Entitas (Kuat/Lemah), Atribut (Simple/Composite/Multi/Derived), dan Relasi
 - Kardinalitas dan Partisipasi menentukan integritas data dalam sistem
 - Notasi Crow's Foot adalah standar industri untuk diagram ER
+
+<Evaluasi pid={2} data={EVAL_P2} />
 
 ## H. Referensi
 

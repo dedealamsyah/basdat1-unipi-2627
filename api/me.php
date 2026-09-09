@@ -12,6 +12,7 @@ if (!$u) {
         'logged_in' => false,
         'user' => null,
         'progress' => new stdClass(),
+        'evaluasi' => new stdClass(),
         'active' => array(),
     )));
 }
@@ -27,10 +28,19 @@ try {
     $mustChange = false;
 }
 
+// hasil evaluasi (toleran bila tabel belum termigrasi)
+$evaluasi = array();
+try {
+    $evaluasi = evaluasi_rows($u['nim']);
+} catch (Throwable $e) {
+    $evaluasi = array();
+}
+
 json_out(array('ok' => true, 'data' => array(
     'logged_in' => true,
     'user' => $u,
     'progress' => status_map($u['nim']),
+    'evaluasi' => $evaluasi,
     'active' => active_pertemuan(),
     'must_change_password' => $mustChange,
     'csrf' => $_SESSION['csrf'] ?? '',

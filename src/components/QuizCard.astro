@@ -57,7 +57,7 @@ const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
           this.classList.add('correct');
           var explanation = this.getAttribute('data-explanation') || '';
           var span = document.createElement('span');
-          span.style.color = '#166534';
+          span.style.color = 'var(--green-600)';
           span.textContent = '[Benar] ' + explanation;
           feedback.appendChild(span);
           var meta = document.getElementById('pageMeta');
@@ -68,7 +68,7 @@ const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
         } else {
           this.classList.add('wrong');
           var span2 = document.createElement('span');
-          span2.style.color = '#991b1b';
+          span2.style.color = 'var(--red-600)';
           span2.textContent = '[Kurang tepat] Coba perhatikan kembali konsepnya.';
           feedback.appendChild(span2);
         }

@@ -42,6 +42,13 @@ const isActive = !pertemuan.data.locked;
         <span class="chip">{pertemuan.data.meta.cpmk}</span>
         <span class="chip">⏱ {pertemuan.data.meta.alokasi}</span>
         <span class="chip chip--amber">BOBOT {pertemuan.data.meta.bobot}</span>
+        {isActive && pertemuan.data.kuis && (
+          <span class="chip" data-kuis>
+            {(pertemuan.data.kuis.latihan ?? 0) > 0 && <>📝 {pertemuan.data.kuis.latihan} Latihan</>}
+            {(pertemuan.data.kuis.latihan ?? 0) > 0 && (pertemuan.data.kuis.evaluasi ?? 0) > 0 && <> · </>}
+            {(pertemuan.data.kuis.evaluasi ?? 0) > 0 && <>📋 {pertemuan.data.kuis.evaluasi} Evaluasi</>}
+          </span>
+        )}
         {isActive && <span class="chip" id="progressChip">–</span>}
       </div>
     )}
@@ -100,8 +107,9 @@ const isActive = !pertemuan.data.locked;
   }
   .gate__box {
     background: var(--card);
-    box-shadow: var(--neu-shadow);
-    border-radius: 16px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
     padding: 40px 32px;
     max-width: 420px;
     text-align: center;
@@ -115,7 +123,8 @@ const isActive = !pertemuan.data.locked;
   .gate__title {
     font-family: var(--font-display);
     font-size: 19px;
-    color: var(--navy-800);
+    font-weight: 700;
+    color: var(--ink);
     margin: 0 0 10px;
   }
   .gate__msg {

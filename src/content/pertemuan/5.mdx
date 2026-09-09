@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "5%"
   cpmk: "CPMK-1"
+kuis:
+  latihan: 7
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P5 = [
+  { soal: "Tabel dikatakan memenuhi 1NF bila...", opsi: [
+    "Tidak ada ketergantungan transitif pada kolom non-kunci",
+    "Semua atribut bernilai atomik (tidak ada grup berulang maupun multivalued)",
+    "Setiap non-key fully dependent pada primary key",
+    "Semua kolom bernilai NULL"
+  ], benar: 1 },
+  { soal: "Anomali yang terjadi saat menghapus satu data justru ikut menghapus data lain yang masih diperlukan disebut...", opsi: [
+    "Insertion anomaly",
+    "Update anomaly",
+    "Deletion anomaly",
+    "Transaction anomaly"
+  ], benar: 2 },
+  { soal: "Ketergantungan fungsional A -> B berarti...", opsi: [
+    "Nilai A menentukan nilai B secara unik untuk setiap baris",
+    "Nilai B menentukan nilai A secara unik",
+    "A dan B selalu sama",
+    "A adalah foreign key dari B"
+  ], benar: 0 },
+  { soal: "Sebuah relasi dikatakan 3NF jika...", opsi: [
+    "Sudah ada di 1NF dan setiap atribut non-key bergantung langsung pada primary key (bukan transitif)",
+    "Sudah ada di 2NF dan diperbolehkan ada ketergantungan transitif",
+    "Semua atribut bernilai multivalued",
+    "Tidak memiliki primary key"
+  ], benar: 0 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -605,6 +636,8 @@ KARYAWAN_TELP(nik FK→KARYAWAN, no_telp)   PK: (nik, no_telp)
 - Tabel ber-PK satu kolom yang sudah 1NF **otomatis lolos 2NF**
 - Hasil normalisasi selalu mengonfirmasi **ERD yang baik = skema ternormalisasi** (bukti: SIAKAD & E-Commerce Pertemuan 3–4)
 - Normalisasi lanjutan (BCNF dan NF lain) dibahas pada Pertemuan 6
+
+<Evaluasi pid={5} data={EVAL_P5} />
 
 ## N. Referensi
 

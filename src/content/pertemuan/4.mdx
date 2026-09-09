@@ -9,9 +9,40 @@ meta:
   alokasi: "3 × 50 menit"
   bobot: "4%"
   cpmk: "CPMK-1"
+kuis:
+  latihan: 5
+  evaluasi: 4
 ---
 
 import QuizCard from '../../components/QuizCard.astro';
+import Evaluasi from '../../components/Evaluasi.astro';
+
+export const EVAL_P4 = [
+  { soal: "Aturan pemetaan entitas kuat ke model relasional menghasilkan...", opsi: [
+    "Tidak ada tabel, langsung menjadi foreign key",
+    "Sebuah tabel yang memiliki primary key dari atribut kunci entitas",
+    "Dua tabel yang saling terhubung",
+    "Satu tabel tanpa primary key"
+  ], benar: 1 },
+  { soal: "Relasi 1:N antara DOSEN (1) dan MATAKULIAH (N) dipetakan dengan cara...", opsi: [
+    "Menambah foreign key NIM di tabel DOSEN",
+    "Membuat tabel penghubung baru",
+    "Menambahkan primary key DOSEN sebagai foreign key di tabel MATAKULIAH",
+    "Menggabungkan kedua entitas menjadi satu tabel"
+  ], benar: 2 },
+  { soal: "Relasi M:N selalu dipecah menjadi tabel penghubung yang berisi...", opsi: [
+    "Foreign key dari kedua entitas yang terkait",
+    "Hanya satu primary key",
+    "Atribut dari entitas ketiga tanpa relasi",
+    "Data duplikat dari kedua tabel"
+  ], benar: 0 },
+  { soal: "Untuk memastikan relasi 1:1, pada tabel disebut dengan constraint...", opsi: [
+    "CHECK",
+    "DEFAULT",
+    "UNIQUE",
+    "NOT NULL"
+  ], benar: 2 }
+];
 
 ## A. Identitas Pertemuan
 
@@ -484,6 +515,8 @@ Hasil DDL yang Anda tulis bisa langsung diuji di **SQL Playground** bawaan porta
 - **Atribut multivalued** → tabel terpisah
 - Jumlah tabel = jumlah entitas kuat + jumlah relasi M:N
 - Hasil transformasi siap ditulis sebagai DDL SQL `CREATE TABLE` dan diverifikasi di SQL Playground
+
+<Evaluasi pid={4} data={EVAL_P4} />
 
 ## N. Referensi
 

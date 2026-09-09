@@ -68,12 +68,43 @@ import Sidebar from '../components/Sidebar.astro';
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">2</span> Pencarian &amp; Filter</h2>
     </div>
-    <div class="filter-row">
-      <input type="text" id="qNim" class="wks-input" placeholder="Cari NIM atau nama…" style="flex:2;" />
-      <select id="qKelas" class="wks-input" style="flex:1;">
-        <option value="">Semua kelas</option>
-      </select>
-      <button class="btn-sim" id="resetFilter" style="background:#1C3B30;">Reset</button>
+    <div class="filter-grid">
+      <div class="filter-item">
+        <label class="filter-label">Pencarian</label>
+        <input type="text" id="qNim" class="wks-input" placeholder="NIM atau nama…" />
+      </div>
+      <div class="filter-item">
+        <label class="filter-label">Kelas</label>
+        <select id="qKelas" class="wks-input">
+          <option value="">Semua kelas</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label class="filter-label">Progres</label>
+        <select id="qProgres" class="wks-input">
+          <option value="">Semua progres</option>
+          <option value="tuntas">Tuntas 100%</option>
+          <option value="belum">Belum tuntas</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label class="filter-label">Huruf</label>
+        <select id="qHuruf" class="wks-input">
+          <option value="">Semua huruf</option>
+          <option value="A">A</option>
+          <option value="AB">AB</option>
+          <option value="B">B</option>
+          <option value="BC">BC</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="-">Belum ada</option>
+        </select>
+      </div>
+      <div class="filter-item filter-item--btn">
+        <label class="filter-label">&nbsp;</label>
+        <button class="btn-sim" id="resetFilter" style="background:var(--navy-800); width:100%;">Reset Filter</button>
+      </div>
     </div>
   </section>
 
@@ -93,8 +124,8 @@ import Sidebar from '../components/Sidebar.astro';
       </table>
     </div>
     <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
-      <button class="btn-sim" id="ptSave" style="background:#2A7A61;">Simpan Menu Pertemuan</button>
-      <button class="btn-sim" id="ptReset" style="background:#1C3B30;">Batal Perubahan</button>
+      <button class="btn-sim" id="ptSave" style="background:var(--green-600);">Simpan Menu Pertemuan</button>
+      <button class="btn-sim" id="ptReset" style="background:var(--navy-800);">Batal Perubahan</button>
     </div>
     <p class="muted" id="ptMsg" style="margin-top:10px;"></p>
   </section>
@@ -110,9 +141,9 @@ import Sidebar from '../components/Sidebar.astro';
     </p>
     <textarea id="importText" class="wks-input" rows="6" spellcheck="false" placeholder="26105100,Fulan Bin Fulan,IF3A&#10;26105101,Fulanah Binti Fulan,IF3A"></textarea>
     <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-      <button class="btn-sim" id="importBtn" style="background:#2A7A61;">Impor Mahasiswa</button>
-      <button class="btn-sim" id="importResetPass" style="background:#1C3B30;">Impor + Reset Password</button>
-      <label class="btn-sim" style="background:#4D8B6E; cursor:pointer; display:inline-block;">
+      <button class="btn-sim" id="importBtn" style="background:var(--green-600);">Impor Mahasiswa</button>
+      <button class="btn-sim" id="importResetPass" style="background:var(--navy-800);">Impor + Reset Password</button>
+      <label class="btn-sim" style="background:var(--green-500); cursor:pointer; display:inline-block;">
         Import dari File CSV <input type="file" id="importCsv" accept=".csv,.txt" hidden />
       </label>
     </div>
@@ -125,7 +156,7 @@ import Sidebar from '../components/Sidebar.astro';
       <h2 class="section-title"><span class="section-badge">5</span> Daftar Mahasiswa</h2>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <span id="rowCount" class="muted" style="font-size:12px;"></span>
-        <button class="btn-sim" id="exportCsv" style="background:#1C3B30;">⬇ Ekspor CSV</button>
+        <button class="btn-sim" id="exportCsv" style="background:var(--navy-800);">⬇ Ekspor CSV</button>
       </div>
     </div>
     <div style="overflow-x:auto;">
@@ -145,17 +176,46 @@ import Sidebar from '../components/Sidebar.astro';
     </div>
   </section>
 
+  <!-- EVALUASI -->
+  <section class="block">
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">6</span> Evaluasi &amp; Integritas</h2>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <label class="integ-filter">
+          <input type="checkbox" id="onlyFlagged" />
+          <span>Hanya yang terindikasi</span>
+        </label>
+        <span id="evalCount" class="muted" style="font-size:12px;"></span>
+      </div>
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:0;">
+      Hasil evaluasi berkunci (1x percobaan, tanpa kunci jawaban) beserta deteksi integritas:
+      salin/tempel, perpindahan tab, dan durasi terlalu singkat. Klik NIM untuk melihat detail.
+    </p>
+    <div style="overflow-x:auto; margin-top:12px;">
+      <table class="dtable tbl-scroll" id="evalTable">
+        <thead><tr>
+          <th>NIM</th><th>Nama</th><th>Kelas</th><th>Ptm</th><th>Skor</th><th>Soal</th><th>Durasi</th>
+          <th>Paste</th><th>Copy</th><th>Tab</th><th>Indikasi</th>
+        </tr></thead>
+        <tbody id="evalTbody"><tr><td colspan="11" class="muted">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- DETAIL -->
   <section class="block" id="detailBox" hidden>
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">›</span> <span id="detailTitle">Detail Progres</span></h2>
-      <button class="btn-sim" id="detailClose" style="background:#1C3B30;">Tutup Detail</button>
+      <button class="btn-sim" id="detailClose" style="background:var(--navy-800);">Tutup Detail</button>
     </div>
 
     <div class="grade-box" id="gradeBox">
       <h3>Nilai Manual &amp; Akhir</h3>
       <div class="grade-grid">
-        <label class="grade-item">Kuis (%)<span class="grade-readonly" id="gKuis">–</span></label>
+        <label class="grade-item">Kuis Latihan (%)<span class="grade-readonly" id="gLatihan">–</span></label>
+        <label class="grade-item">Evaluasi (%)<span class="grade-readonly" id="gEvaluasi">–</span></label>
+        <label class="grade-item">Kuis Gabungan (%)<span class="grade-readonly" id="gKuis">–</span></label>
         <label class="grade-item">PTS
           <input type="number" min="0" max="100" id="gPts" class="wks-input" />
         </label>
@@ -172,10 +232,10 @@ import Sidebar from '../components/Sidebar.astro';
         <label class="grade-item">Huruf<span class="grade-readonly" id="gHuruf">–</span></label>
       </div>
       <p class="muted" style="font-size:11px; margin-top:8px;">
-        Rumus: 40% kuis + 30% PTS + 30% UAS. Nilai akhir muncul saat ketiganya terisi.
+        Rumus: 40% kuis (rata-rata latihan + evaluasi) + 30% PTS + 30% UAS. Nilai akhir muncul saat ketiganya terisi.
       </p>
       <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-        <button class="btn-sim" id="gradeSave" style="background:#2A7A61;">Simpan Nilai</button>
+        <button class="btn-sim" id="gradeSave" style="background:var(--green-600);">Simpan Nilai</button>
       </div>
     </div>
 
@@ -183,6 +243,13 @@ import Sidebar from '../components/Sidebar.astro';
       <table class="dtable tbl-scroll" id="detailTable">
         <thead><tr><th>Pertemuan</th><th>Status</th><th>Skor Kuis</th><th>Attempts</th><th>Tgl Tuntas</th><th>Kelola</th></tr></thead>
         <tbody id="detailTbody"></tbody>
+      </table>
+    </div>
+
+    <div style="overflow-x:auto; margin-top:16px;">
+      <table class="dtable tbl-scroll" id="evalDetailTable">
+        <thead><tr><th>Pertemuan</th><th>Skor Evaluasi</th><th>Soal</th><th>Durasi</th><th>Paste</th><th>Copy</th><th>Tab</th><th>Indikasi</th><th>Tgl Submit</th></tr></thead>
+        <tbody id="evalDetailTbody"><tr><td colspan="9" class="muted">Belum ada evaluasi.</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -199,8 +266,9 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .section-title {
     font-family: var(--font-display);
-    font-size: 19px;
-    color: var(--navy-800);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
     margin: 0;
     display: flex;
     align-items: center;
@@ -241,17 +309,18 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .stat-card {
     background: var(--card);
-    box-shadow: var(--neu-shadow-sm);
-    border-radius: 14px;
-    padding: 16px 14px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius);
+    padding: 18px 16px;
     text-align: left;
-    border-top: 4px solid var(--teal-500);
+    border-top: 3px solid var(--teal-400);
     position: relative;
   }
-  .stat-card--gold { border-top-color: #C9A227; }
-  .stat-card--green { border-top-color: #2A7A61; }
-  .stat-card--navy { border-top-color: #1C3B30; }
-  .stat-card--amber { border-top-color: #B4552D; }
+  .stat-card--gold { border-top-color: var(--teal-400); }
+  .stat-card--green { border-top-color: var(--green-600); }
+  .stat-card--navy { border-top-color: var(--navy-800); }
+  .stat-card--amber { border-top-color: var(--amber-400); }
   .stat-icon {
     display: inline-flex;
     align-items: center;
@@ -262,17 +331,17 @@ import Sidebar from '../components/Sidebar.astro';
     color: #fff;
     margin-bottom: 10px;
   }
-  .stat-card--gold .stat-icon { background: #C9A227; }
-  .stat-card--green .stat-icon { background: #2A7A61; }
-  .stat-card--navy .stat-icon { background: #1C3B30; }
-  .stat-card--amber .stat-icon { background: #B4552D; }
+  .stat-card--gold .stat-icon { background: var(--teal-400); }
+  .stat-card--green .stat-icon { background: var(--green-600); }
+  .stat-card--navy .stat-icon { background: var(--navy-800); }
+  .stat-card--amber .stat-icon { background: var(--amber-400); }
   .stat-num {
     display: block;
     font-family: var(--font-display);
     font-size: 30px;
     font-weight: 700;
     line-height: 1;
-    color: var(--navy-800);
+    color: var(--ink);
     margin-bottom: 6px;
   }
   .stat-label {
@@ -291,15 +360,17 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .kelas-card {
     background: var(--card);
-    box-shadow: var(--neu-shadow-sm);
-    border-radius: 12px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius);
     padding: 12px;
   }
   .kelas-card b {
     display: block;
     font-family: var(--font-display);
     font-size: 16px;
-    color: var(--navy-800);
+    font-weight: 700;
+    color: var(--ink);
   }
   .kelas-card span {
     display: block;
@@ -316,16 +387,38 @@ import Sidebar from '../components/Sidebar.astro';
     gap: 8px;
     font-size: 12px;
   }
-  .dist-row span:first-child { font-family: var(--font-body); font-weight: 700; color: var(--navy-800); }
+  .dist-row span:first-child { font-family: var(--font-body); font-weight: 700; color: var(--ink); }
   .dist-bar { height: 14px; border-radius: 7px; background: var(--teal-100); overflow: hidden; }
   .dist-bar i {
     display: block; height: 100%; border-radius: 7px;
-    background: linear-gradient(90deg, #1F5F4B, #2A7A61);
+    background: linear-gradient(90deg, var(--navy-700), var(--green-600));
   }
   .dist-row span:last-child { text-align: right; color: var(--ink-soft); }
 
-  .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .filter-row .wks-input { margin-bottom: 0; }
+  .filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+  .filter-item { display: flex; flex-direction: column; gap: 4px; }
+  .filter-item--btn { justify-self: end; }
+  .filter-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .filter-grid .wks-input { margin-bottom: 0; width: 100%; box-sizing: border-box; }
+  @media (max-width: 880px) {
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .filter-item--btn { grid-column: 1 / -1; }
+  }
+  @media (max-width: 480px) {
+    .filter-grid { grid-template-columns: 1fr; }
+  }
 
   /* Tabel profesional */
   .tbl-scroll { max-height: 480px; }
@@ -337,13 +430,15 @@ import Sidebar from '../components/Sidebar.astro';
   .grade-box {
     margin-top: 4px;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: var(--teal-100);
+    border: 1px solid rgba(176, 141, 28, .22);
   }
   .grade-box h3 {
     font-family: var(--font-display);
-    font-size: 16px;
-    color: var(--navy-800);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
     margin: 0 0 12px;
   }
   .grade-grid {
@@ -357,7 +452,7 @@ import Sidebar from '../components/Sidebar.astro';
     font-family: var(--font-body);
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: .04em;
+    letter-spacing: .05em;
     text-transform: uppercase;
     color: var(--navy-700);
     gap: 5px;
@@ -366,10 +461,24 @@ import Sidebar from '../components/Sidebar.astro';
   .grade-readonly {
     font-weight: 700;
     font-size: 16px;
-    color: var(--navy-800);
+    color: var(--ink);
     text-transform: none;
     padding: 9px 0;
   }
+
+  .integ-filter {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--ink-soft); cursor: pointer;
+  }
+  .integ-filter input { accent-color: var(--red-600); }
+  .badge-flag {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+    background: #FBEFDC; color: #8A4A29; border: 1px solid #E7A83D;
+    margin: 1px 2px 1px 0;
+  }
+  .badge-flag--red { background: #FDE8E8; color: #B3261E; border-color: #F0A2A0; }
+  .badge-ok { color: var(--green-600); font-weight: 700; font-size: 11px; }
 </style>
 
 <script is:inline>
@@ -413,6 +522,7 @@ import Sidebar from '../components/Sidebar.astro';
     var totalActive = 0;
     var kelasOptions = [];
     var allStudents = [];
+    var allEvaluasi = [];
     var sortKey = 'nim';
     var sortDir = 1;
 
@@ -431,9 +541,11 @@ import Sidebar from '../components/Sidebar.astro';
         totalActive = d.data.total;
         statusEl.textContent = 'Total materi aktif: ' + totalActive + ' pertemuan.';
         allStudents = d.data.students;
+        allEvaluasi = d.data.evaluasi || [];
         kelasOptions = [];
         allStudents.forEach(function (s) { if (s.kelas && kelasOptions.indexOf(s.kelas) === -1) kelasOptions.push(s.kelas); });
         fillKelas();
+        renderEvaluasi();
         renderStats(allStudents);
         applyFilter();
       }).catch(function () {
@@ -499,11 +611,65 @@ import Sidebar from '../components/Sidebar.astro';
       });
     }
 
+    function flagBits(f) { return [1, 2, 4].filter(function (b) { return (f & b) !== 0; }); }
+    function flagLabels(f) {
+      var map = { 1: 'Paste/Copy', 2: 'Pindah tab', 4: 'Terlalu cepat' };
+      return flagBits(f).map(function (b) { return map[b]; });
+    }
+    function fmtDur(ms) {
+      if (!ms) return '–';
+      var s = Math.round(ms / 1000);
+      var m = Math.floor(s / 60);
+      return (m > 0 ? m + 'm ' : '') + (s % 60) + 's';
+    }
+
+    function renderEvaluasi() {
+      var tbody = document.getElementById('evalTbody');
+      var only = document.getElementById('onlyFlagged').checked;
+      var rows = only ? allEvaluasi.filter(function (e) { return e.flagged > 0; }) : allEvaluasi;
+      document.getElementById('evalCount').textContent = '(' + rows.length + ' dari ' + allEvaluasi.length + ' pengumpulan)';
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="11" class="muted">' + (allEvaluasi.length ? 'Tidak ada yang terindikasi.' : 'Belum ada evaluasi masuk.') + '</td></tr>';
+        return;
+      }
+      tbody.innerHTML = '';
+      rows.forEach(function (e) {
+        var pct = e.total > 0 ? Math.round(e.skor / e.total * 100) : 0;
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><a href="#" class="eval-nim" data-nim="' + esc(e.nim) + '">' + esc(e.nim) + '</a></td>' +
+          '<td>' + esc(e.nama) + '</td>' +
+          '<td>' + esc(e.kelas) + '</td>' +
+          '<td>' + e.pertemuan_id + '</td>' +
+          '<td><strong>' + e.skor + ' / ' + e.total + '</strong> (' + pct + '%)</td>' +
+          '<td>' + e.jumlah_soal + '</td>' +
+          '<td>' + fmtDur(e.time_spent_ms) + '</td>' +
+          '<td>' + e.paste_count + '</td>' +
+          '<td>' + e.copy_count + '</td>' +
+          '<td>' + e.blur_count + '</td>' +
+          '<td>' + (e.flagged ? flagLabels(e.flagged).map(function (l) { return '<span class="badge-flag badge-flag--red">' + esc(l) + '</span>'; }).join('') : '<span class="badge-ok">OK</span>') + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+    document.getElementById('onlyFlagged').addEventListener('change', renderEvaluasi);
+    document.getElementById('evalTbody').addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-nim]');
+      if (a) { e.preventDefault(); loadDetail(a.getAttribute('data-nim')); }
+    });
     function applyFilter() {
       var q = (document.getElementById('qNim').value || '').toLowerCase().trim();
       var kl = document.getElementById('qKelas').value;
+      var pr = document.getElementById('qProgres').value;
+      var hr = document.getElementById('qHuruf').value;
       var rows = allStudents.filter(function (s) {
         if (kl && s.kelas !== kl) return false;
+        if (pr === 'tuntas' && s.persen < 100) return false;
+        if (pr === 'belum' && s.persen >= 100) return false;
+        if (hr) {
+          var curH = s.huruf || '–';
+          if (hr === '-') { if (curH !== '–') return false; }
+          else if (curH !== hr) return false;
+        }
         if (q && s.nim.toLowerCase().indexOf(q) === -1 && s.nama.toLowerCase().indexOf(q) === -1) return false;
         return true;
       });
@@ -534,8 +700,8 @@ import Sidebar from '../components/Sidebar.astro';
           '<td>' + s.persen + '%</td>' +
           '<td>' + (s.akhir != null ? s.akhir : '–') + '</td>' +
           '<td>' + (s.huruf ? '<strong>' + esc(s.huruf) + '</strong>' : '–') + '</td>' +
-          '<td><button class="btn-sim" data-view="' + esc(s.nim) + '" style="background:#1C3B30;">Lihat</button> ' +
-          '<button class="btn-sim" data-del="' + esc(s.nim) + '" style="background:#C9584F;">Hapus</button></td>';
+          '<td><button class="btn-sim" data-view="' + esc(s.nim) + '" style="background:var(--navy-800);">Lihat</button> ' +
+          '<button class="btn-sim" data-del="' + esc(s.nim) + '" style="background:var(--red-600);">Hapus</button></td>';
         tbody.appendChild(tr);
       });
     };
@@ -553,6 +719,8 @@ import Sidebar from '../components/Sidebar.astro';
         document.getElementById('detailTitle').textContent = 'Detail Progres: ' + nim;
         window.__curNim = nim;
         var n = d.data.nilai || {};
+        document.getElementById('gLatihan').textContent = n.kuis_latihan != null ? n.kuis_latihan + '%' : '–';
+        document.getElementById('gEvaluasi').textContent = n.kuis_evaluasi != null ? n.kuis_evaluasi + '%' : '–';
         document.getElementById('gKuis').textContent = n.kuis_pct != null ? n.kuis_pct + '%' : '–';
         document.getElementById('gPts').value = n.pts != null ? n.pts : '';
         document.getElementById('gUas').value = n.uas != null ? n.uas : '';
@@ -571,9 +739,31 @@ import Sidebar from '../components/Sidebar.astro';
             '<td>' + p.quiz_score + (p.quiz_total ? ' / ' + p.quiz_total : '') + '</td>' +
             '<td>' + p.attempts + '</td>' +
             '<td>' + (p.completed_at ? p.completed_at.slice(0, 10) : '–') + '</td>' +
-            '<td><button class="btn-sim" data-toggle="' + p.pertemuan_id + '" style="background:' + (st === 'done' ? '#C9584F;' : '#2A7A61;') + '" data-nim="' + esc(nim) + '">' + (st === 'done' ? 'Batal' : 'Tandai Tuntas') + '</button></td>';
+            '<td><button class="btn-sim" data-toggle="' + p.pertemuan_id + '" style="background:' + (st === 'done' ? 'var(--red-600);' : 'var(--green-600);') + '" data-nim="' + esc(nim) + '">' + (st === 'done' ? 'Batal' : 'Tandai Tuntas') + '</button></td>';
           dtbody.appendChild(tr);
         });
+        var etb = document.getElementById('evalDetailTbody');
+        var evs = d.data.evaluasi || [];
+        if (!evs.length) {
+          etb.innerHTML = '<tr><td colspan="9" class="muted">Belum ada evaluasi.</td></tr>';
+        } else {
+          etb.innerHTML = '';
+          evs.forEach(function (e) {
+            var pct = e.total > 0 ? Math.round(e.skor / e.total * 100) : 0;
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td>Pertemuan ' + e.pertemuan_id + '</td>' +
+              '<td><strong>' + e.skor + ' / ' + e.total + '</strong> (' + pct + '%)</td>' +
+              '<td>' + e.jumlah_soal + '</td>' +
+              '<td>' + fmtDur(e.time_spent_ms) + '</td>' +
+              '<td>' + e.paste_count + '</td>' +
+              '<td>' + e.copy_count + '</td>' +
+              '<td>' + e.blur_count + '</td>' +
+              '<td>' + (e.flagged ? flagLabels(e.flagged).map(function (l) { return '<span class="badge-flag badge-flag--red">' + esc(l) + '</span>'; }).join('') : '<span class="badge-ok">OK</span>') + '</td>' +
+              '<td>' + String(e.submitted_at || '').slice(0, 10) + '</td>';
+            etb.appendChild(tr);
+          });
+        }
       }).catch(function () {
         alert('Gagal menghubungi API detail.');
         detailBox.hidden = true;
@@ -694,9 +884,13 @@ import Sidebar from '../components/Sidebar.astro';
 
     document.getElementById('qNim').addEventListener('input', applyFilter);
     document.getElementById('qKelas').addEventListener('change', applyFilter);
+    document.getElementById('qProgres').addEventListener('change', applyFilter);
+    document.getElementById('qHuruf').addEventListener('change', applyFilter);
     document.getElementById('resetFilter').addEventListener('click', function () {
       document.getElementById('qNim').value = '';
       document.getElementById('qKelas').value = '';
+      document.getElementById('qProgres').value = '';
+      document.getElementById('qHuruf').value = '';
       applyFilter();
     });
 
@@ -711,7 +905,16 @@ import Sidebar from '../components/Sidebar.astro';
         renderRows(allStudents.filter(function (s) {
           var kl = document.getElementById('qKelas').value;
           var q = (document.getElementById('qNim').value || '').toLowerCase().trim();
+          var pr = document.getElementById('qProgres').value;
+          var hr = document.getElementById('qHuruf').value;
           if (kl && s.kelas !== kl) return false;
+          if (pr === 'tuntas' && s.persen < 100) return false;
+          if (pr === 'belum' && s.persen >= 100) return false;
+          if (hr) {
+            var curH = s.huruf || '–';
+            if (hr === '-') { if (curH !== '–') return false; }
+            else if (curH !== hr) return false;
+          }
           if (q && s.nim.toLowerCase().indexOf(q) === -1 && s.nama.toLowerCase().indexOf(q) === -1) return false;
           return true;
         }));
