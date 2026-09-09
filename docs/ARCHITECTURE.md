@@ -39,7 +39,8 @@ basdat1-unipi-2627/
 ├── src/
 │   ├── components/                  # Komponen Astro (reusable)
 │   │   ├── Sidebar.astro            # Navigasi samping
-│   │   ├── QuizCard.astro           # Komponen kuis interaktif
+│   │   ├── QuizCard.astro           # Kuis latihan interaktif (feedback langsung)
+│   │   ├── Evaluasi.astro           # Evaluasi kartu 1 soal/halaman (+ anti-salin)
 │   │   ├── DiagramViewer.astro      # Diagram dengan zoom
 │   │   └── CopyCode.astro           # Tombol salin kode
 │   │
@@ -100,6 +101,10 @@ basdat1-unipi-2627/
     alokasi: string    // Alokasi waktu
     bobot: string      // Bobot penilaian
     cpmk: string       // CPMK terkait
+  },
+  kuis?: {
+    latihan: number    // Jumlah soal latihan (QuizCard)
+    evaluasi: number   // Jumlah soal evaluasi (Evaluasi)
   }
 }
 ```
@@ -205,15 +210,16 @@ Browser (statis Astro)
 /api/*.php  (PHP 8, Byethost)  ── PDO (prepared statements) ──►  MySQL Byethost
    ├─ login.php   : POST sesi (password_hash bcrypt, regenerate id)
    ├─ logout.php  : destroy sesi
-   ├─ me.php      : GET status sesi + status progresi (open/locked/done)
-   ├─ complete.php: POST tandai tuntas; validasi urutan (lompat = 422)
-   ├─ admin.php   : GET daftar mahasiswa + nilai akhir/huruf; ?nim= detail
+   ├─ me.php      : GET status sesi + status progresi (open/locked/done) + map evaluasi
+   ├─ complete.php: POST tandai tuntas latihan; validasi urutan (lompat = 422)
+   ├─ evaluasi.php: POST simpan hasil evaluasi 1× per pertemuan + telemetri integritas
+   ├─ admin.php   : GET daftar mahasiswa + nilai akhir/huruf + list evaluasi; ?nim= detail
    ├─ grade.php   : POST input manual PTS/UAS/tugas/hadir (admin)
    ├─ unlock.php  : POST override done/undone (admin)
    ├─ pertemuan.php: GET metadata menu (publik) / POST update (admin)
    ├─ import_users.php : POST impor massal nim,nama,kelas (admin)
    ├─ delete_user.php  : POST hapus akun (admin)
-   ├─ migrate.php : buat tabel bila belum ada (admin, idempoten)
+   ├─ migrate.php : buat tabel bila belum ada (admin; idempoten; seed akun dummy)
    └─ setup_db.php: setup awal + admin pertama (token; dikunci .htaccess)
 ```
 
@@ -222,7 +228,9 @@ Browser (statis Astro)
 Tabel `users` (nim PK, nama, kelas, role mahasiswa|admin, pass_hash), `progress`
 (nim+pertemuan_id PK, quiz_score, quiz_total, attempts, completed_at), `grades`
 (nim+komponen PK: pts|uas|tugas|hadir, nilai), `pertemuan` (id PK, title, subtitle,
-aktif, posisi, alokasi, bobot, cpmk).
+aktif, posisi, alokasi, bobot, cpmk), `login_attempts` (rate-limit), dan **`evaluasi`**
+(id AI PK, nim+pertemuan-id UNIQUE, skor, total, jumlah_soal, jawaban JSON,
+paste_count, copy_count, blur_count, time_spent_ms, flagged, submitted_at).
 
 ### Progresi materiketik
 
@@ -230,17 +238,36 @@ aktif, posisi, alokasi, bobot, cpmk).
 Pertemuan pertama selalu terbuka. `active_pertemuan()` menentukan daftar konten aktif
 (1–7, 9–10) — dokumentasikan untuk disinkronkan dengan tabel `pertemuan` (lihat docs/AUDIT.md).
 
+### Evaluasi (v2.1)
+
+- Komponen `src/components/Evaluasi.astro`: kartu pengantar → satu soal per kartu →
+  kumpulkan; opsi diacak; skor ditampilkan tanpa kunci jawaban; 1× percobaan.
+- Soal didefinisikan di frontmatter MDX sebagai `export const EVAL_Px` (array
+  `{ soal, opsi[], benar }`) dan dirender via `<Evaluasi pid={N} data={EVAL_PN} />`.
+- Penimbangan skor: 100 poin terbentang rata (sisa dibagikan) agar total selalu 100.
+- **Integritas**: blokir paste/copy/konteks-menu, catat `visibilitychange` (pindah tab),
+  ukur durasi; server men-gate `flagged` bitwise (1 paste/copy, 2 tab, 4 terlalu cepat).
+- `compute_nilai()`: `kuis_pct` = rata-rata `kuis_latihan` (dari progress) dan
+  `kuis_evaluasi` (dari tabel evaluasi); rumus akhir tetap 40% kuis + 30% PTS + 30% UAS.
+
 ### Frontend integration
 
 - `public/auth.js` (window.APIAuth): `me/login/logout/complete/refresh`; memperbarui
   kotak akun sidebar, progress bar, chip status tiap pertemuan (`prog-done/open/locked`),
   dan overlay menu pertemuan dari DB (judul/urutan/tampil).
 - Halaman pertemuan: `<span id="pageMeta" data-pertemuan data-active-order>` + gate
-  klien (overlay login/terkunci). Kuis benar → `complete()`.
+  klien (overlay login/terkunci). Kuis latihan benar → `complete()` (pertemuan tuntas);
+  evaluasi terbuka setelah tuntas dan dikirim via `/api/evaluasi.php`.
 - `src/pages/login.astro`: form login (toggle password, hint password awal = NIM).
 - `src/pages/admin.astro` → di-deploy sebagai `admin/panel.html`; `admin/index.php`
   (server-side guard) membaca panel tersebut hanya untuk role admin.
 - `/admin/` di-proteksi `.htaccess` (semua file kecuali `index.php` diblokir).
+
+### Service worker (v2)
+
+- Navigasi halaman: **network-first** (konten selalu segar, fallback ke cache saat offline).
+- Aset statis: cache-first (nama diberi hash versi di `_astro/`); cache name di-bump
+  (`basdat-unipi-v2`) agar versi lama ter-bersihkan saat activate.
 
 ### Catatan deployment
 

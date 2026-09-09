@@ -1,5 +1,56 @@
 # Changelog
 
+## [2.1.0] - 2026-09-09
+
+### Added — Latihan & Evaluasi per Pertemuan
+- **Blok Evaluasi** di semua pertemuan aktif (P1–7, 9, 10) menggunakan komponen baru
+  `src/components/Evaluasi.astro`; P1 & P2 masing-masing **15 soal**, sisanya 4 soal.
+- Alur dua tahap: **Latihan** (feedback langsung, bisa diulang) → **Evaluasi**
+  (hanya terbuka setelah pertemuan TUNTAS).
+- Tampilan evaluasi **kartu satu-soal-per-halaman** + kartu pengantar + progress bar;
+  mode admin = pratinjau satu-per-halaman (tanpa penyimpanan).
+- **Anti-salin / anti-AI (deterrent + pemantauan)**: blokir paste/copy & klik kanan,
+  hitung perpindahan tab (`visibilitychange`), ukur durasi pengerjaan; flag bitwise
+  (1 = paste/copy, 2 = sering pindah tab, 4 = terlalu cepat).
+
+### Added — Backend Evaluasi
+- Tabel `evaluasi` (1× per mahasiswa/pertemuan; skor, total, jumlah_soal, jawaban JSON,
+  telemetri, flagged) — dibuat idempoten di `migrate.php` **dan self-healing** di endpoint.
+- Endpoint `POST /api/evaluasi.php`: validasi (pertemuan harus tuntas, skor 0..total,
+  satu percobaan → 409), penghitungan flag integritas, penyimpanan; CSRF + auth.
+- `compute_nilai()` (config.php): komponen **Kuis** kini = rata-rata persentase
+  LATIHAN + EVALUASI (masing-masing 50% dari bobot 40%); `kuis_latihan`/`kuis_evaluasi`
+  diekspos ke admin.
+- `me.php` mengembalikan map `evaluasi`; `admin.php` mengembalikan `evaluasi` (list + detail
+  per mahasiswa).
+
+### Added — Dashboard Admin
+- Section baru **"Evaluasi & Integritas"**: semua pengumpulan + durasi + paste/copy/tab +
+  badge indikasi, filter "hanya yang terindikasi", klik NIM → detail.
+- Detail mahasiswa menampilkan nilai latihan & evaluasi (kuis gabungan) + tabel evaluasi.
+
+### Changed
+- **Filter admin**: dropdown Kelas, Progres (tuntas/belum), Huruf (A–E), + pencarian NIM/nama.
+- **Jumlah kuis** ditampilkan: chip `📝 N Latihan · 📋 M Evaluasi` di beranda & header pertemuan
+  (field `kuis` di frontmatter).
+- Akun **dummy pengujian**: `mhs_dummy` / `dummy` (kelas IF3A, tanpa paksa-ganti-password)
+  di-seed `migrate.php`.
+- **Service worker v2**: navigasi = network-first (konten selalu segar), aset statis
+  cache-first; cache name di-bump.
+- Evaluasi tangguh: CSRF diambil otomatis dari `/api/me.php`; bila server gagal, skor
+  tetap tampil dan tersimpan lokal perangkat (penanda "belum terkirim").
+
+### Fixed
+- False-positive "pelanggaran" saat tombol navigasi soal (penyebab: window blur saat DOM
+  di-render ulang) — pelanggaran hanya dihitung dari `visibilitychange`.
+- Tombol "Kumpulkan Evaluasi" tidak merespons: binding event delegation satu kali +
+  toast peringatan `pointer-events:none` agar tidak menutup tombol + `catch` jaringan.
+- Konten lama tersaji karena service worker cache-first (kini network-first utk navigasi).
+- Chip kuis tampil sebagai teks mentah karena string template di ekspresi Astro
+  (diganti elemen JSX).
+
+---
+
 ## [2.0.1] - 2026-09-08
 
 ### Security hardening (P1)

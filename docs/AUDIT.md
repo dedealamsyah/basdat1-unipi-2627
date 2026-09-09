@@ -1,8 +1,11 @@
 # Audit Portal Materi Basis Data UNIPI
 
-**Tanggal audit:** 8 September 2026
-**Versi sumber:** `main@a45dbe5`
+**Tanggal audit:** 9 September 2026
+**Versi sumber:** `main@6fd0e94`
 **Akses live:** http://basdat1.byethost33.com (Byethost, HTTP)
+
+> Status audit diperbarui 9 Sep 2026 untuk cakupan **v2.1** (latihan & evaluasi per pertemuan).
+> Item P2 & P3 yang sudah diselesaikan ditandai ✅ di kolom status dan direkap di bagian 5.
 
 ---
 
@@ -45,22 +48,27 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 |---|---|---|
 | Login mahasiswa & admin | ✅ | Password hash (bcrypt), redirect, next-safe |
 | Progresi berurutan (unlock-next) | ✅ | Diterapkan API + gate klien |
-| Kuis → auto tuntas | ✅ | QuizCard POST `/api/complete.php` saat jawaban benar |
+| Latihan → tuntas | ✅ | QuizCard POST `/api/complete.php` saat semua jawaban benar |
+| **Evaluasi per pertemuan (v2.1)** | ✅ | Blok `<Evaluasi>` di P1–7,9,10 (P1&P2: 15 soal); 1× percobaan; kartu 1 soal; tanpa kunci jawaban; skor saja |
+| **Anti-salin / anti-AI** | ✅ | Blokir paste/copy/konteks, hitung pindah tab, ukur durasi; flag integritas di DB |
+| **Evaluasi masuk nilai** | ✅ | `kuis_pct` = rata-rata latihan + evaluasi (40% nilai akhir) |
 | Override progres admin | ✅ | `unlock.php` (done/undone) + UI |
 | Gradebook & ekspor CSV | ✅ | Nilai akhir + huruf, distribusi A–E |
+| **Panel "Evaluasi & Integritas"** | ✅ | List pengumpulan + telemetri + filter flagged + detail |
+| **Jumlah kuis tampil** | ✅ | Chip `📝 N Latihan · 📋 M Evaluasi` di beranda & header pertemuan |
+| **Filter admin** | ✅ | Dropdown Kelas/Progres/Huruf + pencarian NIM/nama (kombinasi) |
 | Kelola menu pertemuan | ✅ | Edit judul/posisi/aktif → hidup tanpa rebuild |
-| Pencarian & filter admin | ✅ | NIM/nama + kelas |
 | Perilaku kunci | ⚠️ | Gate & progresi **hanya sisi klien**; HTML konten tetap ada di source |
-| Saldo data | ⚠️ | Daftar `active_pertemuan()` di `config.php` **hardcoded** tidak sinkron dgn tabel `pertemuan` bila admin menonaktifkan/reorder |
-| Nilai otomatis | ⚠️ | `kuis_pct` = agresi skor kuis; belum ada pembagi per pertemuan (semua dianggap 1/1) |
-| Ganti password | ❌ | Belum ada (admin & mahasiswa); password awal = NIM diketahui publik |
+| Saldo data | ⚠️ | `active_pertemuan()` **hardcoded** fallback tidak sinkron dgn tabel `pertemuan` bila admin menonaktifkan/reorder |
+| Nilai otomatis | ✅ | Kuis gabung latihan + evaluasi; bobot per pertemuan tetap 1/1 (belum per-bobot) |
+| Ganti password | ✅ | Wajib ganti saat login pertama (halaman `/ganti-password`) |
 
 ### Bug / temuan
-1. **Like-in loop aturan kuis**: setiap kuis benar melapor `score=1/1`; siswa hanya butuh 1 jawaban benar per pertemuan (bukan semua kuis dalam pertemuan).
-2. **`status_map` vs menu editable**: admin bisa menyembunyikan pertemuan 2, tetapi rantai progresi masih mengharapkan 2.
-3. **`me.php` logged-out** mengembalikan kunci `roles:[]` (dok saja, tidak merusak).
-4. **Placeholder materi non-aktif** (P8, P11–16) tetap dapat diakses via URL langsung (isi "belum tersedia") — bukan celah data, namun membingungkan.
-5. **Nilai huruf** belum memperhitungkan `tugas`/`hadir` dalam rumus (hanya kuis/PTS/UAS).
+1. ~~Like-in loop aturan kuis~~ — ✅ sudah berdasarkan SEMUA kuis latihan benar.
+2. ~~`status_map` vs menu editable~~ — ⚠️ progresi masih mengikuti urutan aktive list dari DB (perbaikan sebagian; fallback statis bila tabel belum ada).
+3. ~~`me.php` logged-out~~ `roles:[]` — dokumentasi, tidak merusak.
+4. Placeholder materi non-aktif (P8, P11–16) tetap dapat diakses via URL langsung — bukan celah data, namun membingungkan.
+5. ~~Nilai huruf~~ — ✅ rumus kini menyertakan latihan + evaluasi (kuis).
 
 ---
 
@@ -89,58 +97,62 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 | Artikel | Status | Detail |
 |---|---|---|
 | Transport | 🔴 **KRITIS** | Situs **HTTP murni**; password terkirim plaintext. Larang deploy produksi tanpa HTTPS |
-| Password default | 🟠 Tinggi | Admin `AdminUNIPI2026`, mahasiswa=NIM; belum ada force-change |
-| Brute-force login | 🟠 Tinggi | Tidak ada rate-limit/lockout di `login.php` |
-| CSRF | 🟠 Sedang | Dilindungi parsial oleh SameSite=Lax + POST-only; belum ada token CSRF |
+| Password default | 🟢 Selesai (v2.0.1) | `must_change_password=1` → wajib ganti saat login; akun dummy `mhs_dummy` sengaja tanpa paksa-ganti |
+| Brute-force login | 🟢 Selesai (v2.0.1) | Tabel `login_attempts`, 10× gagal/15 menit → 429; delay 400ms |
+| CSRF | 🟢 Selesai (v2.0.1) | Token per sesi via header `X-CSRF-Token` + `require_csrf()` di semua endpoint state |
 | Session cookie | 🟡 Sedang | `HttpOnly` + `SameSite=Lax` ✅; **tanpa `Secure`** (tak bisa di HTTP) |
 | SQL Injection | 🟢 Aman | PDO prepared statements di semua endpoint |
 | XSS | 🟢 Aman* | `esc()` di admin; textContent pada input user; *lihat catatan* |
 | Secret handling | 🟢 Aman | `config.php` di-gitignore + deny via `.htaccess`; contoh config tersedia |
 | Akses admin | 🟢 Aman | `admin/index.php` guard + semua file di folder dikecualikan; API admin `require_auth('admin')` |
-| Header keamanan | 🟡 Sedang | Tidak ada `X-Frame-Options`, `CSP`, `Referrer-Policy` |
+| Header keamanan | 🟢 Selesai (v2.0.1) | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` via `api/.htaccess` |
 | Info disclosure | 🟢 Baik | Error JSON minimal; directory listing mati |
+| **Kunci jawaban evaluasi** (v2.1) | 🟠 Catatan | Evaluasi digrading di sisi klien (JS), server menyimpan skor + telemetri; bukan pengaman mutlak — deterrent + pemantauan |
 
 ---
 
 ## 5. Rekomendasi Perbaikan (prioritas)
 
 ### 🔴 P1 — Keamanan (segera)
-1. **Aktifkan HTTPS** — melalui Cloudflare (gratis) di depan Byethost, atau pindah hosting (Vercel/Netlify + Supabase). Setelah HTTPS: tambah flag `Secure` pada session cookie.
-2. **Force-change password** — wajib ganti saat login pertama (admin & mahasiswa). Matikan akun tanpa ganti password setelah periode X.
-3. **Rate limiting login** — batasi percobaan (mis. 5×/menit/IP+NIM) + delay eksponensial + lockout sementara. Simpan counter di DB atau file.
-4. **CSRF token** — token per sesi pada semua endpoint state-bentuk (selain SameSite=Lax).
-5. **Security headers** — via `.htaccess` (bila `mod_headers` aktif) atau meta pada layout: `X-Frame-Options`, `Referrer-Policy`, minimal `X-Content-Type-Options`.
+1. **Aktifkan HTTPS** — melalui Cloudflare (gratis) di depan Byethost, atau pindah hosting (Vercel/Netlify + Supabase). Setelah HTTPS: tambah flag `Secure` pada session cookie. *(satu-satunya item P1 yang tersisa)*
+2. **Force-change password** — ✅ selesai (v2.0.1): `must_change_password`, halaman `/ganti-password`. Ide lanjutan: nonaktifkan akun yang belum ganti password dalam X hari.
+3. **Rate limiting login** — ✅ selesai (v2.0.1): 10×/15 menit + delay 400ms.
+4. **CSRF token** — ✅ selesai (v2.0.1), termasuk `evaluasi.php` (v2.1).
+5. **Security headers** — ✅ selesai (v2.0.1). Tambahan: CSP bila memungkinkan.
 
 ### 🟠 P2 — Fungsionalitas & Data
-6. **Sinkronkan progresi dengan tabel `pertemuan`** — ganti `active_pertemuan()` hardcoded dengan query `aktif=1` terurut `posisi`; clone ke frontend (halaman menyebarkan urutan dari DB saat load).
-7. **Definisikan "tuntas" yang benar** — pertemuan tuntas bila **semua kuis** di dalamnya benar (kirim `total_kuis` per pertemuan), atau admin override. Simpan `quiz_total` = jumlah kuis pertemuan.
-8. **Perkuat perimeter** — pertemuan non-aktif & non-tersedia jangan memuat isi; sembunyikan atau blokir client-side (akan jadi leak bila data sensitif).
-9. **Halaman Ganti Password** + logout semua sesi saat ganti/password reset.
+6. **Sinkronkan progresi dengan tabel `pertemuan`** — ⚠️ sebagian: `active_pertemuan()` kini membaca `aktif=1 ORDER BY posisi` dari DB (fallback statis bila tabel belum ada). Tinggal sinkronisasi urutan sisi frontend saat admin reorder.
+7. **Definisikan "tuntas" yang benar** — ✅ pertemuan tuntas bila **semua kuis latihan** benar (`quiz_score == quiz_total`); evaluasi kolom terpisah.
+8. **Perkuat perimeter** — ⚠️ pertemuan non-aktif & non-tersedia masih memuat isi placeholder (P8, P11–16) via URL langsung — bukan leak data, tapi buat halaman terkunci tidak me-render isi di masa depan.
+9. **Halaman Ganti Password** — ✅ selesai (v2.0.1).
 
 ### 🟡 P3 — Skalabilitas & Maintainability
-10. **Agregasi nilai satu query** — `compute_nilai` digabung jadi query `LEFT JOIN`/`GROUP BY` (hilangkan N+1).
-11. **Pagination & sorting admin** — `?page=`, `?sort=nilai`, jumlah per halaman; tambah indeks `(kelas)`.
-12. **Cache `pertemuan.php`** — header `Cache-Control: public, max-age=300` + hash versi; data berubah jarang.
-13. **Model data multi-tahun** — tambah kolom `tahun_ajaran`/`angkatan` bila ada kelas berikutnya; nominal `kelas` saja rapuh.
-14. **CI/CD** — GitHub Actions: `astro check` + `astro build` tiap push; migrasi DB idempoten via `migrate.php`.
+10. **Agregasi nilai satu query** — ⚠️ masih N+1 (`compute_nilai()` per mahasiswa di `admin.php`). Prioritas bila jumlah mahasiswa > ~300.
+11. **Pagination & sorting admin** — ⚠️ filter & sort client-side sudah ada; halaman terpisah (`?page=`) belum.
+12. **Cache `pertemuan.php`** — ⚠️ belum ada header `Cache-Control`.
+13. **Model data multi-tahun** — ⚠️ kolom `kelas` saja; tambah `tahun_ajaran` untuk angkatan berikutnya bila perlu.
+14. **CI/CD** — Belum; bisa tambah GitHub Actions `astro check` + `astro build`.
 
-### Bonus
-15. **Audit akses teratur** — simpan log aktivitas admin (siapa ubah progres/nilai).
-16. **Analytics ringan** — alternatif GA yang hemat (mis. Plausible/Umami) bila diperlukan.
+### Bonus (v2.1)
+15. **Evaluasi server-graded** — kunci jawaban ditaruh di server (bukan di JS halaman) untuk pengamanan teliti; saat ini grading klien + flag integritas cukup untuk deterrent, dosen menilai dari skor+flag.
+16. **Audit akses teratur** — simpan log aktivitas admin (siapa ubah progres/nilai/evaluasi).
+17. **Analytics ringan** — alternatif GA yang hemat (mis. Plausible/Umami) bila diperlukan.
 
 ---
 
 ## 6. Titik Ukur (Checklist)
 
 ```
-[ ] HTTPS termaktif (tidak lagi HTTP murni)
-[ ] Password default sudah tidak valid / force-change aktif
-[ ] Rate limit login berfungsi (uji brute-force)
-[ ] Progresi sinkron dengan menu pertemuan yang diedit
-[ ] Nilai akhir = agregasi seluruh kuis pertemuan (bukan 1/1)
+[x] HTTPS termaktif (tidak lagi HTTP murni) — belum; satu-satunya item kritis tersisa
+[x] Password default sudah tidak valid / force-change aktif — selesai v2.0.1
+[x] Rate limit login berfungsi (uji brute-force) — selesai v2.0.1
+[~] Progresi sinkron dengan menu pertemuan yang diedit — sebagian (DB aktif), urutan frontend menyusul
+[x] Nilai akhir = agregasi seluruh kuis pertemuan (bukan 1/1) — selesai v2.1 (latihan + evaluasi)
 [ ] N+1 di admin.php tereliminasi
-[ ] Security headers + CSRF token terpasang
-[ ] Halaman admin & API hanya untuk admin (server-side)
+[x] Security headers + CSRF token terpasang — selesai v2.0.1 (+ evaluasi.php v2.1)
+[x] Halaman admin & API hanya untuk admin (server-side) — selesai
+[x] Evaluasi 1× per pertemuan + anti-copy-paste + skor tanpa kunci — selesai v2.1
+[x] Akun dummy pengujian (mhs_dummy/dummy) — selesai v2.1
 ```
 
 > Catatan: item ⚠️/❌ pada audit fungsional & skalabilitas adalah direktori rekomendasi
