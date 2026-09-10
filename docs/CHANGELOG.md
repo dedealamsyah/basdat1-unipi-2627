@@ -1,5 +1,52 @@
 # Changelog
 
+## [2.2.0] - 2026-09-10
+
+### Added — Mode Presentasi Dosen
+- Halaman `/pertemuan/{id}/presentasi`: mode slide fullscreen untuk penyampaian materi
+  di kelas, terpisah per bagian `##` heading; navigasi keyboard (`←/→/Space/F/G/Esc`),
+  klik kiri/kanan area slide, progress bar, daftar slide panel.
+- Gate akses: hanya admin/dosen (via `APIAuth.me`). Slide dibangun client-side dengan
+  memindahkan node DOM (event listener komponen interaktif tetap hidup).
+
+### Added — Panel "Mode Mengajar" di Dashboard Admin
+- Section pertama di `/admin` berisi kartu per pertemuan dengan tombol
+  "Presentasikan" → buka halaman presentasi + "Buka Materi" → halaman materi standar.
+- Menampilkan metadata: alokasi, bobot, CPMK; badge AKTIF/SEMBUNYI.
+
+### Added — 8 Gambar SVG Interaktif (P1–P4, P9, P10)
+- `p1-komponen-sistem.svg`: 5 komponen sistem basis data
+- `p1-three-schema.svg`: Arsitektur tiga skema (ANSI-SPARC)
+- `p2-taksonomi-atribut.svg`: Taksonomi atribut + contoh PK
+- `p2-crows-foot.svg`: Notasi Crow's Foot (1:1, 1:N, M:N)
+- `p3-metodologi-erd.svg`: Alur 5 langkah metodologi perancangan ERD
+- `p4-aturan-transformasi.svg`: Ringkasan 6 aturan transformasi ERD→relasional
+- `p9-bahasa-sql.svg`: Empat bahasa SQL (DDL/DML/DCL/TCL)
+- `p10-operasi-ar.svg`: 6 operasi dasar aljabar relasional + join turunan
+
+### Changed — Konsistensi Konten MDX
+- Sisipkan gambar via `<figure class="media-figure">` ke pertemuan 1, 2, 3, 4, 9, 10.
+
+### Fixed — Bug Fixes
+- **`api/schema.sql`**: tambah kolom `must_change_password` (hilang vs `setup_db.php`,
+  menyebabkan error SQL pada fresh install dari schema).
+- **`api/config.example.php`**: hapus kredensial asli (DB password, admin password,
+  setup token) → ganti placeholder. Sinkronkan `compute_nilai()` (tambah
+  `evaluasi_pct()`, `kuis_latihan`, `kuis_evaluasi`) agar identik `config.php`.
+- **`api/config.php`**: parameterized query untuk `DELETE login_attempts`
+  (`INTERVAL ? MINUTE`) mengganti interpolasi string.
+- **`public/auth.js`**: pertahankan CSRF token setelah login sukses
+  (`csrfToken = ""` diganti → simpan token dari server jika ada).
+- **`src/pages/login.astro`**: reset `btnText` ke "Masuk" di semua path error
+  `warmUp()` (sebelumnya tetap "Menghubungi…" saat API tidak merespons).
+- **`src/components/Sidebar.astro`**: ubah selector click handler dari
+  `.row:not(.locked)` global → `#sidebarList .row:not(.locked)` agar tidak
+  meng-intercept baris di luar sidebar.
+- **`src/pages/admin.astro`**: hapus duplikasi logika filter di handler sort
+  (cukup panggil `applyFilter()` yang sudah ada).
+
+---
+
 ## [2.1.0] - 2026-09-09
 
 ### Added — Latihan & Evaluasi per Pertemuan
