@@ -13,6 +13,21 @@ import Sidebar from '../components/Sidebar.astro';
     <div id="adminStatus" class="muted"></div>
   </div>
 
+  <!-- MODE MENGAJAR -->
+  <section class="block mengajar">
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">▶</span> Mode Mengajar &amp; Presentasi</h2>
+      <span class="muted">Presentasikan materi langsung di kelas, slide per bagian dengan proyektor</span>
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:2px;">
+      Klik <b>Presentasikan</b> untuk membuka materi pertemuan dalam mode layar penuh
+      (navigasi panah, daftar slide, fullscreen). Materi dibagi otomatis per bagian.
+    </p>
+    <div class="mengajar__grid" id="mengajarGrid">
+      <p class="muted">Memuat…</p>
+    </div>
+  </section>
+
   <!-- STATISTIK -->
   <section class="block">
     <div class="section-head">
@@ -471,6 +486,37 @@ import Sidebar from '../components/Sidebar.astro';
     font-size: 12px; color: var(--ink-soft); cursor: pointer;
   }
   .integ-filter input { accent-color: var(--red-600); }
+
+  .mengajar__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .mengajar__card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color .15s, box-shadow .15s, transform .08s;
+  }
+  .mengajar__card:hover { border-color: var(--navy-700); box-shadow: var(--shadow-md); }
+  .mengajar__card.is-off { opacity: .55; }
+  .mengajar__card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mengajar__num {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+    letter-spacing: .05em; color: var(--amber-500); flex-shrink: 0;
+  }
+  .mengajar__title { font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.35; }
+  .mengajar__sub { font-size: 11.5px; color: var(--ink-soft); line-height: 1.45; }
+  .mengajar__sections { font-size: 11px; color: var(--ink-faint); margin-top: auto; }
+  .mengajar__actions { display: flex; gap: 6px; margin-top: 4px; }
+  .mengajar__actions .btn-sim { font-size: 12px; padding: 7px 10px; }
+
   .badge-flag {
     display: inline-block; font-size: 10px; font-weight: 700;
     padding: 2px 8px; border-radius: 20px;
@@ -901,23 +947,7 @@ import Sidebar from '../components/Sidebar.astro';
         if (sortKey === k) { sortDir = -sortDir; } else { sortKey = k; sortDir = 1; }
         document.querySelectorAll('#adminTable thead th').forEach(function (t) { t.classList.remove('sorted'); });
         th.classList.add('sorted');
-        th.textContent = th.getAttribute('data-key') === 'huruf' ? 'Huruf' : th.textContent;
-        renderRows(allStudents.filter(function (s) {
-          var kl = document.getElementById('qKelas').value;
-          var q = (document.getElementById('qNim').value || '').toLowerCase().trim();
-          var pr = document.getElementById('qProgres').value;
-          var hr = document.getElementById('qHuruf').value;
-          if (kl && s.kelas !== kl) return false;
-          if (pr === 'tuntas' && s.persen < 100) return false;
-          if (pr === 'belum' && s.persen >= 100) return false;
-          if (hr) {
-            var curH = s.huruf || '–';
-            if (hr === '-') { if (curH !== '–') return false; }
-            else if (curH !== hr) return false;
-          }
-          if (q && s.nim.toLowerCase().indexOf(q) === -1 && s.nama.toLowerCase().indexOf(q) === -1) return false;
-          return true;
-        }));
+        applyFilter();
       });
     });
 
@@ -927,7 +957,40 @@ import Sidebar from '../components/Sidebar.astro';
       ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Memuat…</td></tr>';
       api('/api/pertemuan.php').then(function (d) {
         if (!d.ok) { ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Gagal memuat.</td></tr>'; return; }
-        ptRows = d.data.pertemuan; renderPt();
+        ptRows = d.data.pertemuan; renderPt(); renderMengajar();
+      });
+    }
+    function renderMengajar() {
+      var grid = document.getElementById('mengajarGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!ptRows.length) {
+        grid.innerHTML = '<p class="muted">Belum ada data pertemuan.</p>';
+        return;
+      }
+      ptRows.forEach(function (p) {
+        var card = document.createElement('div');
+        card.className = 'mengajar__card' + (p.aktif ? '' : ' is-off');
+        var badge = p.aktif
+          ? '<span class="chip chip--sm" style="background:var(--green-600); color:#fff;">AKTIF</span>'
+          : '<span class="chip chip--sm" style="background:var(--ink-faint);">SEMBUNYI</span>';
+        var sectionCount = p.sections != null ? p.sections : null;
+        var metaBits = [];
+        if (p.alokasi) metaBits.push('⏱ ' + esc(p.alokasi));
+        if (p.bobot) metaBits.push('BOBOT ' + esc(p.bobot));
+        if (p.cpmk) metaBits.push(esc(p.cpmk));
+        card.innerHTML =
+          '<div class="mengajar__card-top">' +
+          '<span class="mengajar__num">PERTEMUAN ' + String(p.id).padStart(2, '0') + '</span>' + badge +
+          '</div>' +
+          '<div class="mengajar__title">' + esc(p.title || 'Belum berjudul') + '</div>' +
+          (p.subtitle ? '<div class="mengajar__sub">' + esc(p.subtitle) + '</div>' : '') +
+          (metaBits.length ? '<div class="mengajar__sections">' + metaBits.join(' · ') + '</div>' : '<div class="mengajar__sections">&nbsp;</div>') +
+          '<div class="mengajar__actions">' +
+          '<a class="btn-sim" style="background:var(--navy-700); flex:1; text-align:center; text-decoration:none;" href="/pertemuan/' + p.id + '/presentasi">▶ Presentasikan</a>' +
+          '<a class="btn-sim" style="background:var(--green-600); flex:1; text-align:center; text-decoration:none;" href="/pertemuan/' + p.id + '">Buka Materi</a>' +
+          '</div>';
+        grid.appendChild(card);
       });
     }
     function renderPt() {

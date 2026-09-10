@@ -287,11 +287,12 @@ import Sidebar from '../components/Sidebar.astro';
 // Form dikunci sampai siap; sekali muat ulang otomatis bila perlu.
 function warmUp() {
   var btn = document.getElementById('loginBtn');
+  var btnText = document.getElementById('loginBtnText');
   if (typeof window.APIAuth === 'undefined') return;
   window.APIAuth.readyCheck().then(function (ok) {
     if (ok) {
       btn.disabled = false;
-      btn.querySelector('#loginBtnText').textContent = 'Masuk';
+      btnText.textContent = 'Masuk';
       return;
     }
     // API belum siap (kemungkinan challenge) -> muat ulang sekali untuk menetapkan cookie
@@ -302,6 +303,7 @@ function warmUp() {
       return;
     }
     btn.disabled = false;
+    btnText.textContent = 'Masuk';
     setMsg('Ada kendala koneksi. Muat ulang halaman bila login tetap gagal.', 'error');
   });
 }

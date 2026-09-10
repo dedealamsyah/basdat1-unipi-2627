@@ -98,8 +98,8 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   }
 
   // Sidebar Navigation
-  const rows = document.querySelectorAll('.row:not(.locked)');
-  rows.forEach(row => {
+  const sidebarNavRows = document.querySelectorAll('#sidebarList .row:not(.locked)');
+  sidebarNavRows.forEach(row => {
     row.addEventListener('click', function() {
       const kind = this.getAttribute('data-kind');
       if (kind === 'praktikum') {

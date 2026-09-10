@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 270" font-family="'Public Sans', system-ui, sans-serif">
+  <rect width="720" height="270" fill="#FFFFFF"/>
+  <text x="360" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#0B231B" letter-spacing="1" font-family="'JetBrains Mono', monospace">TAKSONOMI ATRIBUT</text>
+
+  <!-- Simple -->
+  <rect x="24" y="48" width="162" height="96" rx="10" fill="#E3F2EC" stroke="#1F8A5F" stroke-width="1.5"/>
+  <text x="105" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#14382B">SIMPLE</text>
+  <text x="105" y="92" text-anchor="middle" font-size="9" fill="#55637A">Nilai tunggal, tak bisa</text>
+  <text x="105" y="106" text-anchor="middle" font-size="9" fill="#55637A">dipecah lebih kecil lagi.</text>
+  <rect x="40" y="118" width="130" height="16" rx="4" fill="#FFFFFF" stroke="#1F8A5F" stroke-width="1"/>
+  <text x="105" y="129" text-anchor="middle" font-size="8.5" fill="#14382B" font-family="'JetBrains Mono', monospace">Jenis_Kelamin</text>
+
+  <!-- Composite -->
+  <rect x="198" y="48" width="162" height="96" rx="10" fill="#E3F2EC" stroke="#1F8A5F" stroke-width="1.5"/>
+  <text x="279" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#14382B">COMPOSITE</text>
+  <text x="279" y="92" text-anchor="middle" font-size="9" fill="#55637A">Bisa dipecah menjadi</text>
+  <text x="279" y="106" text-anchor="middle" font-size="9" fill="#55637A">sub-atribut lebih kecil.</text>
+  <rect x="214" y="118" width="130" height="16" rx="4" fill="#FFFFFF" stroke="#1F8A5F" stroke-width="1"/>
+  <text x="279" y="129" text-anchor="middle" font-size="8.5" fill="#14382B" font-family="'JetBrains Mono', monospace">Nama = Depan+Belakang</text>
+
+  <!-- Multivalued -->
+  <rect x="372" y="48" width="162" height="96" rx="10" fill="#F6EFD9" stroke="#B08D1C" stroke-width="1.5"/>
+  <text x="453" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#7A5A12">MULTI-VALUED</text>
+  <text x="453" y="92" text-anchor="middle" font-size="9" fill="#55637A">Memungkinkan lebih dari</text>
+  <text x="453" y="106" text-anchor="middle" font-size="9" fill="#55637A">satu nilai per entitas.</text>
+  <rect x="388" y="118" width="130" height="16" rx="4" fill="#FFFFFF" stroke="#B08D1C" stroke-width="1"/>
+  <text x="453" y="129" text-anchor="middle" font-size="8.5" fill="#7A5A12" font-family="'JetBrains Mono', monospace">{ No_Handphone, Skill }</text>
+
+  <!-- Derived -->
+  <rect x="546" y="48" width="162" height="96" rx="10" fill="#FBE9E1" stroke="#B4552D" stroke-width="1.5"/>
+  <text x="627" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#7A1F0E">DERIVED</text>
+  <text x="627" y="92" text-anchor="middle" font-size="9" fill="#55637A">Dihitung dari atribut lain,</text>
+  <text x="627" y="106" text-anchor="middle" font-size="9" fill="#55637A">tidak perlu disimpan.</text>
+  <rect x="562" y="118" width="130" height="16" rx="4" fill="#FFFFFF" stroke="#B4552D" stroke-width="1"/>
+  <text x="627" y="129" text-anchor="middle" font-size="8.5" fill="#7A1F0E" font-family="'JetBrains Mono', monospace">Usia (dari Tgl_Lahir)</text>
+
+  <text x="360" y="176" text-anchor="middle" font-size="11" font-weight="700" fill="#1E293B">Primary Key (PK) = atribut yang mengidentifikasi setiap baris secara unik</text>
+  <rect x="130" y="192" width="460" height="40" rx="8" fill="#0F2E22"/>
+  <text x="360" y="210" text-anchor="middle" font-size="10.5" fill="#FFFFFF" font-family="'JetBrains Mono', monospace">KARYAWAN( NIK, Nama, Alamat, No_Handphone, Usia )</text>
+  <text x="360" y="226" text-anchor="middle" font-size="8.5" fill="#C9A227" font-family="'JetBrains Mono', monospace">   PK       comp      comp     multi     derived</text>
+
+  <text x="360" y="260" text-anchor="middle" font-size="10" fill="#8A99AA">Sumber: Silberschatz, Korth &amp; Sudarshan — Database System Concepts (2020).</text>
+</svg>

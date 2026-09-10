@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" font-family="'Public Sans', system-ui, sans-serif">
+  <rect width="720" height="400" fill="#FFFFFF"/>
+  <text x="360" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#0B231B" letter-spacing="1" font-family="'JetBrains Mono', monospace">ARSITEKTUR TIGA SKEMA (ANSI-SPARC)</text>
+
+  <!-- External level -->
+  <rect x="30" y="48" width="660" height="92" rx="12" fill="#F6EFD9" stroke="#B08D1C" stroke-width="1.5"/>
+  <text x="52" y="72" font-size="11" font-weight="700" fill="#7A5A12" font-family="'JetBrains Mono', monospace">EXTERNAL LEVEL · PANDANGAN PENGGUNA</text>
+  <!-- view boxes -->
+  <rect x="52" y="82" width="190" height="46" rx="8" fill="#FFFFFF" stroke="#B08D1C" stroke-width="1"/>
+  <text x="147" y="100" text-anchor="middle" font-size="10" font-weight="600" fill="#1E293B">View 1 · Mahasiswa</text>
+  <text x="147" y="116" text-anchor="middle" font-size="8.5" fill="#55637A">Form nilai pribadi</text>
+  <rect x="265" y="82" width="190" height="46" rx="8" fill="#FFFFFF" stroke="#B08D1C" stroke-width="1"/>
+  <text x="360" y="100" text-anchor="middle" font-size="10" font-weight="600" fill="#1E293B">View 2 · Dosen</text>
+  <text x="360" y="116" text-anchor="middle" font-size="8.5" fill="#55637A">Form input nilai kelas</text>
+  <rect x="478" y="82" width="190" height="46" rx="8" fill="#FFFFFF" stroke="#B08D1C" stroke-width="1"/>
+  <text x="573" y="100" text-anchor="middle" font-size="10" font-weight="600" fill="#1E293B">View 3 · Admin</text>
+  <text x="573" y="116" text-anchor="middle" font-size="8.5" fill="#55637A">Dasbor SIAKAD</text>
+
+  <!-- Conceptual level -->
+  <rect x="30" y="176" width="660" height="92" rx="12" fill="#E3F2EC" stroke="#1F8A5F" stroke-width="1.5"/>
+  <text x="52" y="200" font-size="11" font-weight="700" fill="#14382B" font-family="'JetBrains Mono', monospace">CONCEPTUAL LEVEL · STRUKTUR LOGIS SELURUH DATABASE</text>
+  <rect x="130" y="210" width="460" height="46" rx="8" fill="#FFFFFF" stroke="#1F8A5F" stroke-width="1"/>
+  <text x="360" y="230" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1E293B">Skema Relasional SIAKAD</text>
+  <text x="360" y="246" text-anchor="middle" font-size="9" fill="#55637A">Tabel · PK/FK · Relasi — tanpa detail penyimpanan</text>
+
+  <!-- Internal level -->
+  <rect x="30" y="304" width="660" height="72" rx="12" fill="#FBE9E1" stroke="#B4552D" stroke-width="1.5"/>
+  <text x="52" y="328" font-size="11" font-weight="700" fill="#7A1F0E" font-family="'JetBrains Mono', monospace">INTERNAL LEVEL · PENYIMPANAN FISIK</text>
+  <rect x="130" y="336" width="460" height="28" rx="8" fill="#FFFFFF" stroke="#B4552D" stroke-width="1"/>
+  <text x="360" y="354" text-anchor="middle" font-size="9.5" fill="#3A4A63" font-family="'JetBrains Mono', monospace">File · Indeks · Blok di disk · Struktur akses</text>
+
+  <!-- data independence arrows -->
+  <line x1="360" y1="140" x2="360" y2="176" stroke="#8A99AA" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="378" y="162" font-size="8.5" fill="#8A99AA">map</text>
+  <line x1="360" y1="268" x2="360" y2="304" stroke="#8A99AA" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="378" y="290" font-size="8.5" fill="#8A99AA">map</text>
+
+  <text x="360" y="392" text-anchor="middle" font-size="10" fill="#8A99AA">Data independence: perubahan internal tidak mengubah pandangan pengguna.</text>
+</svg>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" font-family="'Public Sans', system-ui, sans-serif">
+  <rect width="720" height="300" fill="#FFFFFF"/>
+  <text x="360" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="#0B231B" letter-spacing="1" font-family="'JetBrains Mono', monospace">METODOLOGI PERANCANGAN ERD — 5 LANGKAH</text>
+
+  <!-- step 1 -->
+  <rect x="30" y="82" width="120" height="66" rx="10" fill="#0F2E22"/>
+  <text x="90" y="106" text-anchor="middle" font-size="18" font-weight="700" fill="#C9A227">1</text>
+  <text x="90" y="124" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Identifikasi</text>
+  <text x="90" y="139" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Entitas</text>
+  <text x="30" y="170" width="120" text-anchor="middle" font-size="8.5" fill="#55637A">kata benda dari narasi</text>
+
+  <text x="150" y="120" text-anchor="middle" font-size="18" fill="#B08D1C">→</text>
+
+  <!-- step 2 -->
+  <rect x="170" y="82" width="120" height="66" rx="10" fill="#176B4D"/>
+  <text x="230" y="106" text-anchor="middle" font-size="18" font-weight="700" fill="#C9A227">2</text>
+  <text x="230" y="124" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Identifikasi</text>
+  <text x="230" y="139" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Atribut</text>
+  <text x="170" y="170" width="120" text-anchor="middle" font-size="8.5" fill="#55637A">properi &amp; key kandidat</text>
+
+  <text x="290" y="120" text-anchor="middle" font-size="18" fill="#B08D1C">→</text>
+
+  <!-- step 3 -->
+  <rect x="310" y="82" width="120" height="66" rx="10" fill="#1F8A5F"/>
+  <text x="370" y="106" text-anchor="middle" font-size="18" font-weight="700" fill="#C9A227">3</text>
+  <text x="370" y="124" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Tentukan</text>
+  <text x="370" y="139" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Relasi</text>
+  <text x="310" y="170" width="120" text-anchor="middle" font-size="8.5" fill="#55637A">nama verba · 1:N · M:N · partisipasi</text>
+
+  <text x="430" y="120" text-anchor="middle" font-size="18" fill="#B08D1C">→</text>
+
+  <!-- step 4 -->
+  <rect x="450" y="82" width="120" height="66" rx="10" fill="#B08D1C"/>
+  <text x="510" y="106" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">4</text>
+  <text x="510" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="#0B231B">Tentukan Key</text>
+  <text x="450" y="170" width="120" text-anchor="middle" font-size="8.5" fill="#55637A">PK &amp; FK</text>
+
+  <text x="570" y="120" text-anchor="middle" font-size="18" fill="#B08D1C">→</text>
+
+  <!-- step 5 -->
+  <rect x="590" y="82" width="110" height="66" rx="10" fill="#C43A2F"/>
+  <text x="645" y="106" text-anchor="middle" font-size="18" font-weight="700" fill="#F6EFD9">5</text>
+  <text x="645" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Gambar &amp;</text>
+  <text x="645" y="139" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Validasi</text>
+  <text x="590" y="170" width="110" text-anchor="middle" font-size="8.5" fill="#55637A">notasi Crow's Foot</text>
+
+  <!-- output arrow -->
+  <path d="M360 190 C 360 214, 360 214, 360 218" fill="none" stroke="#8A99AA" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <rect x="210" y="224" width="300" height="42" rx="10" fill="#F6EFD9" stroke="#B08D1C" stroke-width="1.5"/>
+  <text x="360" y="242" text-anchor="middle" font-size="11" font-weight="700" fill="#7A5A12">OUTPUT: ERD LENGKAP + DOKUMENTASI ASUMSI</text>
+  <text x="360" y="258" text-anchor="middle" font-size="9" fill="#55637A">seluruh entitas punya atribut, relasi, dan key yang valid</text>
+
+  <text x="360" y="292" text-anchor="middle" font-size="10" fill="#8A99AA">Urutan ini menjadi kerangka langkah A–G pada Worksheet Praktikum.</text>
+</svg>

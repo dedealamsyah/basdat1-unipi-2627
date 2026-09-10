@@ -1,0 +1,479 @@
+---
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allPertemuan = await getCollection('pertemuan');
+  return allPertemuan.map(p => ({
+    params: { slug: String(p.data.id) },
+    props: { pertemuan: p, allPertemuan }
+  }));
+}
+
+const { pertemuan, allPertemuan } = Astro.props;
+const { Content } = await render(pertemuan);
+const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
+const currentIndex = sorted.findIndex(p => p.data.id === pertemuan.data.id);
+const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
+const next = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
+const m = pertemuan.data;
+const ptmUrl = `/pertemuan/${m.id}`;
+const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/presentasi`)}`;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={`Mode presentasi: ${m.title} · Basis Data UNIPI`} />
+    <meta name="theme-color" content="#0B231B" />
+    <title>Presentasi · Pertemuan {String(m.id).padStart(2, '0')} · {m.title} | Basis Data UNIPI</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script is:inline>
+      (function() {
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var saved = localStorage.getItem('theme');
+        document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+      })();
+    </script>
+    <style is:global>
+      @import '../../../styles/global.css';
+    </style>
+  </head>
+  <body class="pres-body">
+    <span id="presMeta" hidden data-pertemuan={m.id} data-title={m.title} data-subtitle={m.subtitle || ''} data-cpmk={m.meta?.cpmk || ''} data-alokasi={m.meta?.alokasi || ''} data-bobot={m.meta?.bobot || ''}></span>
+
+    <!-- Gate: hanya admin -->
+    <div class="pres-gate" id="presGate">
+      <div class="pres-gate__box">
+        <div class="pres-gate__icon">◈</div>
+        <h1 class="pres-gate__title">Mode Presentasi Dosen</h1>
+        <p class="pres-gate__msg" id="presGateMsg">Memeriksa akses…</p>
+        <a class="btn-sim" id="presGateAction" href={loginNextHref}>Login Dosen</a>
+        <a class="pres-gate__back" href={ptmUrl}>← Kembali ke materi</a>
+      </div>
+    </div>
+
+    <!-- Layar Presentasi -->
+    <div class="pres" id="presApp" hidden>
+      <header class="pres__topbar">
+        <div class="pres__topbar-left">
+          <img src="/logo-unipi.png" alt="" class="pres__logo" width="30" height="30" />
+          <div class="pres__titles">
+            <span class="pres__kicker">PERTEMUAN {String(m.id).padStart(2, '0')} · BASIS DATA UNIPI</span>
+            <span class="pres__dockey" id="presDocTitle">{m.title}</span>
+          </div>
+        </div>
+        <div class="pres__topbar-right">
+          <span class="pres__sub" id="presDocSub">{m.subtitle}</span>
+          <button class="ps-btn ps-btn--ghost" id="presListBtn" title="Daftar slide (G)">☰ Daftar</button>
+          <button class="ps-btn ps-btn--ghost" id="presFullBtn" title="Layar penuh (F)">⛶</button>
+          <a class="ps-btn ps-btn--ghost ps-btn--exit" href={ptmUrl} title="Tutup (Esc)">✕</a>
+        </div>
+      </header>
+
+      <main class="pres__stage" id="presStage">
+        <article class="pres-article" id="presArticle">
+          <Content />
+        </article>
+      </main>
+
+      <footer class="pres__footer">
+        <button class="ps-btn" id="presPrev" title="Sebelumnya (←)">‹ Sebelumnya</button>
+        <div class="pres__progress">
+          <div class="pres__progress-track"><div class="pres__progress-fill" id="presProgress"></div></div>
+          <span class="pres__counter" id="presCounter">1 / 1</span>
+        </div>
+        <button class="ps-btn ps-btn--primary" id="presNext" title="Berikutnya (→)">Berikutnya ›</button>
+      </footer>
+
+      <!-- Panel daftar slide -->
+      <div class="pres__list" id="presList" hidden>
+        <div class="pres__list-head">
+          <strong>Daftar Slide</strong>
+          <button class="ps-btn ps-btn--ghost" id="presListClose">✕</button>
+        </div>
+        <div class="pres__list-body" id="presListBody"></div>
+      </div>
+      <div class="pres__backdrop" id="presBackdrop" hidden></div>
+    </div>
+
+    <script is:inline src="/auth.js"></script>
+    <script is:inline src="/erd-interactive.js"></script>
+    <style is:global>
+      /* ===== Mode Presentasi ===== */
+      .pres-body { overflow: hidden; background: var(--paper); }
+      [data-theme="dark"] .pres-body { background: #081310; }
+
+      .pres-gate {
+        position: fixed; inset: 0; z-index: 9000;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--paper); padding: 24px;
+      }
+      .pres-gate__box {
+        background: var(--card); border: 1px solid var(--line);
+        box-shadow: var(--shadow-md); border-radius: var(--radius-lg);
+        padding: 40px 32px; max-width: 400px; text-align: center;
+      }
+      .pres-gate__icon { font-family: var(--font-display); font-size: 30px; color: var(--amber-400); margin-bottom: 12px; }
+      .pres-gate__title { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--ink); margin: 0 0 10px; }
+      .pres-gate__msg { color: var(--ink-soft); font-size: 13.5px; line-height: 1.6; margin: 0 0 20px; }
+      .pres-gate__back { display: block; margin-top: 14px; font-size: 12px; color: var(--ink-soft); text-decoration: none; }
+      .pres-gate__back:hover { color: var(--navy-700); }
+
+      .pres { position: fixed; inset: 0; z-index: 8000; background: var(--paper); display: flex; flex-direction: column; }
+      [data-theme="dark"] .pres { background: #081310; }
+
+      .pres__topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        padding: 10px 18px; border-bottom: 1px solid var(--line);
+        background: var(--card); flex: 0 0 auto; z-index: 5;
+      }
+      .pres__topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+      .pres__logo { border-radius: 6px; flex-shrink: 0; }
+      .pres__titles { min-width: 0; line-height: 1.25; }
+      .pres__kicker { display: block; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .08em; color: var(--teal-400); }
+      .pres__dockey { display: block; font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }
+      .pres__topbar-right { display: flex; align-items: center; gap: 6px; min-width: 0; }
+      .pres__sub { font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 26vw; }
+
+      .ps-btn {
+        border: 1px solid var(--line); border-radius: 9px; background: var(--card);
+        color: var(--ink); font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
+        padding: 7px 12px; cursor: pointer; white-space: nowrap;
+        transition: background .15s, border-color .15s, transform .06s, box-shadow .15s;
+      }
+      .ps-btn:hover { border-color: var(--navy-700); box-shadow: var(--shadow-sm); }
+      .ps-btn:active { transform: translateY(1px); }
+      .ps-btn--ghost { background: transparent; }
+      .ps-btn--primary { background: var(--navy-700); border-color: var(--navy-700); color: #fff; }
+      .ps-btn--exit:hover { border-color: var(--red-600); color: var(--red-600); }
+      .ps-btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+      .pres__stage {
+        flex: 1 1 auto; position: relative; overflow: hidden;
+        scroll-behavior: smooth;
+      }
+      .pres__progress { flex: 1; display: flex; align-items: center; gap: 12px; max-width: 380px; }
+      .pres__progress-track { flex: 1; height: 6px; border-radius: 4px; background: var(--teal-100); overflow: hidden; }
+      [data-theme="dark"] .pres__progress-track { background: rgba(43, 166, 160, .15); }
+      .pres__progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--navy-700), var(--teal-400)); transition: width .25s ease; }
+      .pres__counter { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); min-width: 46px; text-align: center; }
+      .pres__footer {
+        display: flex; align-items: center; gap: 14px; padding: 10px 18px;
+        border-top: 1px solid var(--line); background: var(--card); flex: 0 0 auto; z-index: 5;
+      }
+
+      /* ---- slide ---- */
+      .ps-slide {
+        position: absolute; inset: 0;
+        overflow-y: auto; padding: 26px clamp(18px, 6vw, 72px) 40px;
+        opacity: 0; visibility: hidden; transform: translateX(14px);
+        transition: opacity .22s ease, transform .22s ease, visibility .22s;
+      }
+      .ps-slide.is-active { opacity: 1; visibility: visible; transform: none; position: relative; }
+      .ps-slide__heading {
+        display: flex; align-items: center; gap: 12px; margin: 0 0 8px;
+        font-family: var(--font-display); font-size: clamp(22px, 3.4vw, 34px);
+        font-weight: 700; color: var(--navy-800); letter-spacing: -.01em;
+        border-bottom: 2px solid var(--teal-100); padding-bottom: 10px;
+      }
+      [data-theme="dark"] .ps-slide__heading { color: var(--teal-400); }
+      .ps-slide__heading .ps-slide__no {
+        flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+        min-width: 38px; height: 38px; border-radius: 10px;
+        background: var(--navy-700); color: #fff; font-family: var(--font-mono);
+        font-size: 14px; font-weight: 700;
+      }
+      .ps-slide__body { margin-top: 14px; }
+      .ps-slide__body h3 { font-family: var(--font-display); font-size: 18px; color: var(--ink); margin: 18px 0 8px; }
+      .ps-slide__body ul, .ps-slide__body ol { margin: 8px 0 12px 20px; }
+      .ps-slide__body li { margin-bottom: 4px; line-height: 1.7; }
+
+      .ps-slide--cover { display: flex; }
+      .ps-slide--cover .ps-slide__inner {
+        margin: auto; max-width: 780px; text-align: center; width: 100%;
+      }
+      .ps-cover__badge {
+        display: inline-block; font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em;
+        color: var(--amber-400); border: 1.5px solid var(--amber-300); border-radius: 20px;
+        padding: 5px 16px; margin-bottom: 22px;
+      }
+      .ps-cover__title {
+        font-family: var(--font-display); font-size: clamp(30px, 5vw, 52px); font-weight: 700;
+        line-height: 1.12; color: var(--ink); margin: 0 0 14px; letter-spacing: -.02em;
+      }
+      .ps-cover__sub { font-size: clamp(14px, 2vw, 18px); color: var(--ink-soft); margin: 0 0 22px; line-height: 1.6; }
+      .ps-cover__chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+      .ps-cover__hint { font-size: 12px; color: var(--ink-faint); }
+      .ps-cover__hint kbd {
+        font-family: var(--font-mono); background: var(--card); border: 1px solid var(--line-strong);
+        border-radius: 5px; padding: 1px 6px; font-size: 11px;
+      }
+
+      .ps-slide--end { display: flex; }
+      .ps-slide--end .ps-slide__inner { margin: auto; text-align: center; max-width: 640px; }
+      .ps-end__icon { font-family: var(--font-display); font-size: 48px; color: var(--amber-400); margin-bottom: 14px; }
+      .ps-end__title { font-family: var(--font-display); font-size: clamp(24px, 4vw, 38px); font-weight: 700; color: var(--ink); margin: 0 0 10px; }
+      .ps-end__text { color: var(--ink-soft); font-size: 14.5px; line-height: 1.6; margin: 0 0 24px; }
+
+      .pres__list {
+        position: absolute; top: 56px; right: 14px; z-index: 40;
+        width: min(340px, 92vw); max-height: 74vh; overflow: hidden;
+        background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+        box-shadow: var(--shadow-lg);
+      }
+      .pres__list-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+      .pres__list-body { overflow-y: auto; max-height: calc(74vh - 50px); padding: 6px; }
+      .pres__list-item {
+        display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left;
+        background: transparent; border: none; border-radius: 8px; padding: 9px 10px;
+        cursor: pointer; font-family: var(--font-body); font-size: 13px; color: var(--ink); line-height: 1.4;
+      }
+      .pres__list-item:hover, .pres__list-item.is-active { background: var(--teal-100); }
+      [data-theme="dark"] .pres__list-item:hover, [data-theme="dark"] .pres__list-item.is-active { background: rgba(43, 166, 160, .16); }
+      .pres__list-item .n { font-family: var(--font-mono); font-size: 11px; color: var(--amber-500); flex-shrink: 0; min-width: 22px; text-align: right; }
+      .pres__backdrop { position: fixed; inset: 0; z-index: 35; background: rgba(0,0,0,.25); }
+
+      @media (max-width: 640px) {
+        .pres__sub, .pres__dockey { max-width: 46vw; }
+        .pres__topbar { padding: 8px 10px; }
+        .pres__footer { padding: 8px 10px; gap: 8px; }
+        .ps-btn { padding: 6px 9px; font-size: 11.5px; }
+      }
+    </style>
+
+    <script is:inline>
+      (function () {
+        "use strict";
+        var app = document.getElementById('presApp');
+        var gate = document.getElementById('presGate');
+        var article = document.getElementById('presArticle');
+        var stage = document.getElementById('presStage');
+        var slides = [];
+        var current = 0;
+
+        // ===== gate admin =====
+        function gateInit() {
+          if (typeof window.APIAuth === 'undefined') return;
+          window.APIAuth.me(true).then(function (p) {
+            var msg = document.getElementById('presGateMsg');
+            var action = document.getElementById('presGateAction');
+            if (!p.logged_in || !p.user || p.user.role !== 'admin') {
+              msg.textContent = p.logged_in
+                ? 'Mode presentasi khusus admin/dosen. Gunakan akun admin.'
+                : 'Masuk dengan akun admin/dosen untuk membuka mode presentasi.';
+              action.href = '/login?next=' + encodeURIComponent(location.pathname);
+              action.textContent = p.logged_in ? 'Ganti ke akun admin' : 'Login Dosen';
+              return;
+            }
+            gate.hidden = true;
+            buildSlides();
+          });
+        }
+
+        // ===== bangun slide dari `<Content/>` =====
+        function buildSlides() {
+          app.hidden = false;
+          document.body.style.overflow = 'hidden';
+
+          var meta = document.getElementById('presMeta');
+          var pertemuanId = meta.getAttribute('data-pertemuan');
+          var title = meta.getAttribute('data-title');
+          var subtitle = meta.getAttribute('data-subtitle') || '';
+          var cpmk = meta.getAttribute('data-cpmk') || '';
+          var alokasi = meta.getAttribute('data-alokasi') || '';
+          var bobot = meta.getAttribute('data-bobot') || '';
+          var num = String(pertemuanId).padStart(2, '0');
+
+          // slide pembuka
+          var cover = document.createElement('section');
+          cover.className = 'ps-slide ps-slide--cover';
+          cover.innerHTML =
+            '<div class="ps-slide__inner">' +
+            '<span class="ps-cover__badge">PERTEMUAN ' + num + ' · ' + esc(cpmk || 'CPMK') + '</span>' +
+            '<h1 class="ps-cover__title">' + esc(title) + '</h1>' +
+            (subtitle ? '<p class="ps-cover__sub">' + esc(subtitle) + '</p>' : '') +
+            '<div class="ps-cover__chips">' +
+            (alokasi ? '<span class="chip">⏱ ' + esc(alokasi) + '</span>' : '') +
+            (bobot ? '<span class="chip chip--amber">BOBOT ' + esc(bobot) + '</span>' : '') +
+            '<span class="chip">S1 Informatika · UNIPI</span>' +
+            '</div>' +
+            '<p class="ps-cover__hint">Navigasi: <kbd>→</kbd> <kbd>Space</kbd> lanjut · <kbd>←</kbd> kembali · <kbd>F</kbd> layar penuh · <kbd>Esc</kbd> tutup · klik kanan-kiri slide</p>' +
+            '</div>';
+          slides.push({ el: cover, label: 'Pengantar', kind: 'cover' });
+
+          // pecah berdasarkan <h2> (bagian utama), konten sebelum h2 -> slide pengantar
+          var children = Array.prototype.slice.call(article.children);
+          var block = null; // { h2, els[] }
+          children.forEach(function (el) {
+            if (el.tagName === 'H2') {
+              if (block) flush(block);
+              block = { h2: el, els: [] };
+} else if (block) {
+            block.els.push(el);
+          } else {
+            // sebelum h2 pertama -> pindahkan ke slide pembuka
+            var inner = cover.querySelector('.ps-slide__inner');
+            inner.appendChild(el);
+          }
+          });
+          if (block) flush(block);
+
+          function flush(b) {
+            var label = b.h2.textContent.replace(/\s+/g, ' ').trim();
+            var s = document.createElement('section');
+            s.className = 'ps-slide';
+            var no = String(slides.length).padStart(2, '0');
+            var h = document.createElement('div');
+            h.className = 'ps-slide__heading';
+            h.innerHTML = '<span class="ps-slide__no">' + no + '</span>';
+            var htxt = document.createElement('span');
+            htxt.textContent = label;
+            h.appendChild(htxt);
+            s.appendChild(h);
+            var body = document.createElement('div');
+            body.className = 'ps-slide__body';
+            b.els.forEach(function (el) { body.appendChild(el); });
+            s.appendChild(body);
+            slides.push({ el: s, label: label, kind: 'content' });
+          }
+
+          // slide penutup
+          var end = document.createElement('section');
+          end.className = 'ps-slide ps-slide--end';
+          end.innerHTML =
+            '<div class="ps-slide__inner">' +
+            '<div class="ps-end__icon">✓</div>' +
+            '<h2 class="ps-end__title">Terima kasih</h2>' +
+            '<p class="ps-end__text">Demikian materi ' + esc(title) + '. Silakan lanjutkan ke bagian berikutnya atau buka halaman materi untuk latihan &amp; evaluasi.</p>' +
+            '<div class="ps-cover__chips">' +
+            '<a class="btn-sim" href="/pertemuan/' + pertemuanId + '">Buka Halaman Materi</a>' +
+            '</div>' +
+            '</div>';
+          slides.push({ el: end, label: 'Penutup', kind: 'end' });
+
+          // mount ke stage
+          slides.forEach(function (s) { stage.appendChild(s.el); });
+          article.remove();
+
+          // tombol navigasi antar slide
+          var btn = document.createElement('div');
+          btn.className = 'ps-cover__chips';
+          btn.style.marginTop = '18px';
+          btn.innerHTML = '<button class="btn-sim" id="presStart" style="background:var(--teal-400);">Mulai Presentasi →</button>';
+          cover.querySelector('.ps-slide__inner').appendChild(btn);
+          document.getElementById('presStart').addEventListener('click', function () { go(1); });
+
+          // daftar slide
+          renderList();
+          go(0);
+          bindGlobal();
+
+          // label topbar
+          document.getElementById('presDocSub').textContent = subtitle || '';
+        }
+
+        function renderList() {
+          var body = document.getElementById('presListBody');
+          body.innerHTML = '';
+          slides.forEach(function (s, i) {
+            var b = document.createElement('button');
+            b.className = 'pres__list-item';
+            b.innerHTML = '<span class="n">' + String(i).padStart(2, '0') + '</span><span>' + esc(s.label) + '</span>';
+            b.addEventListener('click', function () { go(i); closeList(); });
+            body.appendChild(b);
+          });
+        }
+
+        function go(i) {
+          if (i < 0 || i >= slides.length) return;
+          current = i;
+          slides.forEach(function (s, idx) {
+            s.el.classList.toggle('is-active', idx === current);
+          });
+          var counter = document.getElementById('presCounter');
+          counter.textContent = (current + 1) + ' / ' + slides.length;
+          document.getElementById('presProgress').style.width = ((current + 1) / slides.length * 100) + '%';
+          document.getElementById('presPrev').disabled = current === 0;
+          document.getElementById('presNext').disabled = current === slides.length - 1;
+          slides[current].el.scrollTop = 0;
+          document.querySelectorAll('.pres__list-item').forEach(function (it, idx) {
+            it.classList.toggle('is-active', idx === current);
+          });
+        }
+
+        function next() { go(current + 1); }
+        function prev() { go(current - 1); }
+
+        function openList() {
+          document.getElementById('presList').hidden = false;
+          document.getElementById('presBackdrop').hidden = false;
+        }
+        function closeList() {
+          document.getElementById('presList').hidden = true;
+          document.getElementById('presBackdrop').hidden = true;
+        }
+
+        function toggleFull() {
+          if (!document.fullscreenElement) {
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+          } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
+
+        function bindGlobal() {
+          document.getElementById('presPrev').addEventListener('click', prev);
+          document.getElementById('presNext').addEventListener('click', next);
+          document.getElementById('presListBtn').addEventListener('click', openList);
+          document.getElementById('presListClose').addEventListener('click', closeList);
+          document.getElementById('presBackdrop').addEventListener('click', closeList);
+          document.getElementById('presFullBtn').addEventListener('click', toggleFull);
+
+          var clickStart = 0;
+          stage.addEventListener('click', function (e) {
+            var list = document.getElementById('presList');
+            if (!list.hidden) return;
+            if (e.target.closest('button, a, input, select, label, .diagram-container, .ps-cover__chips')) return;
+            var now = Date.now();
+            if (now - clickStart < 300) return; // dobel-klik diabaikan
+            clickStart = now;
+            var rect = stage.getBoundingClientRect();
+            if (e.clientX > rect.left + rect.width / 2) next(); else prev();
+          });
+
+          document.addEventListener('keydown', function (e) {
+            var list = document.getElementById('presList');
+            var target = e.target;
+            var typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+            if (typing) return;
+            if (list && !list.hidden) {
+              if (e.key === 'Escape') closeList();
+              return;
+            }
+            switch (e.key) {
+              case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); next(); break;
+              case 'ArrowLeft': case 'PageUp': e.preventDefault(); prev(); break;
+              case 'Home': e.preventDefault(); go(0); break;
+              case 'End': e.preventDefault(); go(slides.length - 1); break;
+              case 'Escape': if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); else location.href = '/pertemuan/' + document.getElementById('presMeta').getAttribute('data-pertemuan'); break;
+              case 'f': case 'F': e.preventDefault(); toggleFull(); break;
+              case 'g': case 'G': list.hidden ? openList() : closeList(); break;
+            }
+          });
+        }
+
+        function esc(s) {
+          return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        document.addEventListener('DOMContentLoaded', gateInit);
+        document.addEventListener('astro:page-load', gateInit);
+      })();
+    </script>
+  </body>
+</html>

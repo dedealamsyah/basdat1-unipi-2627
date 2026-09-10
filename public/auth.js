@@ -49,8 +49,10 @@
         var d = r.data || {};
         if (d.ok && d.data && d.data.user) {
           // sukses atomik: keputusan tidak bergantung panggilan me() lanjutan
-          meCache = { logged_in: true, user: d.data.user };
-          csrfToken = "";
+          meCache = { logged_in: true, user: d.data.user, progress: d.data.progress || {} };
+          // session diregenerasi di server tetapi data sesi (termasuk CSRF) dipertahankan,
+          // jadi token lama tetap valid; muat ulang token juga bila respons login menyediakan.
+          if (d.data.csrf) csrfToken = d.data.csrf;
           window.__apiReady = true;
           return d.data;
         }

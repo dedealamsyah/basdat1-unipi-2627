@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   kelas VARCHAR(32) NOT NULL DEFAULT '',
   role ENUM('mahasiswa','admin') NOT NULL DEFAULT 'mahasiswa',
   pass_hash VARCHAR(255) NOT NULL,
+  must_change_password TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

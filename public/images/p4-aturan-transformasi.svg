@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" font-family="'Public Sans', system-ui, sans-serif">
+  <rect width="720" height="400" fill="#FFFFFF"/>
+  <text x="360" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="#0B231B" letter-spacing="1" font-family="'JetBrains Mono', monospace">ATURAN TRANSFORMASI ERD → MODEL RELASIONAL</text>
+
+  <!-- Aturan 1 -->
+  <rect x="30" y="58" width="330" height="92" rx="12" fill="#E3F2EC" stroke="#1F8A5F" stroke-width="1.5"/>
+  <text x="46" y="80" font-size="10.5" font-weight="700" fill="#14382B">ATURAN 1 · Entitas kuat → Tabel</text>
+  <text x="46" y="100" font-size="9" fill="#55637A">Semua atribut jadi kolom, PK entitas jadi PK tabel.</text>
+  <rect x="46" y="112" width="150" height="24" rx="6" fill="#FFFFFF" stroke="#1F8A5F" stroke-width="1"/>
+  <text x="121" y="128" text-anchor="middle" font-size="8.5" fill="#14382B" font-family="'JetBrains Mono', monospace">MAHASISWA(nim, nama)</text>
+  <text x="212" y="128" font-size="9" fill="#C43A2F" font-family="'JetBrains Mono', monospace">PK: nim</text>
+
+  <!-- Aturan 2 -->
+  <rect x="372" y="58" width="318" height="92" rx="12" fill="#E3F2EC" stroke="#1F8A5F" stroke-width="1.5"/>
+  <text x="388" y="80" font-size="10.5" font-weight="700" fill="#14382B">ATURAN 2 · Entitas lemah → Tabel + FK</text>
+  <text x="388" y="100" font-size="9" fill="#55637A">PK gabungan: partial key + PK entitas kuat pemilik.</text>
+  <rect x="388" y="112" width="150" height="24" rx="6" fill="#FFFFFF" stroke="#1F8A5F" stroke-width="1"/>
+  <text x="463" y="128" text-anchor="middle" font-size="8.5" fill="#14382B" font-family="'JetBrains Mono', monospace">TANGGUNGAN(nik, nama)</text>
+  <text x="554" y="128" font-size="9" fill="#C43A2F" font-family="'JetBrains Mono', monospace">PK: (nik,nama)</text>
+
+  <!-- Aturan 3 -->
+  <rect x="30" y="168" width="330" height="92" rx="12" fill="#F6EFD9" stroke="#B08D1C" stroke-width="1.5"/>
+  <text x="46" y="190" font-size="10.5" font-weight="700" fill="#7A5A12">ATURAN 3 · Relasi 1:1 → FK di salah satu sisi</text>
+  <text x="46" y="210" font-size="9" fill="#55637A">Biasanya di sisi partisipasi total; kolom diberi UNIQUE.</text>
+  <rect x="46" y="222" width="160" height="24" rx="6" fill="#FFFFFF" stroke="#B08D1C" stroke-width="1"/>
+  <text x="126" y="238" text-anchor="middle" font-size="8.5" fill="#7A5A12" font-family="'JetBrains Mono', monospace">PEMBAYARAN(id_bayar, id_order)</text>
+  <text x="212" y="238" font-size="9" fill="#C43A2F" font-family="'JetBrains Mono', monospace">FK UNIQUE</text>
+
+  <!-- Aturan 4 -->
+  <rect x="372" y="168" width="318" height="92" rx="12" fill="#F6EFD9" stroke="#B08D1C" stroke-width="1.5"/>
+  <text x="388" y="190" font-size="10.5" font-weight="700" fill="#7A5A12">ATURAN 4 · Relasi 1:N → FK di sisi banyak</text>
+  <text x="388" y="210" font-size="9" fill="#55637A">Contoh: satu DOSEN mengampu banyak MATAKULIAH.</text>
+  <rect x="388" y="222" width="160" height="24" rx="6" fill="#FFFFFF" stroke="#B08D1C" stroke-width="1"/>
+  <text x="468" y="238" text-anchor="middle" font-size="8.5" fill="#7A5A12" font-family="'JetBrains Mono', monospace">MATAKULIAH(..., nip_dosen)</text>
+  <text x="560" y="238" font-size="9" fill="#C43A2F" font-family="'JetBrains Mono', monospace">FK → DOSEN</text>
+
+  <!-- Aturan 5 -->
+  <rect x="30" y="278" width="330" height="92" rx="12" fill="#FBE9E1" stroke="#B4552D" stroke-width="1.5"/>
+  <text x="46" y="300" font-size="10.5" font-weight="700" fill="#7A1F0E">ATURAN 5 · Relasi M:N → tabel penghubung</text>
+  <text x="46" y="320" font-size="9" fill="#55637A">PK gabungan dari kedua FK; atribut relasi ditaruh sini.</text>
+  <rect x="46" y="332" width="170" height="24" rx="6" fill="#FFFFFF" stroke="#B4552D" stroke-width="1"/>
+  <text x="131" y="348" text-anchor="middle" font-size="8.5" fill="#7A1F0E" font-family="'JetBrains Mono', monospace">NILAI(nim, kode_mk, nilai)</text>
+  <text x="222" y="348" font-size="9" fill="#C43A2F" font-family="'JetBrains Mono', monospace">PK: (nim,kode_mk)</text>
+
+  <!-- Aturan 6 -->
+  <rect x="372" y="278" width="318" height="92" rx="12" fill="#FBE9E1" stroke="#B4552D" stroke-width="1.5"/>
+  <text x="388" y="300" font-size="10.5" font-weight="700" fill="#7A1F0E">ATURAN 6 · Atribut multivalued → tabel terpisah</text>
+  <text x="388" y="320" font-size="9" fill="#55637A">Tabel baru berisi FK + atribut; PK gabungan atau id.</text>
+  <rect x="388" y="332" width="170" height="24" rx="6" fill="#FFFFFF" stroke="#B4552D" stroke-width="1"/>
+  <text x="473" y="348" text-anchor="middle" font-size="8.5" fill="#7A1F0E" font-family="'JetBrains Mono', monospace">MHS_TELP(nim, no_telp)</text>
+  <text x="564" y="348" font-size="9" fill="#C43A2F" font-family="'JetBrains Mono', monospace">PK: (nim,no_telp)</text>
+</svg>

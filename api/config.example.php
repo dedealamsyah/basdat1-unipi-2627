@@ -6,20 +6,17 @@
  */
 declare(strict_types=1);
 
-const DB_HOST = 'sql308.byethost33.com';
-const DB_NAME = 'b33_42859006_basdat1';
-const DB_USER = 'b33_42859006';
-const DB_PASS = 'Basdat1!';
-
-/** Default password akun saat diimpor = NIM */
-const DO_NOT_LOG = true;
+const DB_HOST = 'your-db-host.example.com';
+const DB_NAME = 'your_db_name';
+const DB_USER = 'your_db_user';
+const DB_PASS = 'your_db_password';
 
 /** Token satu-kali untuk setup database (ubah setelah setup) */
-const SETUP_TOKEN = 'Basdat1UNIPI2026';
+const SETUP_TOKEN = 'CHANGE_ME_SETUP_TOKEN';
 
 /** Akun admin awal yang dibuat saat setup */
 const ADMIN_DEFAULT_NIM = 'admin';
-const ADMIN_DEFAULT_PASS = 'AdminUNIPI2026';
+const ADMIN_DEFAULT_PASS = 'CHANGE_ME_ADMIN_PASSWORD';
 
 function db(): PDO
 {
@@ -92,8 +89,8 @@ function login_too_many(string $username): bool
     try {
         $pdo = db();
         $pdo->prepare(
-            'DELETE FROM login_attempts WHERE attempted_at < (NOW() - INTERVAL ' . LOGIN_WINDOW_MINUTES . ' MINUTE)'
-        )->execute();
+            'DELETE FROM login_attempts WHERE attempted_at < (NOW() - INTERVAL ? MINUTE)'
+        )->execute(array(LOGIN_WINDOW_MINUTES));
         // throttle berbasis username (akurat; IP di hosting bersama tidak dapat-diandalkan)
         $st = $pdo->prepare(
             'SELECT COUNT(*) c FROM login_attempts WHERE username = ? AND ok = 0'
@@ -212,6 +209,22 @@ function manual_grades(string $nim): array
     return $out;
 }
 
+/** Persentase evaluasi gabungan (skor/total seluruh pertemuan), null bila kosong */
+function evaluasi_pct(string $nim): ?int
+{
+    try {
+        $st = db()->prepare('SELECT SUM(skor) s, SUM(total) t FROM evaluasi WHERE nim = ? AND total > 0');
+        $st->execute(array($nim));
+        $r = $st->fetch();
+        if (!$r || (int) $r['t'] <= 0) {
+            return null;
+        }
+        return (int) round(((int) $r['s'] / (int) $r['t']) * 100);
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
 /** Konversi 0-100 ke nilai huruf (skala SN-Dikti umum) */
 function grade_huruf(float $n): string
 {
@@ -226,7 +239,8 @@ function grade_huruf(float $n): string
 
 /**
  * Hitung nilai akhir dari skor kuis + nilai manual.
- * Return array { kuis_pct, pts, uas, tugas, hadir, akhir, huruf }.
+ * Komponen kuis = rata-rata persentase LATIHAN dan EVALUASI (masing-masing 50% dari 40%).
+ * Return array { kuis_latihan, kuis_evaluasi, kuis_pct, pts, uas, tugas, hadir, akhir, huruf }.
  */
 function compute_nilai(string $nim): array
 {
@@ -240,7 +254,14 @@ function compute_nilai(string $nim): array
         $qs += (int) $r['quiz_score'];
         $qt += (int) $r['quiz_total'];
     }
-    $kuisPct = $qt > 0 ? round(($qs / $qt) * 100) : null;
+    $latihanPct = $qt > 0 ? round(($qs / $qt) * 100) : null;
+    $evaluasiPct = evaluasi_pct($nim);
+
+    if ($latihanPct !== null && $evaluasiPct !== null) {
+        $kuisPct = (int) round(($latihanPct + $evaluasiPct) / 2);
+    } else {
+        $kuisPct = $latihanPct !== null ? $latihanPct : $evaluasiPct;
+    }
 
     $g = manual_grades($nim);
     $pts = $g['pts'] ?? null;
@@ -255,6 +276,8 @@ function compute_nilai(string $nim): array
     }
 
     return array(
+        'kuis_latihan' => $latihanPct,
+        'kuis_evaluasi' => $evaluasiPct,
         'kuis_pct' => $kuisPct,
         'pts' => $pts,
         'uas' => $uas,
