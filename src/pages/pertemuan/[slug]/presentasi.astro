@@ -54,6 +54,16 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
       </div>
     </div>
 
+    <!-- Diagnostik: tangkap semua error JS + tampilkan status di gate -->
+    <script is:inline>
+      (function() {
+        window.onerror = function(msg, _src, line) {
+          var el = document.getElementById('presGateMsg');
+          if (el) el.textContent = 'ERR: ' + msg + ' (line ' + line + ')';
+        };
+      })();
+    </script>
+
     <!-- Layar Presentasi -->
     <div class="pres" id="presApp" hidden>
       <header class="pres__topbar">
@@ -273,15 +283,32 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
         }
 
         function gateInit() {
-          // APIAuth (auth.js) bisa terlambat termuat (terhambat caching/challenge
-          // hosting) -> polling sebentar sebelum menyerah.
+          var _d = document.getElementById('presGateMsg');
+
+          // Mode server (presentasi.php): keputusan akses dari server, tanpa me()
+          if (window.__PRES_GATE === 'ok') {
+            gate.hidden = true;
+            buildSlides();
+            return;
+          }
+          if (window.__PRES_GATE === 'no') {
+            gateFail(
+              'Mode presentasi khusus admin/dosen. Masuk dengan akun admin untuk membuka.',
+              'Login Dosen'
+            );
+            var act = document.getElementById('presGateAction');
+            if (act && window.__PRES_NEXT) act.href = window.__PRES_NEXT;
+            return;
+          }
+
+          if (_d) _d.textContent = '…';
           var poll = 0;
           var attempt = 0;
           var MAX_ATTEMPT = 2;
 
           function check() {
             if (typeof window.APIAuth === 'undefined') {
-              if (++poll <= 100) { setTimeout(check, 150); return; } // ~15 detik
+              if (++poll <= 100) { setTimeout(check, 150); return; }
               gateFail('Modul akses tidak termuat. Periksa koneksi lalu coba lagi.', 'Coba lagi');
               return;
             }

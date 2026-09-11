@@ -991,7 +991,7 @@ import Sidebar from '../components/Sidebar.astro';
           (p.subtitle ? '<div class="mengajar__sub">' + esc(p.subtitle) + '</div>' : '') +
           (metaBits.length ? '<div class="mengajar__sections">' + metaBits.join(' · ') + '</div>' : '<div class="mengajar__sections">&nbsp;</div>') +
           '<div class="mengajar__actions">' +
-          '<a class="btn-sim" style="background:var(--navy-700); flex:1; text-align:center; text-decoration:none;" href="/pertemuan/' + p.id + '/presentasi">▶ Presentasikan</a>' +
+          '<a class="btn-sim" style="background:var(--navy-700); flex:1; text-align:center; text-decoration:none;" href="/presentasi.php?p=' + p.id + '">▶ Presentasikan</a>' +
           '<a class="btn-sim" style="background:var(--green-600); flex:1; text-align:center; text-decoration:none;" href="/pertemuan/' + p.id + '">Buka Materi</a>' +
           '</div>';
         grid.appendChild(card);
