@@ -50,7 +50,7 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
         <p class="pres-gate__msg" id="presGateMsg">Memeriksa akses…</p>
         <a class="btn-sim" id="presGateAction" href={loginNextHref}>Login Dosen</a>
         <a class="pres-gate__back" href={ptmUrl}>← Kembali ke materi</a>
-        <p class="pres-gate__ver">build 2026.09.2</p>
+        <p class="pres-gate__ver">build 2026.09.3</p>
       </div>
     </div>
 
@@ -285,7 +285,13 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
         function gateInit() {
           var _d = document.getElementById('presGateMsg');
 
-          // Mode server (presentasi.php): keputusan akses dari server, tanpa me()
+          // Mode server-rendered (presentasi.php): slide sudah di HTML.
+          if (window.__PRES_GATE === 'server') {
+            gate.hidden = true;
+            bindServerNav();
+            return;
+          }
+          // Mode server: admin (juga via presentasi.php, tanpa render server)
           if (window.__PRES_GATE === 'ok') {
             gate.hidden = true;
             buildSlides();
@@ -347,6 +353,27 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
           }
 
           check();
+        }
+
+        // ===== navigasi tambahan untuk slide server-rendered (presentasi.php) =====
+        // Aman bila JS jalan: cukup meneruskan tombol keyboard ke tautan prev/next.
+        function bindServerNav() {
+          try {
+            var prevLink = document.getElementById('presPrev');
+            var nextLink = document.getElementById('presNext');
+            document.addEventListener('keydown', function (e) {
+              var target = e.target;
+              var typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+              if (typing) return;
+              if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+                if (nextLink && nextLink.href) { e.preventDefault(); location.href = nextLink.href; }
+              } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                if (prevLink && prevLink.href) { e.preventDefault(); location.href = prevLink.href; }
+              } else if (e.key === 'f' || e.key === 'F') {
+                if (toggleFull) toggleFull();
+              }
+            });
+          } catch (err) {}
         }
 
         // ===== bangun slide dari `<Content/>` =====
