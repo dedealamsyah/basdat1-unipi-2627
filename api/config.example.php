@@ -48,10 +48,31 @@ function json_in(): array
     return is_array($data) ? $data : array();
 }
 
+/** Deteksi HTTPS, termasuk saat di belakang proxy (Cloudflare). */
+function is_https(): bool
+{
+    if (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off') {
+        return true;
+    }
+    if (strcasecmp((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''), 'https') === 0) {
+        return true;
+    }
+    // header lama Cloudflare: {"scheme":"https"}
+    $cf = (string) ($_SERVER['HTTP_CF_VISITOR'] ?? '');
+    if ($cf !== '' && strpos($cf, 'https') !== false) {
+        return true;
+    }
+    return false;
+}
+
 function start_session(): void
 {
     if (session_status() === PHP_SESSION_NONE) {
-        session_set_cookie_params(array('httponly' => true, 'samesite' => 'Lax'));
+        session_set_cookie_params(array(
+            'httponly' => true,
+            'samesite' => 'Lax',
+            'secure' => is_https(), // aktif otomatis saat situs diakses via HTTPS
+        ));
         session_start();
     }
     if (empty($_SESSION['csrf'])) {

@@ -134,7 +134,6 @@
 
     function pinAt(line) {
       var r = line.getBoundingClientRect();
-      var rect = container.getBoundingClientRect();
       moveTip({
         clientX: r.left + (r.right - r.left) / 2,
         clientY: r.top + (r.bottom - r.top) / 2

@@ -546,7 +546,7 @@ import Sidebar from '../components/Sidebar.astro';
     }
     loadCsrf();
 
-    var api = function (path, opts) {
+    var api = async function (path, opts) {
       opts = opts || {};
       opts.credentials = 'same-origin';
       opts.cache = 'no-store';
@@ -557,6 +557,11 @@ import Sidebar from '../components/Sidebar.astro';
       }
       if (method !== 'GET' && method !== 'HEAD' && csrfToken) {
         opts.headers = Object.assign({}, opts.headers || {}, { 'X-CSRF-Token': csrfToken });
+      }
+      if (typeof AbortController !== 'undefined' && !opts.signal) {
+        var ctrl = new AbortController();
+        setTimeout(function () { ctrl.abort(); }, 15000);
+        opts.signal = ctrl.signal;
       }
       return fetch(path, opts).then(function (r) { return r.json(); });
     };
@@ -974,7 +979,6 @@ import Sidebar from '../components/Sidebar.astro';
         var badge = p.aktif
           ? '<span class="chip chip--sm" style="background:var(--green-600); color:#fff;">AKTIF</span>'
           : '<span class="chip chip--sm" style="background:var(--ink-faint);">SEMBUNYI</span>';
-        var sectionCount = p.sections != null ? p.sections : null;
         var metaBits = [];
         if (p.alokasi) metaBits.push('⏱ ' + esc(p.alokasi));
         if (p.bobot) metaBits.push('BOBOT ' + esc(p.bobot));

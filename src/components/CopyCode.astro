@@ -2,6 +2,8 @@
 ---
 
 <script is:inline>
+  // @ts-nocheck - util clipboard; fallback tombol salin lama (execCommand) sengaja dipakai
+  //                pada konteks non-HTTPS di mana navigator.clipboard tidak tersedia.
   function addCopyCodeButtons() {
     document.querySelectorAll("pre").forEach(function(pre) {
       if (pre.closest(".code-block-wrapper")) return;

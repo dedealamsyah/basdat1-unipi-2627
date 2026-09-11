@@ -189,20 +189,22 @@ const { pid, data } = Astro.props;
     var preview = false;   // mode admin: pratinjau tanpa penyimpanan
 
     var _csrf = null;
-    function ensureCsrf() {
-      if (_csrf) return Promise.resolve(_csrf);
-      return fetch('/api/me.php', { credentials: 'same-origin', cache: 'no-store' })
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          _csrf = (d && d.data && d.data.csrf) || '';
-          return _csrf;
-        }).catch(function () { return ''; });
+    async function ensureCsrf() {
+      if (_csrf) return _csrf;
+      try {
+        var r = await fetch('/api/me.php', { credentials: 'same-origin', cache: 'no-store' });
+        var d = await r.json();
+        _csrf = (d && d.data && d.data.csrf) || '';
+      } catch (e) {
+        _csrf = '';
+      }
+      return _csrf;
     }
 
-    function api(path, opts) {
+    async function api(path, opts) {
       opts = opts || {};
       var method = (opts.method || 'GET').toUpperCase();
-      var doReq = function () {
+      var doReq = async function () {
         var o = { method: opts.method, credentials: 'same-origin', cache: 'no-store' };
         o.headers = Object.assign({}, opts.headers || {});
         if (opts.body && typeof opts.body !== 'string') {
@@ -212,22 +214,26 @@ const { pid, data } = Astro.props;
           o.body = opts.body;
         }
         if (method !== 'GET' && _csrf) o.headers['X-CSRF-Token'] = _csrf;
-        return fetch(path, o).then(function (r) {
-          return r.json().then(function (j) {
-            return j && typeof j === 'object' ? j : { ok: false, error: 'Respon tidak valid.' };
-          }).catch(function () {
-            return { ok: false, error: 'Respon tidak valid.', status: r.status };
-          });
-        });
+        if (typeof AbortController !== 'undefined' && !o.signal) {
+          var ctrl = new AbortController();
+          setTimeout(function () { ctrl.abort(); }, 15000);
+          o.signal = ctrl.signal;
+        }
+        try {
+          var res = await fetch(path, o);
+          var j = await res.json();
+          return j && typeof j === 'object' ? j : { ok: false, error: 'Respon tidak valid.' };
+        } catch (err) {
+          return { ok: false, error: 'Respon tidak valid.', status: res && res.status };
+        }
       };
-      if (method !== 'GET') return ensureCsrf().then(doReq);
+      if (method !== 'GET') await ensureCsrf();
       return doReq();
     }
 
-    function me() {
-      return api('/api/me.php').then(function (d) {
-        return d.data || {};
-      });
+    async function me() {
+      var d = await api('/api/me.php');
+      return d.data || {};
     }
 
     function esc(s) {

@@ -62,6 +62,7 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 | Saldo data | ⚠️ | `active_pertemuan()` **hardcoded** fallback tidak sinkron dgn tabel `pertemuan` bila admin menonaktifkan/reorder |
 | Nilai otomatis | ✅ | Kuis gabung latihan + evaluasi; bobot per pertemuan tetap 1/1 (belum per-bobot) |
 | Ganti password | ✅ | Wajib ganti saat login pertama (halaman `/ganti-password`) |
+| **Gate presentasi (v2.2.1)** | ✅ | `gateInit()` timeout + retry + tombol "Coba lagi"; SW tidak lagi meng-cache `/api/*`/challenge HTML (perbaikan "stuck" `Memeriksa akses…`) |
 
 ### Bug / temuan
 1. ~~Like-in loop aturan kuis~~ — ✅ sudah berdasarkan SEMUA kuis latihan benar.
@@ -96,7 +97,7 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 
 | Artikel | Status | Detail |
 |---|---|---|
-| Transport | 🔴 **KRITIS** | Situs **HTTP murni**; password terkirim plaintext. Larang deploy produksi tanpa HTTPS |
+| Transport | 🔴 **KRITIS** | Situs **HTTP murni**; password terkirim plaintext. Larang deploy produksi tanpa HTTPS. **Kode siap (v2.2.1):** helper `is_https()` + flag `Secure` otomatis saat HTTPS (termasuk via proxy Cloudflare). Tersisa: pasang Cloudflare / HTTPS di hosting. |
 | Password default | 🟢 Selesai (v2.0.1) | `must_change_password=1` → wajib ganti saat login; akun dummy `mhs_dummy` sengaja tanpa paksa-ganti |
 | Brute-force login | 🟢 Selesai (v2.0.1) | Tabel `login_attempts`, 10× gagal/15 menit → 429; delay 400ms |
 | CSRF | 🟢 Selesai (v2.0.1) | Token per sesi via header `X-CSRF-Token` + `require_csrf()` di semua endpoint state |
@@ -114,7 +115,7 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 ## 5. Rekomendasi Perbaikan (prioritas)
 
 ### 🔴 P1 — Keamanan (segera)
-1. **Aktifkan HTTPS** — melalui Cloudflare (gratis) di depan Byethost, atau pindah hosting (Vercel/Netlify + Supabase). Setelah HTTPS: tambah flag `Secure` pada session cookie. *(satu-satunya item P1 yang tersisa)*
+1. **Aktifkan HTTPS** — melalui Cloudflare (gratis) di depan Byethost, atau pindah hosting (Vercel/Netlify + Supabase). Setelah HTTPS: tambah flag `Secure` pada session cookie. *(kode siap v2.2.1: `is_https()` + Secure otomatis; langkah terakhir = aktivasi di hosting/Cloudflare)*
 2. **Force-change password** — ✅ selesai (v2.0.1): `must_change_password`, halaman `/ganti-password`. Ide lanjutan: nonaktifkan akun yang belum ganti password dalam X hari.
 3. **Rate limiting login** — ✅ selesai (v2.0.1): 10×/15 menit + delay 400ms.
 4. **CSRF token** — ✅ selesai (v2.0.1), termasuk `evaluasi.php` (v2.1).
@@ -143,7 +144,7 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 ## 6. Titik Ukur (Checklist)
 
 ```
-[x] HTTPS termaktif (tidak lagi HTTP murni) — belum; satu-satunya item kritis tersisa
+[~] HTTPS termaktif (tidak lagi HTTP murni) — kode siap (flag Secure otomatis); aktivasi Cloudflare/hosting tersisa
 [x] Password default sudah tidak valid / force-change aktif — selesai v2.0.1
 [x] Rate limit login berfungsi (uji brute-force) — selesai v2.0.1
 [~] Progresi sinkron dengan menu pertemuan yang diedit — sebagian (DB aktif), urutan frontend menyusul

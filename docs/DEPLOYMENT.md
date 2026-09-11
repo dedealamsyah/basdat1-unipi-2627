@@ -138,6 +138,38 @@ export default defineConfig({
 
 ---
 
+## HTTPS: Cloudflare di depan hosting HTTP (Rekomendasi)
+
+> Item kritis dari [Audit](AUDIT.md): tanpa HTTPS, password terkirim plaintext dan
+> cookie sesi tidak bisa diberi flag `Secure`. Hosting PHP (Byethost) hanya menyediakan
+> HTTP, jadi pasang **Cloudflare proxy** di depan domain agar pengunjung selalu lewat HTTPS.
+
+### Langkah
+
+1. Tambahkan domain di Cloudflare (rutin DNS, gratis) dan delegasikan nameserver.
+2. Pada halaman **SSL/TLS**, set **Flexible** atau **Full**:
+   - **Flexible**: koneksi pengunjung → Cloudflare = HTTPS; Cloudflare → origin = HTTP.
+     Cukup untuk membuat cookie `Secure` aktif (dikenali via header `X-Forwarded-Proto`).
+3. **Edge Certificates** → aktifkan **Always Use HTTPS** agar semua permintaan HTTP
+   pengunjung di-redirect ke HTTPS.
+4. Verifikasi di browser: padlock aktif, tidak ada peringatan mixed content
+   (PWA/service worker tidak jalan di HTTP dan hanya terdaftar saat HTTPS).
+
+### Perilaku di sisi kode
+
+- `api/config.php` (helper `is_https()`) otomatis mendeteksi HTTPS:
+  - `$_SERVER['HTTPS']` (HTTPS langsung), atau
+  - header proxy Cloudflare `X-Forwarded-Proto: https` / `CF-Visitor`.
+- Cookie sesi diberi flag `Secure` **hanya** saat `is_https()` bernilai `true`,
+  sehingga saat HTTP murni pun login tetap berfungsi (tanpa flag tersebut).
+
+### Alternatif (hosting baru)
+
+- Hosting statis ber-HTTPS (Vercel/Netlify/Cloudflare Pages) + Supabase untuk API –
+  membuat backend juga HTTPS-native.
+
+---
+
 ## Server Lokal (Testing)
 
 ### Python

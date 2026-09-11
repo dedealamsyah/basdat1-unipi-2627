@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.2.1] - 2026-09-11
+
+### Fixed — Mode Presentasi Dosen "stuck" di "Memeriksa akses…"
+
+- **Akar masalah (infrastruktur)**: hosting Byethost mengirim **halaman challenge anti-bot
+  (HTML)** untuk `/auth.js` & `/api/me.php` bila cookie `__test` belum terverifikasi.
+  Karena service worker memakai strategi cache-first untuk SEMUA GET non-navigasi, challenge
+  HTML bisa tersimpan sebagai isi `auth.js`/`me.php` dan disajikan ulang → `window.APIAuth`
+  tak pernah ada / `me()` bergantung selamanya → gate presentasi macet.
+- **`public/service-worker.js`**:
+  - `/api/*` dan seluruh request data (`destination === ""`) kini **network-only** (tidak
+    pernah di-cache) → respons sesi/nilai selalu segar.
+  - Hanya meng-cache aset yang memang aset (bukan `text/html`), sehingga HTML challenge
+    hosting tidak pernah mencemari cache. Fungsi `cacheable()`.
+  - Cache name di-bump ke **`basdat-unipi-v3`** → cache lama (berpotensi tercemar) dibersihkan
+    saat activate.
+- **`src/pages/pertemuan/[slug]/presentasi.astro`** — `gateInit()` kini anti-stuck:
+  - Polling menunggu `window.APIAuth` termuat (~6 detik) sebelum menampilkan error.
+  - Timeout 15 detik pada `me()`; bila melewati batas atau gagal, gate menampilkan pesan
+    jelas + tombol "Coba lagi" (reload) alih-alih menggantung di "Memeriksa akses…".
+- **`public/auth.js`, `src/pages/admin.astro`, `src/components/Evaluasi.astro`** — `fetch`
+  kini dibatasi `AbortController` 15 detik sehingga API yang lambat/kemacetan jaringan tidak
+  meninggalkan UI menggantung selamanya (bila salah, promise mereject → `.catch` pemanggil).
+
+### Changed — Dokumentasi & higienitas kode
+
+- **`README.md`**: boilerplate Astro starter diganti ringkasan proyek (fitur, struktur,
+  perintah, tautan ke `docs/`).
+- **CI/CD**: `.github/workflows/ci.yml` (npm ci → astro check → astro build → artifact).
+- **Keamanan P1 (persiapan)**: helper `is_https()` + flag `Secure` otomatis pada cookie sesi
+  (termasuk via proxy Cloudflare) di `api/config.php` & `api/config.example.php`; panduan
+  Cloudflare di `docs/DEPLOYMENT.md`.
+- **TypeScript bersih: 38 hint → 0** (`astro check`): `z` dari `astro/zod`, `async`/`await`
+  di `auth.js`/`Evaluasi.astro`/`admin.astro`, hapus variabel tak terpakai
+  (`erd-interactive.js`, `service-worker.js`, `presentasi.astro`, `admin.astro`), pengecualian
+  folder legacy `backup/` di `tsconfig.json`.
+
+---
+
 ## [2.2.0] - 2026-09-10
 
 ### Added — Mode Presentasi Dosen

@@ -9,7 +9,7 @@
   var meCache = null;
   var csrfToken = null;
 
-  function api(path, opts) {
+  async function api(path, opts) {
     opts = opts || {};
     opts.credentials = "same-origin";
     opts.cache = "no-store";
@@ -23,16 +23,23 @@
     if (method !== "GET" && method !== "HEAD" && csrfToken) {
       opts.headers = Object.assign({}, opts.headers || {}, { "X-CSRF-Token": csrfToken });
     }
-    return fetch(path, opts).then(function (res) {
-      return res.json().then(function (data) {
+    // Batasi waktu permintaan agar tidak menggantung (mis. server lambat/challenge hosting)
+    if (typeof AbortController !== "undefined" && !opts.signal) {
+      var ctrl = new AbortController();
+      setTimeout(function () { ctrl.abort(); }, 15000);
+      opts.signal = ctrl.signal;
+    }
+    return fetch(path, opts).then(async function (res) {
+      try {
+        var data = await res.json();
         return { status: res.status, data: data || {} };
-      }).catch(function () {
+      } catch (err) {
         return { status: res.status, data: { ok: false, error: "Respon tidak valid." } };
-      });
+      }
     });
   }
 
-  function me(force) {
+  async function me(force) {
     if (meCache && !force) return Promise.resolve(meCache);
     return api("/api/me.php").then(function (r) {
       meCache = r.data.data || {};
@@ -43,7 +50,7 @@
     });
   }
 
-  function login(username, password) {
+  async function login(username, password) {
     return api("/api/login.php", { method: "POST", body: { username: username, password: password } })
       .then(function (r) {
         var d = r.data || {};
@@ -61,7 +68,7 @@
   }
 
   /* True bila API merespons JSON valid (bukan challenge anti-bot Byethost) */
-  function readyCheck() {
+  async function readyCheck() {
     return me(false).then(function (p) {
       var ok = !!(p && typeof p === "object" && "logged_in" in p);
       if (ok) window.__apiReady = true;
@@ -69,7 +76,7 @@
     }).catch(function () { return false; });
   }
 
-  function logout() {
+  async function logout() {
     return api("/api/logout.php").then(function () {
       meCache = null;
       csrfToken = null;
@@ -77,7 +84,7 @@
     });
   }
 
-  function changePassword(oldPassword, newPassword) {
+  async function changePassword(oldPassword, newPassword) {
     return api("/api/change_password.php", {
       method: "POST",
       body: { old_password: oldPassword, new_password: newPassword }
@@ -87,7 +94,7 @@
     });
   }
 
-  function complete(pertemuanId, score, total) {
+  async function complete(pertemuanId, score, total) {
     return api("/api/complete.php", {
       method: "POST",
       body: { pertemuan_id: pertemuanId, quiz_score: score || 1, quiz_total: total || 1 }
@@ -131,7 +138,7 @@
 
   /* ---------------- UI update ---------------- */
 
-  function refresh() {
+  async function refresh() {
     return me(true).then(function (p) {
       refreshAccountBox(p);
       refreshProgressBar(p);
