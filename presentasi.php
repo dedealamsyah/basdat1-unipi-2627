@@ -146,7 +146,11 @@ if ($isAdmin) {
 
     // Tampilkan #presApp (buang hidden) & sembunyikan gate (server decide)
     $html = str_replace('id="presApp" hidden', 'id="presApp"', $html);
-    $html = str_replace('<div class="pres-gate" id="presGate">', '<div class="pres-gate" id="presGate" hidden>', $html);
+    $html = str_replace(
+        '<div class="pres-gate" id="presGate">',
+        '<div class="pres-gate" id="presGate" hidden style="display:none">',
+        $html
+    );
 
     // Suntik keputusan akses + sembunyikan tombol daftar slide (server mode)
     $inject = '<script>window.__PRES_GATE="server";</script>'

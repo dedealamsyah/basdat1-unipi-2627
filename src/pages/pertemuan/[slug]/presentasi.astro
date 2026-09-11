@@ -120,6 +120,9 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
         display: flex; align-items: center; justify-content: center;
         background: var(--paper); padding: 24px;
       }
+      /* Atribut hidden WAJIB menang atas display:flex di atas (dikalahkan
+         UA stylesheet [hidden]{display:none} bila tidak dipertegas). */
+      .pres-gate[hidden], .pres[hidden] { display: none !important; }
       .pres-gate__box {
         background: var(--card); border: 1px solid var(--line);
         box-shadow: var(--shadow-md); border-radius: var(--radius-lg);
