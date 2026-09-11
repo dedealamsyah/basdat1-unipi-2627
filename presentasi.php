@@ -91,13 +91,13 @@ if ($isAdmin) {
     // Deteksi hook/pemantik: ambil pertanyaan kuis pertama + kunci jawabannya
     $hook = null;
     if (preg_match(
-        '~<div class="interactive-card" data-quiz="[^"]+">\s*(<p>.*?</p>)(<button[^>]*data-correct="true"[^>]*>(.*?)</button>)~is',
+        '~<div class="interactive-card" data-quiz="[^"]+">\s*(<p>.*?</p>).*?<button\b[^>]*data-correct="true"[^>]*>(.*?)</button>~is',
         $content,
         $hm
     )) {
         $hook = array(
             'question' => trim(strip_tags($hm[1])),
-            'answer'   => trim(strip_tags($hm[3])),
+            'answer'   => trim(strip_tags($hm[2])),
         );
     }
 
