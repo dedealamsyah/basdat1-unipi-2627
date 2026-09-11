@@ -2,50 +2,55 @@
 
 - **Alamat login:** http://basdat1.byethost33.com/login
 - **Kelas:** IF3A · Semester 3 · Tahun Akademik 2026/2027
-- **Password awal:** NIM masing-masing (disarankan diganti setelah login pertama)
+- **Username:** nama depan (huruf kecil) + nomor urut
+- **Password awal (semua):** `if3unipi`
 
-| No | NIM | Nama | Kelas | Password Awal |
-|---:|-----|------|-------|---------------|
-| 1 | 26105001 | AHMAD AFANDI YUSUP | IF3A | `26105001` |
-| 2 | 26105002 | AI SITI NURHASANAH | IF3A | `26105002` |
-| 3 | 26105003 | AISYA YULIANTI | IF3A | `26105003` |
-| 4 | 26105004 | ALDI | IF3A | `26105004` |
-| 5 | 26105005 | ALIA SITI SAMSUL TEJA | IF3A | `26105005` |
-| 6 | 26105006 | ALKI SOLEHUDIN | IF3A | `26105006` |
-| 7 | 26105007 | ALVI SAPUTRA | IF3A | `26105007` |
-| 8 | 26105008 | ALWI SIHAB | IF3A | `26105008` |
-| 9 | 26105009 | ANJAR RIJALDI | IF3A | `26105009` |
-| 10 | 26105010 | ARDI | IF3A | `26105010` |
-| 11 | 26105011 | CUCU MUHAMAD RAMDHANI | IF3A | `26105011` |
-| 12 | 26105012 | CUCU SETIAWAN | IF3A | `26105012` |
-| 13 | 26105013 | DARIS MUHAMAD RIDWAN | IF3A | `26105013` |
-| 14 | 26105014 | DAVA PUTRA AGUSTIANSYAH | IF3A | `26105014` |
-| 15 | 26105015 | DEDE ROHIMAT | IF3A | `26105015` |
-| 16 | 26105016 | ELISA NURFAIDA | IF3A | `26105016` |
-| 17 | 26105017 | FAHRI SAEPUL MILLAH | IF3A | `26105017` |
-| 18 | 26105018 | FAZA SYAKUR | IF3A | `26105018` |
-| 19 | 26105019 | GINA RAISA RAHAYU | IF3A | `26105019` |
-| 20 | 26105020 | GUNA ARDIANSYAH | IF3A | `26105020` |
-| 21 | 26105021 | HANINA NURUL WALIDAAINY | IF3A | `26105021` |
-| 22 | 26105022 | HENDANI OKTO FAUZAN RAMDANI | IF3A | `26105022` |
-| 23 | 26105023 | ILYAS | IF3A | `26105023` |
-| 24 | 26105024 | IRMA YULIANA | IF3A | `26105024` |
-| 25 | 26105025 | LILIS NUR KHOLISOH | IF3A | `26105025` |
-| 26 | 26105026 | M. ARYA ARGATHA PUTRA | IF3A | `26105026` |
-| 27 | 26105027 | MUHAMMAD RAFLI NASRUL HAQ | IF3A | `26105027` |
-| 28 | 26105028 | MUHAMMAD RIZKI | IF3A | `26105028` |
-| 29 | 26105029 | MUHAMMAD SAIDINA ALI | IF3A | `26105029` |
-| 30 | 26105030 | MUHAMMAD SAUQI | IF3A | `26105030` |
-| 31 | 26105031 | MUHAMMAD SYAHRUL | IF3A | `26105031` |
-| 32 | 26105032 | NURUL AGNIA | IF3A | `26105032` |
-| 33 | 26105033 | RIFA NURINAYAH | IF3A | `26105033` |
-| 34 | 26105034 | SAMSUL TEJA HERMANSAH | IF3A | `26105034` |
-| 35 | 26105035 | SANDI NUR ALAM | IF3A | `26105035` |
-| 36 | 26105036 | SUWANDIKA | IF3A | `26105036` |
-| 37 | 26105037 | TRI RAHAYU | IF3A | `26105037` |
-| 38 | 26105038 | WAFA NURAZIZAH | IF3A | `26105038` |
-| 39 | 26105039 | WILDAN RIZKI N.R | IF3A | `26105039` |
-| 40 | 26105040 | YUSUF ARDABILI | IF3A | `26105040` |
+| No | Username | Nama | Kelas | Password Awal |
+|---:|----------|------|-------|---------------|
+| 1 | `ahmad1` | Ahmad Afandi Yusup | IF3A | `if3unipi` |
+| 2 | `ai2` | Ai Siti Nurhasanah | IF3A | `if3unipi` |
+| 3 | `aisya3` | Aisya Yulianti | IF3A | `if3unipi` |
+| 4 | `aldi4` | Aldi | IF3A | `if3unipi` |
+| 5 | `alia5` | Alia Siti Samsul Teja | IF3A | `if3unipi` |
+| 6 | `alki6` | Alki Solehudin | IF3A | `if3unipi` |
+| 7 | `alvi7` | Alvi Saputra | IF3A | `if3unipi` |
+| 8 | `alwi8` | Alwi Sihab | IF3A | `if3unipi` |
+| 9 | `anjar9` | Anjar Rijaldi | IF3A | `if3unipi` |
+| 10 | `ardi10` | Ardi | IF3A | `if3unipi` |
+| 11 | `cucu11` | Cucu Muhamad Ramdhani | IF3A | `if3unipi` |
+| 12 | `cucu12` | Cucu Setiawan | IF3A | `if3unipi` |
+| 13 | `daris13` | Daris Muhamad Ridwan | IF3A | `if3unipi` |
+| 14 | `dava14` | Dava Putra Agustiansyah | IF3A | `if3unipi` |
+| 15 | `dede15` | Dede Rohimat | IF3A | `if3unipi` |
+| 16 | `elisa16` | Elisa Nurfaida | IF3A | `if3unipi` |
+| 17 | `fahri17` | Fahri Saepul Millah | IF3A | `if3unipi` |
+| 18 | `faza18` | Faza Syakur | IF3A | `if3unipi` |
+| 19 | `gina19` | Gina Raisa Rahayu | IF3A | `if3unipi` |
+| 20 | `guna20` | Guna Ardiansyah | IF3A | `if3unipi` |
+| 21 | `hanina21` | Hanina Nurul Walidaainy | IF3A | `if3unipi` |
+| 22 | `hendani22` | Hendani Okto Fauzan Ramdani | IF3A | `if3unipi` |
+| 23 | `ilyas23` | Ilyas | IF3A | `if3unipi` |
+| 24 | `irma24` | Irma Yuliana | IF3A | `if3unipi` |
+| 25 | `lilis25` | Lilis Nur Kholisoh | IF3A | `if3unipi` |
+| 26 | `arya26` | M. Arya Argatha Putra | IF3A | `if3unipi` |
+| 27 | `muhammad27` | Muhammad Rafli Nasrul Haq | IF3A | `if3unipi` |
+| 28 | `muhammad28` | Muhammad Rizki | IF3A | `if3unipi` |
+| 29 | `muhammad29` | Muhammad Saidina Ali | IF3A | `if3unipi` |
+| 30 | `muhammad30` | Muhammad Sauqi | IF3A | `if3unipi` |
+| 31 | `muhammad31` | Muhammad Syahrul | IF3A | `if3unipi` |
+| 32 | `nurul32` | Nurul Agnia | IF3A | `if3unipi` |
+| 33 | `rifa33` | Rifa Nurinayah | IF3A | `if3unipi` |
+| 34 | `samsul34` | Samsul Teja Hermansah | IF3A | `if3unipi` |
+| 35 | `sandi35` | Sandi Nur Alam | IF3A | `if3unipi` |
+| 36 | `suwandika36` | Suwandika | IF3A | `if3unipi` |
+| 37 | `tri37` | Tri Rahayu | IF3A | `if3unipi` |
+| 38 | `wafa38` | Wafa Nurazizah | IF3A | `if3unipi` |
+| 39 | `wildan39` | Wildan Rizki N.R | IF3A | `if3unipi` |
+| 40 | `yusuf40` | Yusuf Ardabili | IF3A | `if3unipi` |
+
+> Akun uji lain: `mhs_dummy` (password ikut disamakan menjadi `if3unipi`).
+> NIM asli (26105001–26105040) telah dimigrasikan ke username di atas beserta
+> progres/nilai/evaluasi bila ada.
 
 ---
 
