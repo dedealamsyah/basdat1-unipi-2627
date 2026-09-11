@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # konfigurasi API berisi kredensial (jangan di-commit)
 api/config.php
+
+# kredensial hosting (jangan di-commit)
+docs/HOSTING-RAHASIA.md
