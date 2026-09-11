@@ -88,13 +88,38 @@ if ($isAdmin) {
         $sections[] = $cur;
     }
 
-    $s = (int) ($_GET['s'] ?? 0);
-    if ($s < 0 || $s >= count($sections) + 2) {
-        $s = 0;
+    // Deteksi hook/pemantik: ambil pertanyaan kuis pertama + kunci jawabannya
+    $hook = null;
+    if (preg_match(
+        '~<div class="interactive-card" data-quiz="[^"]+">\s*(<p>.*?</p>)(<button[^>]*data-correct="true"[^>]*>(.*?)</button>)~is',
+        $content,
+        $hm
+    )) {
+        $hook = array(
+            'question' => trim(strip_tags($hm[1])),
+            'answer'   => trim(strip_tags($hm[3])),
+        );
     }
-    $total = count($sections) + 2; // + cover + penutup
 
     $num = str_pad((string) $ptId, 2, '0', STR_PAD_LEFT);
+
+    // Layout indeks slide
+    $hookIdx = null;
+    $nextIdx = 1; // 0 = cover
+    if ($hook !== null) {
+        $hookIdx = $nextIdx;
+        $nextIdx++;
+    }
+    $startSections = $nextIdx;
+    $summaryIdx = $startSections + count($sections);
+    $endIdx = $summaryIdx + 1;
+    $total = $endIdx + 1;
+
+    $s = (int) ($_GET['s'] ?? 0);
+    if ($s < 0 || $s >= $total) {
+        $s = 0;
+    }
+    $rev = (($_GET['r'] ?? '') === '1');
 
     // --- build all slides ---
     $slides = array();
@@ -119,18 +144,49 @@ if ($isAdmin) {
         . '<p class="ps-cover__chips" style="margin-top:18px;"><a class="btn-sim" href="/presentasi.php?p=' . $id . '&amp;s=1" style="background:var(--teal-400); text-decoration:none;">Mulai Presentasi →</a></p>'
         . '</div></section>';
 
+    // slide pemantik (hook) bila ada pertanyaan kuis
+    if ($hook !== null) {
+        $act = ($s === $hookIdx) ? ' is-active' : '';
+        $revealHtml = '';
+        if ($s === $hookIdx && $rev) {
+            $revealHtml = '<div class="ps-hook__ans"><span class="ps-hook__ans-tag">JAWABAN</span><div class="ps-hook__ans-body">' . e($hook['answer']) . '</div></div>';
+        } elseif ($s === $hookIdx) {
+            $revealHtml = '<p class="ps-cover__chips"><a class="btn-sim" href="/presentasi.php?p=' . $id . '&amp;s=' . $hookIdx . '&amp;r=1" style="background:var(--teal-400); text-decoration:none;">Lihat Jawaban</a></p>';
+        } else {
+            $revealHtml = '';
+        }
+        $slides[] = '<section id="s' . $hookIdx . '" class="ps-slide ps-slide--hook' . $act . '">'
+            . '<div class="ps-slide__inner">'
+            . '<span class="ps-cover__badge">PEMANTIK</span>'
+            . '<div class="ps-hook__q">' . e($hook['question']) . '</div>'
+            . '<p class="ps-hook__prompt">Jawab dulu di pikiranmu, lalu buka jawabannya bersama-sama di kelas.</p>'
+            . $revealHtml
+            . '</div></section>';
+    }
+
     // slide tengah: tiap bagian
     foreach ($sections as $i => $sec) {
-        $n = $i + 1;
-        $active = ($s === $n) ? ' is-active' : '';
-        $slides[] = '<section id="s' . $n . '" class="ps-slide' . $active . '">'
-            . '<div class="ps-slide__heading"><span class="ps-slide__no">' . str_pad((string) $n, 2, '0', STR_PAD_LEFT) . '</span><span>' . e($sec['label']) . '</span></div>'
+        $idx = $startSections + $i;
+        $active = ($s === $idx) ? ' is-active' : '';
+        $slides[] = '<section id="s' . $idx . '" class="ps-slide' . $active . '">'
+            . '<div class="ps-slide__heading"><span class="ps-slide__no">' . str_pad((string) $idx, 2, '0', STR_PAD_LEFT) . '</span><span>' . e($sec['label']) . '</span></div>'
             . '<div class="ps-slide__body">' . $sec['html'] . '</div>'
             . '</section>';
     }
 
+    // slide ringkasan
+    $sum = array();
+    foreach ($sections as $sec) {
+        $sum[] = '<li>' . e($sec['label']) . '</li>';
+    }
+    $slides[] = '<section id="s' . $summaryIdx . '" class="ps-slide ps-slide--summary' . ($s === $summaryIdx ? ' is-active' : '') . '">'
+        . '<div class="ps-slide__inner">'
+        . '<span class="ps-cover__badge" style="background:var(--navy-700); color:#fff;">RANGKUMAN</span>'
+        . '<h2 class="ps-summary__title">Apa yang sudah kita bahas?</h2>'
+        . '<ul class="ps-summary__list">' . implode('', $sum) . '</ul>'
+        . '</div></section>';
+
     // slide terakhir: penutup
-    $endIdx = $total - 1;
     $slides[] = '<section id="s' . $endIdx . '" class="ps-slide ps-slide--end' . ($s === $endIdx ? ' is-active' : '') . '">'
         . '<div class="ps-slide__inner">'
         . '<div class="ps-end__icon">✓</div>'
@@ -159,14 +215,23 @@ if ($isAdmin) {
 
     // Nav prev/next + counter + progress (link murni, tanpa JS)
     $prevHref = $s > 0 ? '/presentasi.php?p=' . $id . '&amp;s=' . ($s - 1) : null;
-    $nextHref = $s < $total - 1 ? '/presentasi.php?p=' . $id . '&amp;s=' . ($s + 1) : null;
+
+    // Khusus slide pemantik: "Berikutnya" = buka jawaban dulu (lihat reveal)
+    $nextHref = null;
+    $nextLabel = 'Berikutnya ›';
+    if ($hook !== null && $s === $hookIdx && !$rev) {
+        $nextHref = '/presentasi.php?p=' . $id . '&amp;s=' . $hookIdx . '&amp;r=1';
+        $nextLabel = 'Lihat Jawaban ›';
+    } elseif ($s < $total - 1) {
+        $nextHref = '/presentasi.php?p=' . $id . '&amp;s=' . ($s + 1);
+    }
 
     $prevBtn = $prevHref !== null
         ? '<a class="ps-btn" id="presPrev" href="' . $prevHref . '" style="text-decoration:none">‹ Sebelumnya</a>'
         : '<span class="ps-btn" id="presPrev" style="opacity:.4">‹ Sebelumnya</span>';
     $nextBtn = $nextHref !== null
-        ? '<a class="ps-btn ps-btn--primary" id="presNext" href="' . $nextHref . '" style="text-decoration:none">Berikutnya ›</a>'
-        : '<span class="ps-btn ps-btn--primary" id="presNext" style="opacity:.4">Berikutnya ›</span>';
+        ? '<a class="ps-btn ps-btn--primary" id="presNext" href="' . $nextHref . '" style="text-decoration:none">' . $nextLabel . '</a>'
+        : '<span class="ps-btn ps-btn--primary" id="presNext" style="opacity:.4">' . $nextLabel . '</span>';
 
     $html = str_replace(
         '<button class="ps-btn" id="presPrev" title="Sebelumnya (←)">‹ Sebelumnya</button>',
