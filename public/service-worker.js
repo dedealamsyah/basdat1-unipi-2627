@@ -6,7 +6,7 @@
    dari hosting).
    ===================================================================== */
 
-const CACHE_NAME = "basdat-unipi-v3";
+const CACHE_NAME = "basdat-unipi-v4";
 const PRECACHE_ASSETS = [
   "./",
   "./index.html",

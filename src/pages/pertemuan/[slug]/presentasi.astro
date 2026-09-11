@@ -50,6 +50,7 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
         <p class="pres-gate__msg" id="presGateMsg">Memeriksa akses…</p>
         <a class="btn-sim" id="presGateAction" href={loginNextHref}>Login Dosen</a>
         <a class="pres-gate__back" href={ptmUrl}>← Kembali ke materi</a>
+        <p class="pres-gate__ver">build 2026.09.2</p>
       </div>
     </div>
 
@@ -119,6 +120,7 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
       .pres-gate__msg { color: var(--ink-soft); font-size: 13.5px; line-height: 1.6; margin: 0 0 20px; }
       .pres-gate__back { display: block; margin-top: 14px; font-size: 12px; color: var(--ink-soft); text-decoration: none; }
       .pres-gate__back:hover { color: var(--navy-700); }
+      .pres-gate__ver { margin-top: 18px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
 
       .pres { position: fixed; inset: 0; z-index: 8000; background: var(--paper); display: flex; flex-direction: column; }
       [data-theme="dark"] .pres { background: #081310; }
@@ -274,19 +276,24 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
           // APIAuth (auth.js) bisa terlambat termuat (terhambat caching/challenge
           // hosting) -> polling sebentar sebelum menyerah.
           var poll = 0;
-          var timer = null;
+          var attempt = 0;
+          var MAX_ATTEMPT = 2;
 
           function check() {
             if (typeof window.APIAuth === 'undefined') {
-              if (++poll <= 40) { setTimeout(check, 150); return; } // ~6 detik
+              if (++poll <= 100) { setTimeout(check, 150); return; } // ~15 detik
               gateFail('Modul akses tidak termuat. Periksa koneksi lalu coba lagi.', 'Coba lagi');
               return;
             }
+            runMe();
+          }
+
+          function runMe() {
             var timedOut = false;
-            timer = setTimeout(function () {
+            var timer = setTimeout(function () {
               timedOut = true;
-              gateFail('Server akses melambat. Coba lagi.', 'Coba lagi');
-            }, 15000);
+              retryOrFail('Server akses melambat.');
+            }, 10000);
             window.APIAuth.me(true).then(function (p) {
               clearTimeout(timer);
               if (timedOut) return;
@@ -303,8 +310,13 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
               buildSlides();
             }).catch(function () {
               clearTimeout(timer);
-              gateFail('Terjadi kesalahan saat memeriksa akses. Coba lagi.', 'Coba lagi');
+              retryOrFail('Terjadi kesalahan saat memeriksa akses.');
             });
+          }
+
+          function retryOrFail(msg) {
+            if (++attempt < MAX_ATTEMPT) { setTimeout(runMe, 2500); return; }
+            gateFail(msg, 'Coba lagi');
           }
 
           check();
