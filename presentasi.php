@@ -88,17 +88,57 @@ if ($isAdmin) {
         $sections[] = $cur;
     }
 
-    // Deteksi hook/pemantik: ambil pertanyaan kuis pertama + kunci jawabannya
+    // Deteksi hook/pemantik: kartu kuis pertama dijadikan mini studi kasus
+    // (soal kasus + opsi jawaban + penjelasan kunci).
     $hook = null;
-    if (preg_match(
-        '~<div class="interactive-card" data-quiz="[^"]+">\s*(<p>.*?</p>).*?<button\b[^>]*data-correct="true"[^>]*>(.*?)</button>~is',
-        $content,
-        $hm
-    )) {
-        $hook = array(
-            'question' => trim(strip_tags($hm[1])),
-            'answer'   => trim(strip_tags($hm[2])),
-        );
+    if (preg_match('~<div class="interactive-card" data-quiz="[^"]+">~i', $content, $dm, PREG_OFFSET_CAPTURE)) {
+        $start = $dm[0][1];
+        $i = $start + strlen($dm[0][0]);
+        $len = strlen($content);
+        $depth = 1;
+        $cardHtml = null;
+        while ($i < $len) {
+            $open = strpos($content, '<div', $i);
+            $close = strpos($content, '</div>', $i);
+            if ($open !== false && $close !== false && $open < $close) {
+                $depth++;
+                $i = $open + 4;
+            } elseif ($close !== false) {
+                $depth--;
+                if ($depth === 0) {
+                    $cardHtml = substr($content, $start, ($close + 6) - $start);
+                    break;
+                }
+                $i = $close + 6;
+            } else {
+                break;
+            }
+        }
+        if ($cardHtml !== null) {
+            if (preg_match('~<p>(.*?)</p>~is', $cardHtml, $pm)) {
+                $question = trim(strip_tags($pm[1]));
+            } else {
+                $question = '';
+            }
+            $options = array();
+            if (preg_match_all('~<button\b([^>]*)>(.*?)</button>~is', $cardHtml, $mm, PREG_SET_ORDER)) {
+                foreach ($mm as $m) {
+                    $correct = (bool) preg_match('~data-correct="true"~i', $m[1]);
+                    $expl = '';
+                    if (preg_match('~data-explanation="([^"]*)"~i', $m[1], $em)) {
+                        $expl = html_entity_decode($em[1], ENT_QUOTES, 'UTF-8');
+                    }
+                    $options[] = array(
+                        'text'    => trim(strip_tags($m[2])),
+                        'correct' => $correct,
+                        'expl'    => $expl,
+                    );
+                }
+            }
+            if ($question !== '' && count($options) > 0) {
+                $hook = array('question' => $question, 'options' => $options);
+            }
+        }
     }
 
     $num = str_pad((string) $ptId, 2, '0', STR_PAD_LEFT);
@@ -144,22 +184,50 @@ if ($isAdmin) {
         . '<p class="ps-cover__chips" style="margin-top:18px;"><a class="btn-sim" href="/presentasi.php?p=' . $id . '&amp;s=1" style="background:var(--teal-400); text-decoration:none;">Mulai Presentasi →</a></p>'
         . '</div></section>';
 
-    // slide pemantik (hook) bila ada pertanyaan kuis
+    // slide pemantik (mini studi kasus) bila ada kartu kuis
     if ($hook !== null) {
         $act = ($s === $hookIdx) ? ' is-active' : '';
+        $letters = array('A', 'B', 'C', 'D', 'E');
+
+        $optsHtml = '<ol class="ps-hook__opts">';
+        foreach ($hook['options'] as $oi => $opt) {
+            $letter = $letters[$oi] ?? ($oi + 1);
+            $cls = 'ps-hook__opt';
+            $mark = '';
+            if ($s === $hookIdx && $rev) {
+                if ($opt['correct']) {
+                    $cls .= ' is-right';
+                    $mark = '<span class="ps-hook__opt-tag">✔ Jawaban benar</span>';
+                }
+            }
+            $optsHtml .= '<li class="' . $cls . '"><span class="ps-hook__opt-letter">' . $letter . '</span><span class="ps-hook__opt-text">' . e($opt['text']) . '</span>' . $mark . '</li>';
+        }
+        $optsHtml .= '</ol>';
+
+        $answer = '';
+        $expl = '';
+        foreach ($hook['options'] as $opt) {
+            if ($opt['correct']) {
+                $answer = $opt['text'];
+                $expl = $opt['expl'];
+            }
+        }
+
         $revealHtml = '';
         if ($s === $hookIdx && $rev) {
-            $revealHtml = '<div class="ps-hook__ans"><span class="ps-hook__ans-tag">JAWABAN</span><div class="ps-hook__ans-body">' . e($hook['answer']) . '</div></div>';
+            $explBlock = ($expl !== '')
+                ? '<p class="ps-hook__expl">' . e($expl) . '</p>'
+                : '';
+            $revealHtml = '<div class="ps-hook__ans"><span class="ps-hook__ans-tag">KUNCI JAWABAN</span><div class="ps-hook__ans-body">' . e($answer) . '</div>' . $explBlock . '</div>';
         } elseif ($s === $hookIdx) {
-            $revealHtml = '<p class="ps-cover__chips"><a class="btn-sim" href="/presentasi.php?p=' . $id . '&amp;s=' . $hookIdx . '&amp;r=1" style="background:var(--teal-400); text-decoration:none;">Lihat Jawaban</a></p>';
-        } else {
-            $revealHtml = '';
+            $revealHtml = '<p class="ps-hook__opts-hint">Diskusikan jawabanmu dengan teman sebangku, lalu buka kunci jawabannya.</p>';
         }
+
         $slides[] = '<section id="s' . $hookIdx . '" class="ps-slide ps-slide--hook' . $act . '">'
             . '<div class="ps-slide__inner">'
-            . '<span class="ps-cover__badge">PEMANTIK</span>'
+            . '<span class="ps-cover__badge">MINI STUDI KASUS</span>'
             . '<div class="ps-hook__q">' . e($hook['question']) . '</div>'
-            . '<p class="ps-hook__prompt">Jawab dulu di pikiranmu, lalu buka jawabannya bersama-sama di kelas.</p>'
+            . $optsHtml
             . $revealHtml
             . '</div></section>';
     }

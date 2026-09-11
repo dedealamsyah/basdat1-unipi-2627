@@ -215,8 +215,29 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
         margin: 14px 0 18px; letter-spacing: -.01em;
       }
       .ps-hook__prompt { font-size: 15px; color: var(--ink-soft); line-height: 1.7; margin: 0 0 8px; }
+      .ps-hook__opts { list-style: none; margin: 0 auto 18px; padding: 0; max-width: 680px; text-align: left; }
+      .ps-hook__opt {
+        display: flex; align-items: center; gap: 12px;
+        background: var(--card); border: 1.5px solid var(--line); border-radius: 12px;
+        padding: 11px 16px; margin-bottom: 10px; font-size: 15px; font-weight: 600; color: var(--ink);
+      }
+      [data-theme="dark"] .ps-hook__opt { background: rgba(255,255,255,.04); }
+      .ps-hook__opt-letter {
+        flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+        width: 28px; height: 28px; border-radius: 9px; background: var(--navy-700); color: #fff;
+        font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+      }
+      .ps-hook__opt-text { flex: 1; }
+      .ps-hook__opt-tag {
+        flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--green-700);
+        background: var(--green-100); border-radius: 12px; padding: 3px 10px;
+      }
+      [data-theme="dark"] .ps-hook__opt-tag { color: #7FE3B8; background: rgba(39,174,96,.18); }
+      .ps-hook__opt.is-right { border-color: var(--green-600); background: var(--green-100); }
+      [data-theme="dark"] .ps-hook__opt.is-right { background: rgba(39,174,96,.14); }
+      .ps-hook__opts-hint { font-size: 14px; color: var(--ink-soft); line-height: 1.7; margin: 4px 0 0; }
       .ps-hook__ans {
-        margin: 22px auto 0; max-width: 560px; text-align: left;
+        margin: 18px auto 0; max-width: 640px; text-align: left;
         background: var(--green-600); color: #fff; border-radius: 14px; padding: 18px 22px;
       }
       [data-theme="dark"] .ps-hook__ans { background: #126e4a; }
@@ -224,7 +245,8 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
         display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em;
         background: rgba(255,255,255,.22); border-radius: 12px; padding: 3px 12px; margin-bottom: 10px;
       }
-      .ps-hook__ans-body { font-size: 17px; font-weight: 600; line-height: 1.6; }
+      .ps-hook__ans-body { font-size: 18px; font-weight: 700; line-height: 1.5; }
+      .ps-hook__expl { font-size: 14.5px; line-height: 1.7; margin: 10px 0 0; font-weight: 400; opacity: .95; }
 
       /* ---- slide ringkasan ---- */
       .ps-summary__title {
@@ -450,19 +472,30 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
             '</div>';
           slides.push({ el: cover, label: 'Pengantar', kind: 'cover' });
 
-          // slide pemantik (hook) dari kuis pertama
+          // slide pemantik (mini studi kasus) dari kuis pertama
           var quizCard = article.querySelector('.interactive-card[data-quiz]');
           if (quizCard) {
             var qText = quizCard.querySelector('p');
-            var ansBtn = quizCard.querySelector('button[data-correct="true"]');
-            if (qText && ansBtn) {
+            var opts = Array.prototype.slice.call(quizCard.querySelectorAll('.quiz-option'));
+            if (qText && opts.length) {
+              var letters = ['A', 'B', 'C', 'D', 'E'];
               var hookEl = document.createElement('section');
               hookEl.className = 'ps-slide ps-slide--hook';
+              var optsHtml = '<ol class="ps-hook__opts">';
+              opts.forEach(function (ob, oi) {
+                optsHtml +=
+                  '<li class="ps-hook__opt" data-correct="' + (ob.getAttribute('data-correct') === 'true') + '">' +
+                  '<span class="ps-hook__opt-letter">' + (letters[oi] || (oi + 1)) + '</span>' +
+                  '<span class="ps-hook__opt-text">' + esc(ob.textContent.trim()) + '</span>' +
+                  '</li>';
+              });
+              optsHtml += '</ol>';
               hookEl.innerHTML =
                 '<div class="ps-slide__inner">' +
-                '<span class="ps-cover__badge">PEMANTIK</span>' +
+                '<span class="ps-cover__badge">MINI STUDI KASUS</span>' +
                 '<div class="ps-hook__q">' + esc(qText.textContent.replace(/\s+/g, ' ').trim()) + '</div>' +
-                '<p class="ps-hook__prompt">Jawab dulu di pikiranmu, lalu buka jawabannya bersama-sama di kelas.</p>' +
+                optsHtml +
+                '<p class="ps-hook__opts-hint" id="psHookHint">Diskusikan jawabanmu dengan teman sebangku, lalu buka kunci jawabannya.</p>' +
                 '<p class="ps-cover__chips"></p>' +
                 '</div>';
               var revealWrap = hookEl.querySelector('.ps-cover__chips');
@@ -472,15 +505,33 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
               revealBtn.textContent = 'Lihat Jawaban';
               var ansBox = null;
               revealBtn.addEventListener('click', function () {
-                if (ansBox) { ansBox.remove(); ansBox = null; revealBtn.textContent = 'Lihat Jawaban'; return; }
+                if (ansBox) { ansBox.remove(); ansBox = null; revealBtn.textContent = 'Lihat Jawaban'; hookEl.querySelector('#psHookHint').hidden = false; return; }
+                var correct = null;
+                opts.forEach(function (ob) {
+                  if (ob.getAttribute('data-correct') === 'true') correct = ob;
+                });
+                hookEl.querySelectorAll('.ps-hook__opt').forEach(function (li) {
+                  if (li.getAttribute('data-correct') === 'true') {
+                    li.classList.add('is-right');
+                    var tag = document.createElement('span');
+                    tag.className = 'ps-hook__opt-tag';
+                    tag.textContent = '✔ Jawaban benar';
+                    li.appendChild(tag);
+                  }
+                });
+                var explTxt = correct ? (correct.getAttribute('data-explanation') || '') : '';
                 ansBox = document.createElement('div');
                 ansBox.className = 'ps-hook__ans';
-                ansBox.innerHTML = '<span class="ps-hook__ans-tag">JAWABAN</span><div class="ps-hook__ans-body">' + esc(ansBtn.textContent.trim()) + '</div>';
+                ansBox.innerHTML =
+                  '<span class="ps-hook__ans-tag">KUNCI JAWABAN</span>' +
+                  '<div class="ps-hook__ans-body">' + (correct ? esc(correct.textContent.trim()) : '') + '</div>' +
+                  (explTxt ? '<p class="ps-hook__expl">' + esc(explTxt) + '</p>' : '');
                 hookEl.querySelector('.ps-slide__inner').appendChild(ansBox);
+                hookEl.querySelector('#psHookHint').hidden = true;
                 revealBtn.textContent = 'Sembunyikan Jawaban';
               });
               revealWrap.appendChild(revealBtn);
-              slides.push({ el: hookEl, label: 'Pemantik', kind: 'hook' });
+              slides.push({ el: hookEl, label: 'Studi Kasus', kind: 'hook' });
             }
           }
 
