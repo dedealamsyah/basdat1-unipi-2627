@@ -35,7 +35,9 @@ $isAdmin = $u !== null && ($u['role'] ?? '') === 'admin';
 $next = '/login?next=' . urlencode('/presentasi.php?p=' . $id);
 
 $html = file_get_contents($file);
-$stamp = $isAdmin ? 'server:1' : 'server:0';
+$sessName = session_name();
+$hasSessCookie = isset($_COOKIE[$sessName]);
+$stamp = ($isAdmin ? 'server:1' : 'server:0') . '·ck' . ($hasSessCookie ? '1' : '0');
 $html = str_replace('build 2026.09.3', 'build 2026.09.3 · ' . $stamp, $html);
 
 /* ============================================================

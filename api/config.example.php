@@ -68,10 +68,12 @@ function is_https(): bool
 function start_session(): void
 {
     if (session_status() === PHP_SESSION_NONE) {
+        // Catatan: flag `Secure` sengaja TIDAK dipakai selama akses masih campur
+        // http/https (Byethost). Cookie Secure tidak dikirim lintas skema dan
+        // akan membuat sesi "hilang". Aktifkan kembali hanya setelah HTTPS penuh.
         session_set_cookie_params(array(
             'httponly' => true,
             'samesite' => 'Lax',
-            'secure' => is_https(), // aktif otomatis saat situs diakses via HTTPS
         ));
         session_start();
     }
