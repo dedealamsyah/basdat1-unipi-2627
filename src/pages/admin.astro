@@ -196,6 +196,24 @@ import Sidebar from '../components/Sidebar.astro';
   </section>
 
   <!-- EVALUASI -->
+  <!-- NILAI EVALUASI -->
+  <section class="block">
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">7</span> Nilai Evaluasi Mahasiswa</h2>
+      <span class="muted">Matriks skor evaluasi per pertemuan (1x percobaan)</span>
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:0;">
+      Nilai = persentase <b>skor/total</b> evaluasi yang sudah dikerjakan mahasiswa. Warna sel:
+      hijau ≥80 · amber 60–79 · merah &lt;60. Titik merah = terindikasi integritas.
+    </p>
+    <div style="overflow-x:auto; margin-top:12px;">
+      <table class="dtable tbl-scroll" id="nilaiEvalTable">
+        <thead id="nilaiEvalHead"><tr><th>Mahasiswa</th><th>Kelas</th></tr></thead>
+        <tbody id="nilaiEvalTbody"><tr><td colspan="2" class="muted">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
   <section class="block">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">6</span> Evaluasi &amp; Integritas</h2>
@@ -529,6 +547,23 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .badge-flag--red { background: #FDE8E8; color: #B3261E; border-color: #F0A2A0; }
   .badge-ok { color: var(--green-600); font-weight: 700; font-size: 11px; }
+
+  /* Grid nilai evaluasi */
+  #nilaiEvalTable th { white-space: nowrap; }
+  .ev-td { text-align: center; position: relative; }
+  .ev-cell {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 34px; height: 26px; border-radius: 8px;
+    font-family: var(--font-mono); font-size: 12.5px; font-weight: 700;
+  }
+  .ev-g { background: var(--green-100); color: var(--green-600); }
+  .ev-a { background: #FBEFDC; color: #8A4A29; }
+  .ev-r { background: #FDE8E8; color: #B3261E; }
+  .ev-na { color: var(--ink-faint); text-align: center; }
+  .ev-flag {
+    position: absolute; top: 4px; right: 6px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red-600);
+  }
 </style>
 
 <script is:inline>
@@ -578,6 +613,7 @@ import Sidebar from '../components/Sidebar.astro';
     var kelasOptions = [];
     var allStudents = [];
     var allEvaluasi = [];
+    var evalByStudent = {};
     var sortKey = 'nim';
     var sortDir = 1;
 
@@ -597,6 +633,8 @@ import Sidebar from '../components/Sidebar.astro';
         statusEl.textContent = 'Total materi aktif: ' + totalActive + ' pertemuan.';
         allStudents = d.data.students;
         allEvaluasi = d.data.evaluasi || [];
+        evalByStudent = d.data.eval_by_student || {};
+        renderNilaiEval();
         kelasOptions = [];
         allStudents.forEach(function (s) { if (s.kelas && kelasOptions.indexOf(s.kelas) === -1) kelasOptions.push(s.kelas); });
         fillKelas();
@@ -706,6 +744,41 @@ import Sidebar from '../components/Sidebar.astro';
         tbody.appendChild(tr);
       });
     }
+
+    // ===== Grid nilai evaluasi per pertemuan =====
+    function renderNilaiEval() {
+      var head = document.getElementById('nilaiEvalHead');
+      var tb = document.getElementById('nilaiEvalTbody');
+      if (!head || !tb) return;
+      var cols = (ptRows || []).filter(function (p) { return !!p.aktif; })
+        .sort(function (a, b) { return ((a.posisi || 99) - (b.posisi || 99)) || (a.id - b.id); });
+      head.innerHTML = '<tr><th>Mahasiswa</th><th>Kelas</th>' +
+        cols.map(function (p) { return '<th title="Evaluasi Pertemuan ' + p.id + '">P' + String(p.id).padStart(2, '0') + '</th>'; }).join('') +
+        '<th>Rata Evaluasi</th></tr>';
+      if (!allStudents.length) {
+        tb.innerHTML = '<tr><td colspan="' + (cols.length + 3) + '" class="muted">Belum ada mahasiswa.</td></tr>';
+        return;
+      }
+      var html = '';
+      allStudents.forEach(function (s) {
+        var evs = evalByStudent[s.nim] || {};
+        html += '<tr>' +
+          '<td>' + esc(s.nama) + '<span class="muted" style="display:block;font-size:11px;">' + esc(s.nim) + '</span></td>' +
+          '<td>' + esc(s.kelas || '–') + '</td>';
+        cols.forEach(function (p) {
+          var e = evs[p.id];
+          if (!e) { html += '<td class="ev-na">–</td>'; return; }
+          var cls = e.pct >= 80 ? 'ev-g' : (e.pct >= 60 ? 'ev-a' : 'ev-r');
+          html += '<td class="ev-td">' +
+            '<span class="ev-cell ' + cls + '" title="Skor ' + e.skor + ' / ' + e.total + '">' + e.pct + '</span>' +
+            (e.flagged ? '<i class="ev-flag" title="Terindikasi integritas"></i>' : '') +
+            '</td>';
+        });
+        html += '<td>' + (s.eval_pct != null ? '<strong>' + s.eval_pct + '%</strong>' : '–') + '</td></tr>';
+      });
+      tb.innerHTML = html;
+    }
+
     document.getElementById('onlyFlagged').addEventListener('change', renderEvaluasi);
     document.getElementById('evalTbody').addEventListener('click', function (e) {
       var a = e.target.closest('a[data-nim]');
@@ -1017,6 +1090,7 @@ import Sidebar from '../components/Sidebar.astro';
         tr.querySelector('input[data-f="aktif"]').style.width = 'auto';
         ptTbody.appendChild(tr);
       });
+      renderNilaiEval();
     }
     function collectPt() {
       var updates = [];

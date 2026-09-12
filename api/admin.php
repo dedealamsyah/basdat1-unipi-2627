@@ -72,8 +72,25 @@ foreach ($st as $r) {
         'done_count' => (int) $r['done_count'],
         'total' => $total,
         'persen' => $total > 0 ? round(((int) $r['done_count'] / $total) * 100) : 0,
+        'eval_pct' => $nilai['kuis_evaluasi'],
         'akhir' => $nilai['akhir'],
         'huruf' => $nilai['huruf'],
+    );
+}
+
+// Peta nilai evaluasi per mahasiswa per pertemuan (untuk grid nilai)
+$evalByStudent = array();
+foreach (evaluasi_list() as $e) {
+    $pid = (int) $e['pertemuan_id'];
+    if (!isset($evalByStudent[$e['nim']])) {
+        $evalByStudent[$e['nim']] = array();
+    }
+    $tot = (int) $e['total'];
+    $evalByStudent[$e['nim']][$pid] = array(
+        'skor' => (int) $e['skor'],
+        'total' => $tot,
+        'pct' => $tot > 0 ? (int) round((int) $e['skor'] / $tot * 100) : 0,
+        'flagged' => (int) $e['flagged'],
     );
 }
 
@@ -81,4 +98,5 @@ json_out(array('ok' => true, 'data' => array(
     'students' => $students,
     'total' => $total,
     'evaluasi' => evaluasi_list(),
+    'eval_by_student' => $evalByStudent,
 )));
