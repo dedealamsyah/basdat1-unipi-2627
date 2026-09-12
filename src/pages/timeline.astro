@@ -1,0 +1,206 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { getCollection } from 'astro:content';
+import { RPS_WEEKS, PHASE_META, EVALUASI } from '../data/rps';
+
+const allPertemuan = await getCollection('pertemuan');
+const locked = (id: number) => {
+  const p = allPertemuan.find((x) => x.data.id === id);
+  return p ? Boolean(p.data.locked) : true;
+};
+const totalBobot = RPS_WEEKS.reduce((a, w) => a + w.bobot, 0);
+const byFase = new Map<string, (typeof RPS_WEEKS)[number][]>();
+RPS_WEEKS.forEach((w) => {
+  const arr = byFase.get(w.fase) || [];
+  arr.push(w);
+  byFase.set(w.fase, arr);
+});
+---
+
+<BaseLayout title="Timeline Perkuliahan · Basis Data UNIPI">
+  <Sidebar slot="sidebar" />
+
+  <div class="contentHeader">
+    <div class="eyebrow">RENCANA PEMBELAJARAN SEMESTER</div>
+    <h1 class="pageTitle">Timeline Perkuliahan</h1>
+    <p class="pageSubtitle">
+      Peta perjalanan belajar 16 minggu mata kuliah Basis Data — dari konsep dasar, perancangan ERD,
+      normalisasi, hingga implementasi dan proyek akhir (OBE · Project Based Learning).
+    </p>
+    <div class="chipRow">
+      <span class="chip">Semester 3 · TA 2026/2027</span>
+      <span class="chip chip--amber">16 Minggu</span>
+      <span class="chip">3 SKS · {totalBobot}% Bobot</span>
+      <span class="chip chip--amber">CPMK-1 &amp; CPMK-2</span>
+    </div>
+  </div>
+
+  <!-- Ringkasan semester -->
+  <section class="tl-stats">
+    <div class="tl-stat">
+      <span class="tl-stat__num" style="color:var(--teal-400);">16</span>
+      <div><strong>Minggu Belajar</strong><span class="muted">terstruktur per pertemuan</span></div>
+    </div>
+    <div class="tl-stat">
+      <span class="tl-stat__num" style="color:var(--amber-400);">2</span>
+      <div><strong>Fase CPMK</strong><span class="muted">konsep &amp; implementasi</span></div>
+    </div>
+    <div class="tl-stat">
+      <span class="tl-stat__num" style="color:var(--green-600);">65%</span>
+      <div><strong>Bobot Proyek</strong><span class="muted">penilaian produk (OBE)</span></div>
+    </div>
+    <div class="tl-stat">
+      <span class="tl-stat__num">1</span>
+      <div><strong>Proyek Akhir</strong><span class="muted">capstone di Minggu 16</span></div>
+    </div>
+  </section>
+
+  <!-- Komposisi evaluasi -->
+  <section class="block">
+    <h2>Komposisi Evaluasi</h2>
+    <p class="muted" style="margin:-6px 0 14px;">Sumber: RPS Basis Data UNIPI TA 2026/2027</p>
+    <style>
+      .home-eval { display: grid; gap: 12px; }
+    </style>
+    <div class="home-eval">
+      {EVALUASI.map((ev) => (
+        <div>
+          <div class="eval-row">
+            <span>{ev.label}</span>
+            <span class="eval-pct">{ev.pct}%</span>
+          </div>
+          <div class="tl-eval-bar"><i style={`width:${ev.pct}%;`}></i></div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section class="block">
+    <h2>Peta 16 Minggu</h2>
+    <div class="tl-legend">
+      <span><i style="background:var(--navy-700);"></i> CPMK-1 · Konsep &amp; Perancangan</span>
+      <span><i style="background:var(--amber-400);"></i> CPMK-2 · Implementasi</span>
+    </div>
+
+    <div class="tl">
+      {[...byFase.entries()].map(([fase, items]) => (
+        <Fragment>
+          <div class={`tl-phase tl-phase--${fase}`}>
+            <span class="tl-phase__label">{PHASE_META[fase as keyof typeof PHASE_META].label}</span>
+            <span class="tl-phase__desc">{PHASE_META[fase as keyof typeof PHASE_META].desc}</span>
+            <span class="tl-phase__range">
+              {`Minggu ${items[0].week}${items.length > 1 ? '–' + items[items.length - 1].week : ''}`}
+            </span>
+          </div>
+          {items.map((w) => {
+            const isLocked = locked(w.week);
+            const link = isLocked ? '#tl' : `/pertemuan/${w.week}`;
+            return (
+              <div class={`tl-item tl-item--${fase}`} data-id={w.week}>
+                <span class={`tl-dot tl-dot--${w.cpmk}`}>{w.week}</span>
+                <div class="tl-card">
+                  <div class="tl-card__top">
+                    <span class="tl-week">MINGGU {String(w.week).padStart(2, '0')}</span>
+                    <span class={`tl-state ${isLocked ? 'is-locked' : 'is-open'}`}>
+                      {isLocked ? '🔒 Terkunci' : '🔓 Terbuka'}
+                    </span>
+                    <span class="tl-bobot">Bobot {w.bobot}%</span>
+                  </div>
+                  <h3 class="tl-card__title">{w.topic}</h3>
+                  <p class="tl-card__outcome">{w.outcome}</p>
+                  <a class="tl-card__link" href={link}>
+                    {isLocked ? 'Menunggu materi dibuka' : 'Buka Materi →'}
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </Fragment>
+      ))}
+    </div>
+  </section>
+
+  <style is:global>
+    .tl-stats { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 26px; }
+    .tl-stat {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 18px 20px; box-shadow: var(--shadow-sm);
+    }
+    .tl-stat__num { font-family: var(--font-display); font-size: 34px; font-weight: 700; color: var(--navy-700); line-height: 1; }
+    .tl-stat strong { display: block; font-size: 14px; color: var(--ink); }
+    .tl-stat .muted { font-size: 12px; }
+
+    .eval-row { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+    .eval-row span:first-child { color: var(--ink); }
+    .eval-pct { color: var(--teal-400); }
+    .tl-eval-bar { height: 10px; border-radius: 6px; background: var(--teal-100); overflow: hidden; }
+    [data-theme="dark"] .tl-eval-bar { background: rgba(43,166,160,.16); }
+    .tl-eval-bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--navy-700), var(--teal-400)); }
+
+    .tl-legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 4px 0 22px; font-size: 12.5px; color: var(--ink-soft); }
+    .tl-legend span { display: inline-flex; align-items: center; gap: 8px; }
+    .tl-legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+    .tl { position: relative; padding: 6px 0 10px; }
+    .tl::before {
+      content: ""; position: absolute; left: 27px; top: 0; bottom: 0; width: 3px;
+      background: linear-gradient(180deg, var(--navy-700), var(--teal-400) 45%, var(--amber-300) 70%, var(--green-600));
+      border-radius: 3px; opacity: .35;
+    }
+
+    .tl-phase { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position: relative; z-index: 2; margin: 26px 0 16px; margin-left: 6px; }
+    .tl-phase__label {
+      font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; font-weight: 700;
+      color: #fff; border-radius: 18px; padding: 6px 14px;
+    }
+    .tl-phase--konsep .tl-phase__label, .tl-phase--uts .tl-phase__label { background: var(--navy-700); }
+    .tl-phase--normalisasi .tl-phase__label { background: var(--teal-400); color: #04302a; }
+    .tl-phase--implementasi .tl-phase__label { background: var(--amber-400); color: #4a3700; }
+    .tl-phase--aplikasi .tl-phase__label { background: var(--green-600); }
+    .tl-phase--uas .tl-phase__label { background: var(--red-600); }
+    .tl-phase__desc { font-size: 13px; color: var(--ink-soft); }
+    .tl-phase__range { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); }
+
+    .tl-item { position: relative; padding-left: 64px; margin-bottom: 18px; }
+    .tl-dot {
+      position: absolute; left: 0; top: 6px; z-index: 3;
+      width: 54px; height: 54px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-weight: 700; font-size: 16px; color: #fff;
+      box-shadow: 0 0 0 6px var(--card), 0 4px 14px rgba(0,0,0,.12);
+    }
+    .tl-dot--1 { background: linear-gradient(135deg, var(--navy-700), #255f8d); }
+    .tl-dot--2 { background: linear-gradient(135deg, #b57e10, var(--amber-500)); }
+
+    .tl-card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 14px 16px 12px; box-shadow: var(--shadow-sm);
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s;
+    }
+    .tl-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--teal-500); }
+    .tl-card__top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+    .tl-week { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em; color: var(--teal-500); font-weight: 700; }
+    .tl-state { font-size: 11px; font-weight: 700; border-radius: 12px; padding: 2px 10px; }
+    .tl-state.is-open { background: var(--green-100); color: var(--green-700); }
+    .tl-state.is-locked { background: var(--ink-faint); color: var(--ink-soft); }
+    [data-theme="dark"] .tl-state.is-open { background: rgba(39,174,96,.18); color: #7FE3B8; }
+    .tl-bobot { margin-left: auto; font-size: 11.5px; color: var(--ink-faint); font-family: var(--font-mono); }
+    .tl-card__title { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; color: var(--ink); margin: 2px 0 4px; }
+    .tl-card__outcome { font-size: 13px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+    .tl-card__link { font-size: 12.5px; font-weight: 700; color: var(--teal-500); text-decoration: none; }
+    .tl-card__link:hover { text-decoration: underline; }
+
+    .tl-item.prog-done .tl-card { border-color: var(--green-600); }
+    .tl-item.prog-done .tl-state { background: var(--green-600); color: #fff; }
+
+    @media (min-width: 720px) {
+      .tl { padding-left: 0; }
+      .tl::before { left: 30px; }
+      .tl-item { padding-left: 84px; }
+      .tl-dot { width: 62px; height: 62px; font-size: 18px; }
+    }
+  </style>
+</BaseLayout>

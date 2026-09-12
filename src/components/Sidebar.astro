@@ -38,6 +38,13 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
 </div>
 
 <ul class="sidebar__list" id="sidebarList">
+  <li class="row timeline-link" data-kind="timeline" data-title="timeline perjalanan semester peta minggu rps">
+    <span class="row__pk" style="background:var(--amber-400); color:#4a3700;">🗓</span>
+    <span class="row__text">
+      <span class="row__num">PETA BELAJAR</span>
+      <span class="row__title" style="color:var(--amber-400);">Timeline Perkuliahan</span>
+    </span>
+  </li>
   <li class="row praktikum-link" data-kind="praktikum" data-title="worksheet praktikum perancangan erd">
     <span class="row__pk">✎</span>
     <span class="row__text">
@@ -102,6 +109,10 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   sidebarNavRows.forEach(row => {
     row.addEventListener('click', function() {
       const kind = this.getAttribute('data-kind');
+      if (kind === 'timeline') {
+        window.location.href = '/timeline';
+        return;
+      }
       if (kind === 'praktikum') {
         window.location.href = '/praktikum';
         return;
@@ -123,5 +134,9 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   if (window.location.pathname.includes('/playground')) {
     const pg = document.querySelector('.playground-link');
     if (pg) pg.classList.add('active');
+  }
+  if (window.location.pathname.includes('/timeline')) {
+    const tl = document.querySelector('.timeline-link');
+    if (tl) tl.classList.add('active');
   }
 </script>
