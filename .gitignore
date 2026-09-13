@@ -28,3 +28,7 @@ api/config.php
 
 # kredensial hosting (jangan di-commit)
 docs/HOSTING-RAHASIA.md
+
+# berkas tugas & kredensial service account Google Drive (jangan di-commit)
+api/uploads/
+api/gdrive-service.json

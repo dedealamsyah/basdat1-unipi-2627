@@ -14,7 +14,7 @@
     opts.credentials = "same-origin";
     opts.cache = "no-store";
     var method = (opts.method || "GET").toUpperCase();
-    if (opts.body && typeof opts.body !== "string") {
+    if (opts.body && typeof opts.body !== "string" && !(opts.body instanceof FormData)) {
       opts.headers = Object.assign({}, opts.headers || {}, {
         "Content-Type": "application/json"
       });

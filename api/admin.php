@@ -94,9 +94,37 @@ foreach (evaluasi_list() as $e) {
     );
 }
 
+// Daftar pengumpulan tugas berkas (PDF) — terbaru dulu
+$tugas = array();
+try {
+    $st = db()->query(
+        'SELECT t.id, t.nim, u.nama, u.kelas, t.pertemuan_id, t.original_name, t.mime,
+                t.size, t.drive_file_id, t.submitted_at
+         FROM tugas t JOIN users u ON u.nim = t.nim
+         ORDER BY t.submitted_at DESC'
+    );
+    foreach ($st as $r) {
+        $tugas[] = array(
+            'id' => (int) $r['id'],
+            'nim' => $r['nim'],
+            'nama' => $r['nama'],
+            'kelas' => $r['kelas'],
+            'pertemuan_id' => (int) $r['pertemuan_id'],
+            'original_name' => $r['original_name'],
+            'mime' => $r['mime'],
+            'size' => (int) $r['size'],
+            'drive_file_id' => $r['drive_file_id'],
+            'submitted_at' => $r['submitted_at'],
+        );
+    }
+} catch (Throwable $e) {
+    $tugas = array(); // tabel belum ada
+}
+
 json_out(array('ok' => true, 'data' => array(
     'students' => $students,
     'total' => $total,
     'evaluasi' => evaluasi_list(),
     'eval_by_student' => $evalByStudent,
+    'tugas' => $tugas,
 )));

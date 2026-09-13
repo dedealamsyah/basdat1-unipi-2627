@@ -1,0 +1,147 @@
+---
+interface Props {
+  pid: number;
+  title: string;
+  note?: string;
+  driveNote?: boolean;
+}
+const { pid, title, note, driveNote = true } = Astro.props;
+---
+
+<section class="tugas-box" data-tugasbox={pid}>
+  <div class="tugas-box__head">
+    <span class="tugas-box__badge">PENGUMPULAN TUGAS · PDF</span>
+    <h3 class="tugas-box__title">{title}</h3>
+  </div>
+  {note && <p class="tugas-box__note">{note}</p>}
+  {driveNote && (
+    <p class="tugas-box__drive">Hasil unggahan otomatis terkumpul untuk dosen (folder Google Drive).</p>
+  )}
+  <div class="tugas-box__state">Memeriksa status…</div>
+  <form class="tugas-box__form" hidden>
+    <label class="tugas-box__file">
+      <span>Pilih berkas PDF</span>
+      <input type="file" accept=".pdf,application/pdf" />
+    </label>
+    <button type="submit" class="btn-sim" style="background:var(--teal-400);">Unggah PDF</button>
+    <p class="tugas-box__hint">Format <strong>PDF</strong> saja · maksimal 8 MB · satu kali pengumpulan yang boleh diganti.</p>
+  </form>
+</section>
+
+<style>
+  .tugas-box {
+    margin: 22px 0;
+    border: 1.5px solid var(--teal-500);
+    border-radius: 16px;
+    background: var(--card);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .tugas-box__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-bottom: 8px; }
+  .tugas-box__badge {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; font-weight: 700;
+    color: #fff; background: var(--teal-500); border-radius: 14px; padding: 4px 12px;
+  }
+  .tugas-box__title { margin: 0; font-family: var(--font-display); font-size: 17px; color: var(--ink); }
+  .tugas-box__note { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin: 6px 0; }
+  .tugas-box__drive { font-size: 12px; color: var(--teal-500); margin: 2px 0 10px; }
+  .tugas-box__state { font-size: 13px; color: var(--ink); line-height: 1.6; margin-top: 6px; }
+  .tugas-box__state .ok { color: var(--green-600); font-weight: 700; }
+  .tugas-box__form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 12px; }
+  .tugas-box__file { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+  .tugas-box__file input[type="file"] { font-size: 13px; }
+  .tugas-box__hint { width: 100%; margin: 0; font-size: 11.5px; color: var(--ink-faint); }
+</style>
+
+<script is:inline>
+  (function () {
+    function initTugas(pid) {
+      var box = document.querySelector('.tugas-box[data-tugasbox="' + pid + '"]');
+      if (!box || box.dataset.booted) return;
+      box.dataset.booted = '1';
+      var stateEl = box.querySelector('.tugas-box__state');
+      var form = box.querySelector('.tugas-box__form');
+      var fileInput = box.querySelector('input[type="file"]');
+
+      function setState(html, cls) {
+        stateEl.className = 'tugas-box__state' + (cls ? ' ' + cls : '');
+        stateEl.innerHTML = html;
+      }
+      function esc(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      if (typeof window.APIAuth === 'undefined') {
+        setState('Modul akses belum termuat. Muat ulang halaman.');
+        return;
+      }
+
+      window.APIAuth.me(true).then(function (p) {
+        if (!p.logged_in) {
+          setState('Silakan <a href="/login?next=' + encodeURIComponent(location.pathname) + '">login</a> untuk mengumpulkan tugas.');
+          return;
+        }
+        loadStatus();
+      }).catch(function () {
+        setState('Gagal memeriksa status. Muat ulang halaman.');
+      });
+
+      function loadStatus() {
+        setState('Memeriksa…');
+        window.APIAuth.api('/api/upload_tugas.php?pertemuan_id=' + pid).then(function (r) {
+          var d = r.data && r.data.data;
+          if (d) {
+            form.hidden = false;
+            setState(
+              '<span class="ok">Sudah terkumpul.</span> Berkas: <strong>' + esc(d.original_name) +
+              '</strong> (' + Math.round(d.size / 1024) + ' KB) · ' + esc(d.submitted_at) +
+              (d.drive_file_id ? ' · <span class="ok">tersinkron ke Drive</span>' : '') +
+              '. Anda boleh menggantinya di bawah.'
+            );
+          } else {
+            form.hidden = false;
+            setState('Belum ada pengumpulan.');
+          }
+        }).catch(function () {
+          setState('Server tidak merespons. Coba lagi nanti.');
+        });
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) { setState('Pilih berkas PDF terlebih dahulu.'); return; }
+        if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) {
+          setState('Hanya berkas PDF yang diizinkan.'); return;
+        }
+        if (file.size > 8 * 1024 * 1024) { setState('Ukuran maksimal 8 MB.'); return; }
+        var fd = new FormData();
+        fd.append('file', file);
+        fd.append('pertemuan_id', String(pid));
+        setState('Mengunggah… silakan tunggu.');
+        window.APIAuth.api('/api/upload_tugas.php', { method: 'POST', body: fd }).then(function (r) {
+          if (r.data && r.data.ok) {
+            setState('<span class="ok">Berhasil diunggah.</span> ' + esc(r.data.data.original_name) +
+              (r.data.data.drive_sent ? ' · tersinkron ke Drive.' : ' · diterima server.'));
+            loadStatus();
+          } else {
+            setState('Gagal: ' + esc((r.data && r.data.error) || 'Terjadi kesalahan.'));
+          }
+        }).catch(function () {
+          setState('Gagal mengunggah. Periksa koneksi lalu coba lagi.');
+        });
+      });
+    }
+
+    document.querySelectorAll('.tugas-box').forEach(function (b) {
+      var pid = b.getAttribute('data-tugasbox');
+      if (pid) initTugas(parseInt(pid, 10));
+    });
+    document.addEventListener('astro:page-load', function () {
+      document.querySelectorAll('.tugas-box').forEach(function (b) {
+        var pid = b.getAttribute('data-tugasbox');
+        if (pid) initTugas(parseInt(pid, 10));
+      });
+    });
+  })();
+</script>

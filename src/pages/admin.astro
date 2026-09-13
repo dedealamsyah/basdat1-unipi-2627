@@ -240,6 +240,26 @@ import Sidebar from '../components/Sidebar.astro';
     </div>
   </section>
 
+  <!-- PENGUMPULAN TUGAS -->
+  <section class="block">
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">9</span> Pengumpulan Tugas PDF</h2>
+      <span id="tugasCount" class="muted" style="font-size:12px;"></span>
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:0;">
+      Berkas tugas yang diunggah mahasiswa (mis. ERD Latihan Mandiri Pertemuan 2). Klik
+      <strong>Unduh</strong> untuk mengambil berkas dari server.
+    </p>
+    <div style="overflow-x:auto; margin-top:12px;">
+      <table class="dtable tbl-scroll" id="tugasTable">
+        <thead><tr>
+          <th>NIM</th><th>Nama</th><th>Kelas</th><th>Ptm</th><th>Berkas</th><th>Ukuran</th><th>Drive</th><th>Waktu</th><th></th>
+        </tr></thead>
+        <tbody id="tugasTbody"><tr><td colspan="9" class="muted">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- DETAIL -->
   <section class="block" id="detailBox" hidden>
     <div class="section-head">
@@ -614,6 +634,7 @@ import Sidebar from '../components/Sidebar.astro';
     var allStudents = [];
     var allEvaluasi = [];
     var evalByStudent = {};
+    var allTugas = [];
     var sortKey = 'nim';
     var sortDir = 1;
 
@@ -634,7 +655,9 @@ import Sidebar from '../components/Sidebar.astro';
         allStudents = d.data.students;
         allEvaluasi = d.data.evaluasi || [];
         evalByStudent = d.data.eval_by_student || {};
+        allTugas = d.data.tugas || [];
         renderNilaiEval();
+        renderTugas();
         kelasOptions = [];
         allStudents.forEach(function (s) { if (s.kelas && kelasOptions.indexOf(s.kelas) === -1) kelasOptions.push(s.kelas); });
         fillKelas();
@@ -775,6 +798,32 @@ import Sidebar from '../components/Sidebar.astro';
             '</td>';
         });
         html += '<td>' + (s.eval_pct != null ? '<strong>' + s.eval_pct + '%</strong>' : '–') + '</td></tr>';
+      });
+      tb.innerHTML = html;
+    }
+
+    // ===== Pengumpulan tugas PDF =====
+    function renderTugas() {
+      var tb = document.getElementById('tugasTbody');
+      if (!tb) return;
+      document.getElementById('tugasCount').textContent = '(' + allTugas.length + ' pengumpulan)';
+      if (!allTugas.length) {
+        tb.innerHTML = '<tr><td colspan="9" class="muted">Belum ada pengumpulan tugas.</td></tr>';
+        return;
+      }
+      var html = '';
+      allTugas.forEach(function (t) {
+        html += '<tr>' +
+          '<td>' + esc(t.nim) + '</td>' +
+          '<td>' + esc(t.nama) + '</td>' +
+          '<td>' + esc(t.kelas || '–') + '</td>' +
+          '<td>P' + String(t.pertemuan_id).padStart(2, '0') + '</td>' +
+          '<td>' + esc(t.original_name) + '<span class="muted" style="display:block;font-size:11px;">' + (t.mime || '') + '</span></td>' +
+          '<td>' + (t.size > 0 ? Math.round(t.size / 1024) + ' KB' : '–') + '</td>' +
+          '<td>' + (t.drive_file_id ? '<span class="badge-ok">Drive</span>' : '–') + '</td>' +
+          '<td>' + esc(t.submitted_at) + '</td>' +
+          '<td><a class="btn-sim" style="font-size:11.5px; padding:5px 9px;" href="/api/tugas_download.php?id=' + t.id + '">Unduh</a></td>' +
+          '</tr>';
       });
       tb.innerHTML = html;
     }

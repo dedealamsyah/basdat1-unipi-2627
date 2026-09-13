@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.3.0] - 2026-09-13
+
+### Added — Nilai evaluasi & pengumpulan tugas
+- **Dashboard admin · "Nilai Evaluasi Mahasiswa"**: matriks persentase skor evaluasi per
+  pertemuan (hijau ≥80/amber 60–79/merah <60), titik merah indikasi integritas, kolom rata-rata
+  evaluasi; data `eval_by_student` dari satu query `evaluasi_list()`.
+- **Pengumpulan tugas PDF (Pertemuan 2)**: komponen `TugasUpload` di materi (Latihan Mandiri
+  Belajar Mandiri), format PDF maks. 8 MB, satu pengumpulan boleh diganti, self-healing tabel
+  `tugas`, penyimpanan di `api/uploads/tugas` (diblokir akses web langsung), unduh khusus admin
+  (`/api/tugas_download.php`).
+- **Google Drive (opsional)**: unggah otomatis ke Drive per pertemuan via service account
+  (`api/gdrive-service.json` + `TUGAS_DRIVE_FOLDERS`); tanpa kredensial cukup tersimpan lokal.
+- **Dashboard admin · "Pengumpulan Tugas PDF"**: daftar unggahan + tombol Unduh.
+- `auth.js`: FormData tidak lagi dikonversi JSON pada `APIAuth.api()`.
+
+### Fixed
+- **JOIN evaluasi gagal**: tabel `evaluasi` dibuat dgn kolasi `utf8mb4_unicode_ci` sementara tabel
+  lain `utf8mb4_general_ci` → `Illegal mix of collations` membuat "Evaluasi & Integritas" tampil
+  0 pengumpulan padahal ada 42. Sinkronisasi kolasi di `migrate.php` (idempoten) + ALTER di DB live.
+
+---
+
 ## [2.2.1] - 2026-09-11
 
 ### Fixed — Mode Presentasi Dosen "stuck" di "Memeriksa akses…"

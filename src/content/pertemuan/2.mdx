@@ -16,6 +16,7 @@ kuis:
 
 import QuizCard from '../../components/QuizCard.astro';
 import Evaluasi from '../../components/Evaluasi.astro';
+import TugasUpload from '../../components/TugasUpload.astro';
 
 export const EVAL_P2 = [
   { soal: "Dalam ERD, entitas yang keberadaannya bergantung pada entitas lain dan tidak memiliki key sendiri disebut...", opsi: [
@@ -296,7 +297,27 @@ Atribut mendeskripsikan properti dari entitas. Klasifikasi menurut **Silberschat
 
 <Evaluasi pid={2} data={EVAL_P2} />
 
-## H. Referensi
+## H. Latihan Mandiri (Belajar Mandiri / BM)
+
+Sebagai persiapan menuju Minggu 3 (penyelesaian ERD dari studi kasus kelompok), kerjakan latihan berikut:
+
+1. Pilih satu sistem sederhana yang Anda kenal (contoh: peminjaman buku perpustakaan, pemesanan tiket bioskop, atau pendaftaran ekstrakurikuler sekolah).
+2. Identifikasi minimal 3 entitas, masing-masing dengan minimal 2 atribut (salah satunya atribut kunci).
+3. Tentukan relasi antar entitas beserta kardinalitasnya (1:1, 1:N, atau M:N).
+4. Gambar ERD lengkap menggunakan draw.io, dbdiagram.io, atau manual di kertas, lalu **ekspor sebagai PDF** dan kumpulkan di bawah ini.
+
+<blockquote class="callout callout--amber">
+  <span class="callout__label">Catatan Pengumpulan</span>
+  <p>Format <strong>PDF</strong> (maks. 8 MB). Satu pengumpulan per mahasiswa; boleh mengganti berkas sebelum batas waktu. Hasil unggahan otomatis terkumpul untuk dosen.</p>
+</blockquote>
+
+<TugasUpload
+  pid={2}
+  title="Pengumpulan ERD Pembuatan Model Konseptual"
+  note="Unggah hasil gambar ERD Anda (disarankan ekspor PDF) dari latihan mandiri di atas."
+/>
+
+## I. Referensi
 
 <ul class="refs">
   <li>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7th ed.). Pearson Education Limited.</li>

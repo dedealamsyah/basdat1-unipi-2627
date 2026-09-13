@@ -143,4 +143,21 @@ if (!$stDummy->fetch()) {
     )->execute(array('mhs_dummy', 'mhs_dummy', 'IF3A', password_hash('dummy', PASSWORD_DEFAULT)));
 }
 
+// Tabel pengumpulan tugas berkas (PDF) — idempoten
+$pdo->exec(
+    "CREATE TABLE IF NOT EXISTS tugas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nim VARCHAR(24) NOT NULL,
+        pertemuan_id INT NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        original_name VARCHAR(255) NOT NULL,
+        mime VARCHAR(120) NOT NULL DEFAULT 'application/pdf',
+        size INT NOT NULL DEFAULT 0,
+        drive_file_id VARCHAR(255) NULL,
+        submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_tugas_nim_ptm (nim, pertemuan_id),
+        KEY idx_tugas_ptm (pertemuan_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+);
+
 json_out(array('ok' => true, 'data' => array('status' => 'migrasi selesai')));
