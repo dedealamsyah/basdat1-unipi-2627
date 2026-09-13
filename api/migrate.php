@@ -84,8 +84,13 @@ $pdo->exec(
         submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uq_eval_nim_ptm (nim, pertemuan_id),
         KEY idx_eval_ptm (pertemuan_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 );
+
+// Sinkronkan kolasi `evaluasi` agar sama dengan tabel lain (utf8mb4_general_ci).
+// Mismatch kolasi menyebabkan JOIN users.nim = evaluasi.nim gagal
+// ("Illegal mix of collations"). Idempoten: aman dijalankan berulang.
+$pdo->exec("ALTER TABLE evaluasi CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
 
 // Kolom kewajiban ganti password (bila belum ada) → paksa akun lama saat pertama migrasi
 $cols = $pdo->query('SHOW COLUMNS FROM users')->fetchAll();
