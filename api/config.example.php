@@ -48,9 +48,6 @@ function json_in(): array
     return is_array($data) ? $data : array();
 }
 
-/** Folder Google Drive tujuan pengumpulan per pertemuan (kosong = hanya lokal). */
-const TUGAS_DRIVE_FOLDERS = array(); // contoh: array(2 => '<folder-id>')
-
 /** Deteksi HTTPS, termasuk saat di belakang proxy (Cloudflare). */
 function is_https(): bool
 {

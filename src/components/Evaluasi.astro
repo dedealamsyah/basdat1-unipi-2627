@@ -518,18 +518,27 @@ const { pid, data } = Astro.props;
 
     function onPaste(e) {
       if (!isActive) return;
+      if (inTugasBox(e)) return; // kolom tautan tugas (Google Drive) dikecualikan
       pasteCount++;
       e.preventDefault();
       warnKeep('<b>Menempel (paste) dilarang</b> pada evaluasi dan telah dicatat. Kerjakan dengan pemahaman sendiri.');
     }
     function onCopy(e) {
       if (!isActive) return;
+      if (inTugasBox(e)) return; // kolom tautan tugas (Google Drive) dikecualikan
       copyCount++;
       e.preventDefault();
       warnKeep('Aktivitas salin (copy) dicatat pada evaluasi ini.');
     }
+    // Kolom tautan Google Drive pada pengumpulan tugas tidak tunduk aturan
+    // anti-copy-paste evaluasi (mahasiswa menyalin tautan dari Drive sendiri).
+    function inTugasBox(e) {
+      var t = e && e.target;
+      return !!(t && t.closest && t.closest('.tugas-box'));
+    }
     function onCtx(e) {
       if (!isActive) return;
+      if (inTugasBox(e)) return; // kolom tautan tugas (Google Drive) dikecualikan
       e.preventDefault();
     }
     function onVis() {

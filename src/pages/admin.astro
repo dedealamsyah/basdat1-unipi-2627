@@ -243,19 +243,19 @@ import Sidebar from '../components/Sidebar.astro';
   <!-- PENGUMPULAN TUGAS -->
   <section class="block">
     <div class="section-head">
-      <h2 class="section-title"><span class="section-badge">9</span> Pengumpulan Tugas PDF</h2>
+      <h2 class="section-title"><span class="section-badge">9</span> Pengumpulan Tugas (Link Drive)</h2>
       <span id="tugasCount" class="muted" style="font-size:12px;"></span>
     </div>
     <p class="muted" style="font-size:12px; margin-top:0;">
-      Berkas tugas yang diunggah mahasiswa (mis. ERD Latihan Mandiri Pertemuan 2). Klik
-      <strong>Unduh</strong> untuk mengambil berkas dari server.
+      Tugas mahasiswa berupa tautan Google Drive (berbagi publik). Klik
+      <strong>Buka</strong> untuk melihat berkas di Drive.
     </p>
     <div style="overflow-x:auto; margin-top:12px;">
       <table class="dtable tbl-scroll" id="tugasTable">
         <thead><tr>
-          <th>NIM</th><th>Nama</th><th>Kelas</th><th>Ptm</th><th>Berkas</th><th>Ukuran</th><th>Drive</th><th>Waktu</th><th></th>
+          <th>NIM</th><th>Nama</th><th>Kelas</th><th>Ptm</th><th>Berkas</th><th>Drive</th><th>Waktu</th><th></th>
         </tr></thead>
-        <tbody id="tugasTbody"><tr><td colspan="9" class="muted">Memuat…</td></tr></tbody>
+        <tbody id="tugasTbody"><tr><td colspan="8" class="muted">Memuat…</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -802,27 +802,31 @@ import Sidebar from '../components/Sidebar.astro';
       tb.innerHTML = html;
     }
 
-    // ===== Pengumpulan tugas PDF =====
+    // ===== Pengumpulan tugas (tautan Google Drive) =====
     function renderTugas() {
       var tb = document.getElementById('tugasTbody');
       if (!tb) return;
       document.getElementById('tugasCount').textContent = '(' + allTugas.length + ' pengumpulan)';
       if (!allTugas.length) {
-        tb.innerHTML = '<tr><td colspan="9" class="muted">Belum ada pengumpulan tugas.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" class="muted">Belum ada pengumpulan tugas.</td></tr>';
         return;
       }
       var html = '';
       allTugas.forEach(function (t) {
+        var drive = t.drive_link || t.drive_file_id;
         html += '<tr>' +
           '<td>' + esc(t.nim) + '</td>' +
           '<td>' + esc(t.nama) + '</td>' +
           '<td>' + esc(t.kelas || '–') + '</td>' +
           '<td>P' + String(t.pertemuan_id).padStart(2, '0') + '</td>' +
-          '<td>' + esc(t.original_name) + '<span class="muted" style="display:block;font-size:11px;">' + (t.mime || '') + '</span></td>' +
-          '<td>' + (t.size > 0 ? Math.round(t.size / 1024) + ' KB' : '–') + '</td>' +
-          '<td>' + (t.drive_file_id ? '<span class="badge-ok">Drive</span>' : '–') + '</td>' +
+          '<td>' + (t.drive_file_id
+            ? '<span class="badge-ok">Drive</span><span class="muted" style="display:block;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(t.original_name || t.drive_link || '') + '</span>'
+            : esc(t.original_name || '–')) + '</td>' +
+          '<td>' + (drive ? '<span class="badge-ok">Link</span>' : '–') + '</td>' +
           '<td>' + esc(t.submitted_at) + '</td>' +
-          '<td><a class="btn-sim" style="font-size:11.5px; padding:5px 9px;" href="/api/tugas_download.php?id=' + t.id + '">Unduh</a></td>' +
+          '<td>' + (drive
+            ? '<a class="btn-sim" style="font-size:11.5px; padding:5px 9px;" href="' + esc(t.drive_link || 'https://drive.google.com/file/d/' + esc(t.drive_file_id) + '/view') + '" target="_blank" rel="noopener">Buka</a>'
+            : '<a class="btn-sim" style="font-size:11.5px; padding:5px 9px;" href="/api/tugas_download.php?id=' + t.id + '">Unduh</a>') + '</td>' +
           '</tr>';
       });
       tb.innerHTML = html;

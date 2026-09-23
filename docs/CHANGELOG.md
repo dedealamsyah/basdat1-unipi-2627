@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.4.0] - 2026-09-18
+
+### Changed — Pengumpulan tugas lewat tautan Google Drive (buka-ganti dari unggah PDF)
+
+- **Alur baru**: mahasiswa mengunggah berkas ke Google Drive pribadi, mengatur berbagi
+  menjadi **"Siapa saja yang memiliki link"**, lalu menempelkan tautannya di portal.
+  Tidak ada lagi unggah berkas ke server maupun service account Drive.
+- **`api/upload_tugas.php`**: menerima `{ pertemuan_id, drive_link }` (JSON), memvalidasi
+  bahwa tautan benar dari `drive.google.com`/`docs.google.com`, mengekstrak file id,
+  lalu mengecek akses publik memakai endpoint unduhan publik Google
+  (`docs.google.com/uc?export=download`). Tautan **privat ditolak** (422 + pesan arahan),
+  akses tak-konkret diizinkan dengan status `unknown`.
+- **DB `tugas`**: kolom baru `drive_link VARCHAR(700)` (idempoten via `tugas_ensure()`
+  di `config.php`, dipakai `upload_tugas.php` & `admin.php`; sinkron `migrate.php` &
+  `schema.sql`). Data lama (berkas PDF) tetap tersimpan & tetap bisa diunduh admin.
+- **`src/components/TugasUpload.astro`**: input tautan + langkah 3-tahap (unggah →
+  berbagi publik → tempel tautan), validasi URL sisi klien.
+- **Dashboard admin**: section "Pengumpulan Tugas (Link Drive)", tombol **Buka** membuka
+  tautan; mode lama tetap memakai **Unduh** (fallback berkas lokal).
+- **`api/tugas_download.php`**: kini redirect ke tautan Drive; fallback ke berkas PDF lama.
+- **`api/lib-drive.php` Dihapus**: layanan unggah otomatis (Service Account) tidak lagi
+  diperlukan. `TUGAS_DRIVE_FOLDERS` serta `gdrive_*()` dibersihkan dari `config.php`
+  (dan `config.example.php`); `tugas_dir()` dipertahankan hanya untuk unduh berkas
+  PDF versi lama di `tugas_download.php`.
+
+### Fixed
+
+- Halaman **Pertemuan 2 di server ternyata 0 byte** (rusak sejak lama) → dipulihkan dengan
+  hasil build baru.
+
+---
+
 ## [2.3.0] - 2026-09-13
 
 ### Added — Nilai evaluasi & pengumpulan tugas

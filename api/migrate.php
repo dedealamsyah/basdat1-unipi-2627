@@ -143,21 +143,32 @@ if (!$stDummy->fetch()) {
     )->execute(array('mhs_dummy', 'mhs_dummy', 'IF3A', password_hash('dummy', PASSWORD_DEFAULT)));
 }
 
-// Tabel pengumpulan tugas berkas (PDF) — idempoten
+// Tabel pengumpulan tugas via tautan Google Drive — idempoten
 $pdo->exec(
     "CREATE TABLE IF NOT EXISTS tugas (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nim VARCHAR(24) NOT NULL,
         pertemuan_id INT NOT NULL,
-        filename VARCHAR(255) NOT NULL,
-        original_name VARCHAR(255) NOT NULL,
-        mime VARCHAR(120) NOT NULL DEFAULT 'application/pdf',
+        filename VARCHAR(255) NOT NULL DEFAULT '',
+        original_name VARCHAR(255) NOT NULL DEFAULT '',
+        mime VARCHAR(120) NOT NULL DEFAULT 'google-drive',
         size INT NOT NULL DEFAULT 0,
         drive_file_id VARCHAR(255) NULL,
+        drive_link VARCHAR(700) NULL,
         submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uq_tugas_nim_ptm (nim, pertemuan_id),
         KEY idx_tugas_ptm (pertemuan_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 );
+
+// Kolom lama dari versi berkas (PDF) -> tambahkan drive_link secara idempoten
+try {
+    $has = $pdo->query("SHOW COLUMNS FROM tugas LIKE 'drive_link'")->fetch();
+    if (!$has) {
+        $pdo->exec("ALTER TABLE tugas ADD COLUMN drive_link VARCHAR(700) NULL AFTER drive_file_id");
+    }
+} catch (Throwable $_e) {
+    // tabel belum ada / kolom sudah ada tentunya
+}
 
 json_out(array('ok' => true, 'data' => array('status' => 'migrasi selesai')));

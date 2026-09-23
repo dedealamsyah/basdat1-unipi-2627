@@ -94,12 +94,13 @@ foreach (evaluasi_list() as $e) {
     );
 }
 
-// Daftar pengumpulan tugas berkas (PDF) — terbaru dulu
+// Daftar pengumpulan tugas (tautan Google Drive) — terbaru dulu
 $tugas = array();
 try {
+    tugas_ensure();
     $st = db()->query(
         'SELECT t.id, t.nim, u.nama, u.kelas, t.pertemuan_id, t.original_name, t.mime,
-                t.size, t.drive_file_id, t.submitted_at
+                t.size, t.drive_file_id, t.drive_link, t.submitted_at
          FROM tugas t JOIN users u ON u.nim = t.nim
          ORDER BY t.submitted_at DESC'
     );
@@ -114,6 +115,7 @@ try {
             'mime' => $r['mime'],
             'size' => (int) $r['size'],
             'drive_file_id' => $r['drive_file_id'],
+            'drive_link' => $r['drive_link'] ?? null,
             'submitted_at' => $r['submitted_at'],
         );
     }

@@ -57,16 +57,17 @@ CREATE TABLE IF NOT EXISTS evaluasi (
 --   nim = 'admin' / password = 'AdminUNIPI2026'
 -- Mohon segera diganti setelah login pertama.
 
--- Pengumpulan tugas berkas (PDF) per mahasiswa per pertemuan (boleh replace)
+-- Pengumpulan tugas per mahasiswa per pertemuan via tautan Google Drive (boleh replace)
 CREATE TABLE IF NOT EXISTS tugas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nim VARCHAR(24) NOT NULL,
   pertemuan_id INT NOT NULL,
-  filename VARCHAR(255) NOT NULL,
-  original_name VARCHAR(255) NOT NULL,
-  mime VARCHAR(120) NOT NULL DEFAULT 'application/pdf',
+  filename VARCHAR(255) NOT NULL DEFAULT '',
+  original_name VARCHAR(255) NOT NULL DEFAULT '',
+  mime VARCHAR(120) NOT NULL DEFAULT 'google-drive',
   size INT NOT NULL DEFAULT 0,
   drive_file_id VARCHAR(255) NULL,
+  drive_link VARCHAR(700) NULL,
   submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_tugas_nim_ptm (nim, pertemuan_id),
   KEY idx_tugas_ptm (pertemuan_id)
