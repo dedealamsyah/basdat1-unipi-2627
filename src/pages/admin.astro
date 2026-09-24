@@ -14,8 +14,23 @@ import { erdTemplates } from '../data/erdTemplates';
     <div id="adminStatus" class="muted"></div>
   </div>
 
+  <!-- NAVIGASI CEPAT BAGIAN DASHBOARD -->
+  <nav class="admin-nav" id="adminNav" aria-label="Navigasi cepat dashboard admin">
+    <span class="admin-nav__label">Langsung ke:</span>
+    <a href="#bag-mengajar">Mengajar</a>
+    <a href="#bag-ringkasan">Ringkasan</a>
+    <a href="#bag-filter">Pencarian</a>
+    <a href="#bag-pertemuan">Menu Pertemuan</a>
+    <a href="#bag-import">Import Akun</a>
+    <a href="#bag-mahasiswa">Mahasiswa</a>
+    <a href="#bag-nilai">Nilai Evaluasi</a>
+    <a href="#bag-integr">Integritas</a>
+    <a href="#bag-tugas">Tugas</a>
+    <a href="#bag-erd">Template ERD</a>
+  </nav>
+
   <!-- MODE MENGAJAR -->
-  <section class="block mengajar">
+  <section class="block mengajar" id="bag-mengajar">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">▶</span> Mode Mengajar &amp; Presentasi</h2>
       <span class="muted">Presentasikan materi langsung di kelas</span>
@@ -50,7 +65,7 @@ import { erdTemplates } from '../data/erdTemplates';
   </section>
 
   <!-- STATISTIK -->
-  <section class="block">
+  <section class="block" id="bag-ringkasan">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">1</span> Ringkasan</h2>
       <span class="muted">Pembaruan otomatis dari data terkini</span>
@@ -112,7 +127,7 @@ import { erdTemplates } from '../data/erdTemplates';
   </section>
 
   <!-- FILTER -->
-  <section class="block">
+  <section class="block" id="bag-filter">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">2</span> Pencarian &amp; Filter</h2>
     </div>
@@ -157,7 +172,7 @@ import { erdTemplates } from '../data/erdTemplates';
   </section>
 
   <!-- KELOLA PERTEMUAN -->
-  <section class="block">
+  <section class="block" id="bag-pertemuan">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">3</span> Kelola Menu Pertemuan</h2>
       <span class="muted" style="font-size:11.5px;">Perubahan langsung tampil di portal tanpa rebuild.</span>
@@ -179,7 +194,7 @@ import { erdTemplates } from '../data/erdTemplates';
   </section>
 
   <!-- IMPORT -->
-  <section class="block">
+  <section class="block" id="bag-import">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">4</span> Import Akun Mahasiswa</h2>
     </div>
@@ -199,7 +214,7 @@ import { erdTemplates } from '../data/erdTemplates';
   </section>
 
   <!-- DAFTAR -->
-  <section class="block">
+  <section class="block" id="bag-mahasiswa">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">5</span> Daftar Mahasiswa</h2>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -226,7 +241,7 @@ import { erdTemplates } from '../data/erdTemplates';
 
   <!-- EVALUASI -->
   <!-- NILAI EVALUASI -->
-  <section class="block">
+  <section class="block" id="bag-nilai">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">6</span> Nilai Evaluasi Mahasiswa</h2>
       <span class="muted">Matriks skor evaluasi per pertemuan (1x percobaan)</span>
@@ -243,7 +258,7 @@ import { erdTemplates } from '../data/erdTemplates';
     </div>
   </section>
 
-  <section class="block">
+  <section class="block" id="bag-integr">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">7</span> Evaluasi &amp; Integritas</h2>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -270,7 +285,7 @@ import { erdTemplates } from '../data/erdTemplates';
   </section>
 
   <!-- PENGUMPULAN TUGAS -->
-  <section class="block">
+  <section class="block" id="bag-tugas">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">8</span> Pengumpulan Tugas (Link Drive)</h2>
       <span id="tugasCount" class="muted" style="font-size:12px;"></span>
@@ -290,7 +305,7 @@ import { erdTemplates } from '../data/erdTemplates';
   </section>
 
   <!-- TEMPLATE WORKSHEET ERD (mode mengajar) -->
-  <section class="block">
+  <section class="block" id="bag-erd">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">9</span> Template Worksheet Perancangan ERD</h2>
       <span class="muted" style="font-size:11.5px;">Mode mengajar — tanpa mengetik manual.</span>
@@ -402,6 +417,67 @@ import { erdTemplates } from '../data/erdTemplates';
     margin-top: 20px;
   }
   @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ==== Navigasi cepat bagian dashboard ==== */
+  .admin-nav {
+    position: sticky;
+    top: 10px;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 10px 12px;
+    margin: 0 0 22px;
+    background: rgba(243, 245, 247, .92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    scrollbar-width: thin;
+  }
+  [data-theme="dark"] .admin-nav { background: rgba(14, 20, 24, .92); }
+  .admin-nav__label {
+    flex: 0 0 auto;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-left: 4px;
+  }
+  .admin-nav a {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--navy-700);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 6px 12px;
+    white-space: nowrap;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .admin-nav a:hover {
+    border-color: var(--navy-700);
+    background: var(--green-100);
+    color: var(--navy-900);
+  }
+  .admin-nav a.active {
+    background: var(--navy-700);
+    border-color: var(--navy-700);
+    color: #fff;
+  }
+  .main section.block { scroll-margin-top: 96px; }
+  @media (max-width: 880px) {
+    .admin-nav { top: 46px; }
+    .main section.block { scroll-margin-top: 132px; }
+  }
 
   /* ==== Kartu KPI (Ringkasan) ==== */
   .stat-grid {
@@ -1529,6 +1605,28 @@ import { erdTemplates } from '../data/erdTemplates';
         window.open('/praktikum', '_self');
       });
     }
+
+    // ===== Sorot menu aktif sesuai bagian yang terlihat (scroll-spy) =====
+    (function () {
+      var links = document.querySelectorAll('.admin-nav a[href^="#"]');
+      var targets = [];
+      links.forEach(function (a) {
+        var s = document.querySelector(a.getAttribute('href'));
+        if (s) targets.push(s);
+      });
+      if (!targets.length) return;
+      function setActive(id) {
+        links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + id); });
+      }
+      if ('IntersectionObserver' in window) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (en.isIntersecting) setActive(en.target.id);
+          });
+        }, { rootMargin: '-15% 0px -70% 0px' });
+        targets.forEach(function (s) { spy.observe(s); });
+      }
+    })();
 
     loadAdmin();
     loadPertemuan();
