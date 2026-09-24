@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.5.0] - 2026-09-23
+
+### Added — Template Worksheet Perancangan ERD (mode mengajar, khusus admin)
+
+- **Panel admin · section "Template Worksheet Perancangan ERD"**: 5 template studi kasus lengkap
+  (SIAKAD, Perpustakaan, Rumah Sakit, Parkir, Hotel) berisi entitas, atribut & key, relasi
+  (kardinalitas + partisipasi), dan asumsi — model jawaban langsung jadi.
+- Tombol **Solusi**: menampilkan model jawaban di panel admin untuk dijelaskan di kelas
+  (tanpa mengetik manual). Tombol **Terapkan**: mengisi worksheet `/praktikum` secara otomatis
+  melalui localStorage lalu membukanya untuk demonstrasi. **Reset Worksheet** mengosongkannya.
+- Template **hanya dibundel di halaman admin** (`src/data/erdTemplates.ts`, di-gate side-server
+  oleh `admin/index.php`) — **tidak tersedia/bocor di halaman mahasiswa**.
+
+---
+
 ## [2.4.0] - 2026-09-18
 
 ### Changed — Pengumpulan tugas lewat tautan Google Drive (buka-ganti dari unggah PDF)

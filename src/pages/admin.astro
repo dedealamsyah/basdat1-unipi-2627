@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
+import { erdTemplates } from '../data/erdTemplates';
 ---
 
 <BaseLayout title="Admin · Dashboard Progres & Nilai · Basis Data UNIPI" description="Panel admin: progres belajar, nilai, dan pengelolaan akun">
@@ -17,19 +18,35 @@ import Sidebar from '../components/Sidebar.astro';
   <section class="block mengajar">
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">▶</span> Mode Mengajar &amp; Presentasi</h2>
-      <span class="muted">Presentasikan materi langsung di kelas, slide per bagian dengan proyektor</span>
+      <span class="muted">Presentasikan materi langsung di kelas</span>
     </div>
     <p class="muted" style="font-size:12px; margin-top:2px;">
       Klik <b>Presentasikan</b> untuk membuka materi pertemuan dalam mode layar penuh
-      (navigasi panah, daftar slide, fullscreen). Materi dibagi otomatis per bagian.
+      (navigasi panah, daftar slide, fullscreen). Daftar pertemuan berikut <b>diciutkan</b>
+      agar dashboard tetap ringkas.
     </p>
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
       <a class="btn-sim" style="background:var(--amber-400); color:#4a3700; text-decoration:none;" href="/timeline">Lihat Timeline Perkuliahan</a>
       <span class="muted" style="align-self:center; font-size:12px;">Peta 16 minggu dari RPS — tampil untuk mahasiswa sebagai infografik.</span>
     </div>
-    <div class="mengajar__grid" id="mengajarGrid">
-      <p class="muted">Memuat…</p>
-    </div>
+    <details class="mengajar__details" id="mengajarDetails">
+      <summary>
+        <span id="mengajarCount">Daftar 16 pertemuan</span>
+        <span class="mengajar__toggle-hint">klik untuk perluas / ciutkan</span>
+      </summary>
+      <div class="mengajar__table-wrap">
+        <table class="dtable tbl-scroll" id="mengajarTable">
+          <thead><tr>
+            <th style="width:64px;">P</th>
+            <th>Pertemuan</th>
+            <th style="width:180px;">Info</th>
+            <th style="width:104px;">Status</th>
+            <th style="width:196px;">Aksi</th>
+          </tr></thead>
+          <tbody id="mengajarTbody"><tr><td colspan="5" class="muted">Memuat…</td></tr></tbody>
+        </table>
+      </div>
+    </details>
   </section>
 
   <!-- STATISTIK -->
@@ -40,43 +57,55 @@ import Sidebar from '../components/Sidebar.astro';
     </div>
 
     <div class="stat-grid" id="statGrid">
-      <div class="stat-card stat-card--gold">
+      <div class="stat-card stat-card--teal">
         <span class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </span>
-        <span class="stat-num" id="stTotal">–</span>
-        <span class="stat-label">Mahasiswa Terdaftar</span>
+        <span class="stat-body">
+          <span class="stat-num" id="stTotal">–</span>
+          <span class="stat-label">Mahasiswa Terdaftar</span>
+          <span class="stat-meta" id="stTotalMeta"></span>
+        </span>
       </div>
       <div class="stat-card stat-card--green">
         <span class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
         </span>
-        <span class="stat-num" id="stProgres">–</span>
-        <span class="stat-label">Rata-rata Progres</span>
+        <span class="stat-body">
+          <span class="stat-num" id="stProgres">–</span>
+          <span class="stat-label">Rata-rata Progres</span>
+          <span class="stat-meta" id="stProgresMeta"></span>
+        </span>
       </div>
       <div class="stat-card stat-card--navy">
         <span class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
         </span>
-        <span class="stat-num" id="stNilai">–</span>
-        <span class="stat-label">Rata-rata Nilai</span>
+        <span class="stat-body">
+          <span class="stat-num" id="stNilai">–</span>
+          <span class="stat-label">Rata-rata Nilai</span>
+          <span class="stat-meta" id="stNilaiMeta"></span>
+        </span>
       </div>
       <div class="stat-card stat-card--amber">
         <span class="stat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </span>
-        <span class="stat-num" id="stTuntas">–</span>
-        <span class="stat-label">Tuntas 100%</span>
+        <span class="stat-body">
+          <span class="stat-num" id="stTuntas">–</span>
+          <span class="stat-label">Tuntas 100%</span>
+          <span class="stat-meta" id="stTuntasMeta"></span>
+        </span>
       </div>
     </div>
 
     <div class="two-col">
-      <div>
-        <h3 class="mini-title">Rekap per Kelas</h3>
+      <div class="panel">
+        <h3 class="panel__title">Rekap per Kelas</h3>
         <div id="kelasBox" class="kelas-grid"><p class="muted">Memuat…</p></div>
       </div>
-      <div>
-        <h3 class="mini-title">Distribusi Nilai</h3>
+      <div class="panel">
+        <h3 class="panel__title">Distribusi Nilai</h3>
         <div id="distBox" class="dist-box"><p class="muted">Memuat…</p></div>
       </div>
     </div>
@@ -199,7 +228,7 @@ import Sidebar from '../components/Sidebar.astro';
   <!-- NILAI EVALUASI -->
   <section class="block">
     <div class="section-head">
-      <h2 class="section-title"><span class="section-badge">7</span> Nilai Evaluasi Mahasiswa</h2>
+      <h2 class="section-title"><span class="section-badge">6</span> Nilai Evaluasi Mahasiswa</h2>
       <span class="muted">Matriks skor evaluasi per pertemuan (1x percobaan)</span>
     </div>
     <p class="muted" style="font-size:12px; margin-top:0;">
@@ -216,7 +245,7 @@ import Sidebar from '../components/Sidebar.astro';
 
   <section class="block">
     <div class="section-head">
-      <h2 class="section-title"><span class="section-badge">6</span> Evaluasi &amp; Integritas</h2>
+      <h2 class="section-title"><span class="section-badge">7</span> Evaluasi &amp; Integritas</h2>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <label class="integ-filter">
           <input type="checkbox" id="onlyFlagged" />
@@ -243,7 +272,7 @@ import Sidebar from '../components/Sidebar.astro';
   <!-- PENGUMPULAN TUGAS -->
   <section class="block">
     <div class="section-head">
-      <h2 class="section-title"><span class="section-badge">9</span> Pengumpulan Tugas (Link Drive)</h2>
+      <h2 class="section-title"><span class="section-badge">8</span> Pengumpulan Tugas (Link Drive)</h2>
       <span id="tugasCount" class="muted" style="font-size:12px;"></span>
     </div>
     <p class="muted" style="font-size:12px; margin-top:0;">
@@ -258,6 +287,26 @@ import Sidebar from '../components/Sidebar.astro';
         <tbody id="tugasTbody"><tr><td colspan="8" class="muted">Memuat…</td></tr></tbody>
       </table>
     </div>
+  </section>
+
+  <!-- TEMPLATE WORKSHEET ERD (mode mengajar) -->
+  <section class="block">
+    <div class="section-head">
+      <h2 class="section-title"><span class="section-badge">9</span> Template Worksheet Perancangan ERD</h2>
+      <span class="muted" style="font-size:11.5px;">Mode mengajar — tanpa mengetik manual.</span>
+    </div>
+    <p class="muted" style="font-size:12px; margin-top:2px;">
+      Pilih template studi kasus yang sudah lengkap (entitas, atribut &amp; key, relasi, asumsi).
+      <b>Terapkan ke Worksheet</b> membuka <code>/praktikum</code> dengan isian terisi otomatis untuk
+      didemonstrasikan di kelas; <b>Solusi</b> menampilkan model jawaban langsung di panel ini.
+      Template hanya tersimpan di panel admin, tidak tersedia di halaman mahasiswa.
+    </p>
+    <div class="erd-grid" id="erdTempGrid"><p class="muted">Memuat…</p></div>
+    <div class="erd-preview" id="erdTempPreview" hidden></div>
+    <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+      <button class="btn-sim" id="erdResetWs" style="background:var(--red-600);">Reset Worksheet (/praktikum)</button>
+    </div>
+    <p class="muted" id="erdMsg" style="margin-top:8px;"></p>
   </section>
 
   <!-- DETAIL -->
@@ -310,6 +359,7 @@ import Sidebar from '../components/Sidebar.astro';
       </table>
     </div>
   </section>
+  <div hidden id="erdTemplatesJson">{JSON.stringify(erdTemplates)}</div>
 </BaseLayout>
 
 <style is:global>
@@ -345,12 +395,6 @@ import Sidebar from '../components/Sidebar.astro';
     font-weight: 700;
     padding: 0 6px;
   }
-  .mini-title {
-    font-family: var(--font-display);
-    font-size: 14px;
-    color: var(--navy-700);
-    margin: 0 0 10px;
-  }
   .two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -359,22 +403,27 @@ import Sidebar from '../components/Sidebar.astro';
   }
   @media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
 
+  /* ==== Kartu KPI (Ringkasan) ==== */
   .stat-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
   }
   .stat-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
     background: var(--card);
     border: 1px solid var(--line);
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius);
-    padding: 18px 16px;
-    text-align: left;
-    border-top: 3px solid var(--teal-400);
+    padding: 16px;
+    border-top: 3px solid var(--line-strong);
     position: relative;
+    transition: border-color .15s, box-shadow .15s, transform .1s;
   }
-  .stat-card--gold { border-top-color: var(--teal-400); }
+  .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .stat-card--teal { border-top-color: var(--teal-400); }
   .stat-card--green { border-top-color: var(--green-600); }
   .stat-card--navy { border-top-color: var(--navy-800); }
   .stat-card--amber { border-top-color: var(--amber-400); }
@@ -382,75 +431,156 @@ import Sidebar from '../components/Sidebar.astro';
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
     color: #fff;
-    margin-bottom: 10px;
+    flex: 0 0 auto;
   }
-  .stat-card--gold .stat-icon { background: var(--teal-400); }
+  .stat-card--teal .stat-icon { background: var(--teal-400); }
   .stat-card--green .stat-icon { background: var(--green-600); }
   .stat-card--navy .stat-icon { background: var(--navy-800); }
   .stat-card--amber .stat-icon { background: var(--amber-400); }
+  .stat-body { display: flex; flex-direction: column; min-width: 0; }
   .stat-num {
     display: block;
     font-family: var(--font-display);
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.15;
     color: var(--ink);
-    margin-bottom: 6px;
+    margin-bottom: 2px;
   }
   .stat-label {
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: .03em;
+    letter-spacing: .05em;
     text-transform: uppercase;
     color: var(--ink-soft);
+  }
+  .stat-meta {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+    padding-top: 7px;
+    border-top: 1px dashed var(--line);
+  }
+
+  /* ==== Panel (Rekap per Kelas & Distribusi Nilai) ==== */
+  .panel {
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 16px 18px 18px;
+    height: 100%;
+  }
+  .panel__title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-display);
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    color: var(--ink);
+    margin: 0 0 14px;
+  }
+  .panel__title::before {
+    content: "";
+    width: 4px;
+    height: 16px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--navy-700), var(--green-600));
+    flex-shrink: 0;
   }
 
   .kelas-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
   }
-  .kelas-card {
+  .kcard {
     background: var(--card);
     border: 1px solid var(--line);
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius);
-    padding: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
   }
-  .kelas-card b {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 16px;
+  .kcard__tag {
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
     font-weight: 700;
+    letter-spacing: .04em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+  }
+  .kcard__val {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
     color: var(--ink);
   }
-  .kelas-card span {
-    display: block;
+  .kcard__label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .kcard__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+  }
+  .kcard__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 11.5px;
     color: var(--ink-soft);
-    margin-top: 2px;
   }
+  .kcard__row b { color: var(--ink); font-family: var(--font-mono); }
 
-  .dist-box { display: flex; flex-direction: column; gap: 6px; }
+  .dist-box { display: flex; flex-direction: column; gap: 7px; }
   .dist-row {
     display: grid;
-    grid-template-columns: 42px 1fr 34px;
+    grid-template-columns: 30px 1fr 28px;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
+    gap: 10px;
+    font-size: 12.5px;
   }
-  .dist-row span:first-child { font-family: var(--font-body); font-weight: 700; color: var(--ink); }
-  .dist-bar { height: 14px; border-radius: 7px; background: var(--teal-100); overflow: hidden; }
-  .dist-bar i {
-    display: block; height: 100%; border-radius: 7px;
+  .dist-letter { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--ink); }
+  .dist-track {
+    height: 12px;
+    border-radius: 6px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .dist-track i {
+    display: block;
+    height: 100%;
+    border-radius: 6px;
     background: linear-gradient(90deg, var(--navy-700), var(--green-600));
   }
-  .dist-row span:last-child { text-align: right; color: var(--ink-soft); }
+  .dist-count {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
 
   .filter-grid {
     display: grid;
@@ -529,35 +659,55 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .integ-filter input { accent-color: var(--red-600); }
 
-  .mengajar__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 12px;
+  .mengajar__details {
     margin-top: 14px;
-  }
-  .mengajar__card {
-    background: var(--card);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-    padding: 14px 14px 12px;
+    background: var(--card);
+    overflow: hidden;
+  }
+  .mengajar__details summary {
+    cursor: pointer;
+    list-style: none;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: border-color .15s, box-shadow .15s, transform .08s;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    background: linear-gradient(180deg, rgba(11,35,27,.04), rgba(11,35,27,0));
+    user-select: none;
   }
-  .mengajar__card:hover { border-color: var(--navy-700); box-shadow: var(--shadow-md); }
-  .mengajar__card.is-off { opacity: .55; }
-  .mengajar__card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .mengajar__num {
-    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
-    letter-spacing: .05em; color: var(--amber-500); flex-shrink: 0;
+  .mengajar__details summary::-webkit-details-marker { display: none; }
+  .mengajar__details summary::before {
+    content: "▸";
+    color: var(--teal-500);
+    display: inline-block;
+    transition: transform .15s;
+    margin-right: 8px;
   }
-  .mengajar__title { font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.35; }
-  .mengajar__sub { font-size: 11.5px; color: var(--ink-soft); line-height: 1.45; }
-  .mengajar__sections { font-size: 11px; color: var(--ink-faint); margin-top: auto; }
-  .mengajar__actions { display: flex; gap: 6px; margin-top: 4px; }
-  .mengajar__actions .btn-sim { font-size: 12px; padding: 7px 10px; }
+  .mengajar__details[open] summary::before { transform: rotate(90deg); }
+  .mengajar__details summary:hover { background: var(--teal-100); }
+  .mengajar__toggle-hint { font-size: 11px; font-weight: 400; color: var(--ink-faint); }
+  .mengajar__table-wrap { padding: 12px 14px 14px; overflow-x: auto; }
+  .mengajar__details .mengajar__table-wrap .dtable { margin: 0; }
+
+  .mengajar__pid {
+    font-family: var(--font-mono); font-weight: 700; color: var(--amber-500);
+    white-space: nowrap;
+  }
+  .mengajar__t { font-weight: 700; color: var(--ink); line-height: 1.35; }
+  .mengajar__s { font-size: 11px; color: var(--ink-soft); line-height: 1.4; margin-top: 2px; }
+  .mengajar__info { font-size: 11px; color: var(--ink-faint); white-space: nowrap; }
+  .mengajar__btn { white-space: nowrap; }
+  .mengajar__btn .btn-sim {
+    display: inline-block; font-size: 11.5px; padding: 6px 10px;
+    text-decoration: none; text-align: center; margin-right: 6px;
+  }
+  .mengajar__btn .btn-sim:last-child { margin-right: 0; }
 
   .badge-flag {
     display: inline-block; font-size: 10px; font-weight: 700;
@@ -565,6 +715,76 @@ import Sidebar from '../components/Sidebar.astro';
     background: #FBEFDC; color: #8A4A29; border: 1px solid #E7A83D;
     margin: 1px 2px 1px 0;
   }
+
+  /* Template worksheet ERD */
+  .erd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .erd-tpl {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--teal-500);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color .15s, box-shadow .15s, transform .08s;
+  }
+  .erd-tpl:hover { border-color: var(--navy-700); box-shadow: var(--shadow-md); }
+  .erd-tpl__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .erd-tpl__num {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+    letter-spacing: .05em; color: var(--amber-500); flex-shrink: 0;
+  }
+  .erd-tpl__title { font-weight: 700; font-size: 13.5px; color: var(--ink); line-height: 1.35; }
+  .erd-tpl__meta { font-size: 11px; color: var(--ink-soft); line-height: 1.5; }
+  .erd-tpl__meta b { color: var(--teal-600); }
+  .erd-tpl__actions { display: flex; gap: 6px; margin-top: auto; }
+  .erd-tpl__actions .btn-sim { font-size: 11.5px; padding: 6px 9px; flex: 1; text-align: center; }
+
+  .erd-preview {
+    margin-top: 16px;
+    border: 1.5px solid var(--navy-700);
+    border-radius: var(--radius);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+  .erd-preview__head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap;
+    padding: 12px 16px;
+    background: var(--navy-700); color: #fff;
+    border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  }
+  .erd-preview__head h3 { margin: 0; font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+  .erd-preview__body { padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+  .erd-preview__body h4 {
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .05em;
+    color: var(--navy-700); margin: 0 0 8px;
+  }
+  .erd-preview__body .wks-table { margin-top: 0; }
+  .erd-preview__narasi {
+    font-size: 13px; color: var(--ink-soft); line-height: 1.7;
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px;
+  }
+
+  .erd-preview .wks-table { width: 100%; border-collapse: collapse; margin-top: 0; }
+  .erd-preview .wks-table th {
+    background: var(--navy-700); color: #fff; font-family: var(--font-mono);
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em;
+    padding: 7px 10px; text-align: left; font-weight: 700;
+  }
+  .erd-preview .wks-table td {
+    padding: 7px 10px; border-bottom: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink);
+  }
+
   .badge-flag--red { background: #FDE8E8; color: #B3261E; border-color: #F0A2A0; }
   .badge-ok { color: var(--green-600); font-weight: 700; font-size: 11px; }
 
@@ -589,6 +809,9 @@ import Sidebar from '../components/Sidebar.astro';
 <script is:inline>
   (function () {
     var csrfToken = null;
+    var ERD_TEMPLATES = [];
+    try { ERD_TEMPLATES = JSON.parse(document.getElementById('erdTemplatesJson').textContent); }
+    catch (e) { ERD_TEMPLATES = []; }
 
     function loadCsrf() {
       var load = function (payload) {
@@ -684,23 +907,41 @@ import Sidebar from '../components/Sidebar.astro';
         kelas[k].sp += s.persen;
         if (s.akhir != null) { kelas[k].sn += s.akhir; kelas[k].nn++; }
       });
+      var kelasNames = Object.keys(kelas);
       document.getElementById('stTotal').textContent = total;
+      setMeta('stTotalMeta', kelasNames.length ? kelasNames.length + ' kelas terdata' : 'belum ada kelas');
       document.getElementById('stProgres').textContent = total ? Math.round(sumP / total) + '%' : '–';
+      setMeta('stProgresMeta', (total - tuntas) + ' mahasiswa belum tuntas');
       document.getElementById('stNilai').textContent = nN ? Math.round(sumN / nN) : '–';
+      setMeta('stNilaiMeta', nN + ' dengan nilai akhir');
       document.getElementById('stTuntas').textContent = tuntas;
+      setMeta('stTuntasMeta', tuntas + ' dari ' + total + ' mahasiswa');
 
       // rekap kelas
+      var KCARDS = [
+        { fg: 'var(--navy-700)', bg: 'var(--green-100)' },
+        { fg: 'var(--amber-400)', bg: 'var(--amber-100)' },
+        { fg: 'var(--teal-500)', bg: 'var(--teal-100)' },
+        { fg: 'var(--green-600)', bg: 'var(--green-100)' },
+        { fg: 'var(--red-600)', bg: 'var(--red-100)' }
+      ];
       var kb = document.getElementById('kelasBox');
       kb.innerHTML = '';
-      Object.keys(kelas).sort().forEach(function (k) {
+      kelasNames.sort().forEach(function (k, i) {
         var d = kelas[k];
+        var c = KCARDS[i % KCARDS.length];
+        var rows = '<span class="kcard__row">Progres <b>' + Math.round(d.sp / d.n) + '%</b></span>';
+        if (d.nn) rows += '<span class="kcard__row">Nilai Ø <b>' + Math.round(d.sn / d.nn) + '</b></span>';
         var el = document.createElement('div');
-        el.className = 'kelas-card';
-        el.innerHTML = '<b>' + esc(k) + '</b><span>' + d.n + ' mhs · progres ' + Math.round(d.sp / d.n) + '%</span>' +
-          (d.nn ? '<span>nilai Ø ' + Math.round(d.sn / d.nn) + '</span>' : '');
+        el.className = 'kcard';
+        el.innerHTML =
+          '<span class="kcard__tag" style="background:' + c.bg + ';color:' + c.fg + ';">' + esc(k) + '</span>' +
+          '<span class="kcard__val">' + d.n + '</span>' +
+          '<span class="kcard__label">Mahasiswa</span>' +
+          '<span class="kcard__rows">' + rows + '</span>';
         kb.appendChild(el);
       });
-      if (!Object.keys(kelas).length) kb.innerHTML = '<p class="muted">Belum ada data.</p>';
+      if (!kelasNames.length) kb.innerHTML = '<p class="muted">Belum ada data.</p>';
 
       // distribusi
       var order = ['A', 'AB', 'B', 'BC', 'C', 'D', 'E'];
@@ -712,9 +953,13 @@ import Sidebar from '../components/Sidebar.astro';
         var c = dist[h] || 0;
         var row = document.createElement('div');
         row.className = 'dist-row';
-        row.innerHTML = '<span>' + h + '</span><div class="dist-bar"><i style="width:' + (c / max * 100) + '%"></i></div><span>' + c + '</span>';
+        row.innerHTML = '<span class="dist-letter">' + h + '</span><div class="dist-track"><i style="width:' + (c / max * 100) + '%"></i></div><span class="dist-count">' + c + '</span>';
         box.appendChild(row);
       });
+    }
+    function setMeta(id, txt) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = txt;
     }
 
     function fillKelas() {
@@ -1096,35 +1341,41 @@ import Sidebar from '../components/Sidebar.astro';
       });
     }
     function renderMengajar() {
-      var grid = document.getElementById('mengajarGrid');
-      if (!grid) return;
-      grid.innerHTML = '';
+      var tbody = document.getElementById('mengajarTbody');
+      if (!tbody) return;
       if (!ptRows.length) {
-        grid.innerHTML = '<p class="muted">Belum ada data pertemuan.</p>';
+        tbody.innerHTML = '<tr><td colspan="5" class="muted">Belum ada data pertemuan.</td></tr>';
         return;
       }
-      ptRows.forEach(function (p) {
-        var card = document.createElement('div');
-        card.className = 'mengajar__card' + (p.aktif ? '' : ' is-off');
+      var countEl = document.getElementById('mengajarCount');
+      if (countEl) {
+        var nAktif = ptRows.filter(function (p) { return !!p.aktif; }).length;
+        countEl.textContent = 'Daftar ' + ptRows.length + ' pertemuan · ' + nAktif + ' aktif';
+      }
+      var rows = ptRows.slice().sort(function (a, b) {
+        return ((a.posisi || 99) - (b.posisi || 99)) || (a.id - b.id);
+      });
+      tbody.innerHTML = '';
+      rows.forEach(function (p) {
         var badge = p.aktif
           ? '<span class="chip chip--sm" style="background:var(--green-600); color:#fff;">AKTIF</span>'
-          : '<span class="chip chip--sm" style="background:var(--ink-faint);">SEMBUNYI</span>';
-        var metaBits = [];
-        if (p.alokasi) metaBits.push('⏱ ' + esc(p.alokasi));
-        if (p.bobot) metaBits.push('BOBOT ' + esc(p.bobot));
-        if (p.cpmk) metaBits.push(esc(p.cpmk));
-        card.innerHTML =
-          '<div class="mengajar__card-top">' +
-          '<span class="mengajar__num">PERTEMUAN ' + String(p.id).padStart(2, '0') + '</span>' + badge +
-          '</div>' +
-          '<div class="mengajar__title">' + esc(p.title || 'Belum berjudul') + '</div>' +
-          (p.subtitle ? '<div class="mengajar__sub">' + esc(p.subtitle) + '</div>' : '') +
-          (metaBits.length ? '<div class="mengajar__sections">' + metaBits.join(' · ') + '</div>' : '<div class="mengajar__sections">&nbsp;</div>') +
-          '<div class="mengajar__actions">' +
-          '<a class="btn-sim" style="background:var(--navy-700); flex:1; text-align:center; text-decoration:none;" href="/presentasi.php?p=' + p.id + '">▶ Presentasikan</a>' +
-          '<a class="btn-sim" style="background:var(--green-600); flex:1; text-align:center; text-decoration:none;" href="/pertemuan/' + p.id + '">Buka Materi</a>' +
-          '</div>';
-        grid.appendChild(card);
+          : '<span class="chip chip--sm" style="background:var(--ink-faint); color:#fff;">SEMBUNYI</span>';
+        var info = [];
+        if (p.alokasi) info.push('⏱ ' + esc(p.alokasi));
+        if (p.bobot) info.push('BOBOT ' + esc(p.bobot));
+        if (p.cpmk) info.push(esc(p.cpmk));
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="mengajar__pid">P' + String(p.id).padStart(2, '0') + '</td>' +
+          '<td><div class="mengajar__t">' + esc(p.title || 'Belum berjudul') + '</div>' +
+          (p.subtitle ? '<div class="mengajar__s">' + esc(p.subtitle) + '</div>' : '') + '</td>' +
+          '<td class="mengajar__info">' + (info.length ? info.join(' · ') : '–') + '</td>' +
+          '<td>' + badge + '</td>' +
+          '<td class="mengajar__btn">' +
+          '<a class="btn-sim" style="background:var(--navy-700); color:#fff;" href="/presentasi.php?p=' + p.id + '">▶ Presentasikan</a>' +
+          '<a class="btn-sim" style="background:var(--green-600); color:#fff;" href="/pertemuan/' + p.id + '">Buka Materi</a>' +
+          '</td>';
+        tbody.appendChild(tr);
       });
     }
     function renderPt() {
@@ -1176,6 +1427,103 @@ import Sidebar from '../components/Sidebar.astro';
       document.getElementById('ptMsg').textContent = '';
       loadPertemuan();
     });
+
+    // ===== Template worksheet ERD (mode mengajar) =====
+    function renderErdTemplates() {
+      var grid = document.getElementById('erdTempGrid');
+      if (!grid) return;
+      if (!ERD_TEMPLATES.length) { grid.innerHTML = '<p class="muted">Belum ada template.</p>'; return; }
+      grid.innerHTML = '';
+      ERD_TEMPLATES.forEach(function (t, i) {
+        var card = document.createElement('div');
+        card.className = 'erd-tpl';
+        card.innerHTML =
+          '<div class="erd-tpl__head"><span class="erd-tpl__num">KASUS ' + String(i + 1).padStart(2, '0') + '</span></div>' +
+          '<div class="erd-tpl__title">' + esc(t.title) + '</div>' +
+          '<div class="erd-tpl__meta"><b>' + t.entitas.length + '</b> entitas · <b>' + t.relasi.length + '</b> relasi · 1 skenario</div>' +
+          '<div class="erd-tpl__actions">' +
+          '<button class="btn-sim" data-sol="' + t.id + '" style="background:var(--navy-800);">Solusi</button>' +
+          '<button class="btn-sim" data-terapkan="' + t.id + '" style="background:var(--green-600);">Terapkan</button>' +
+          '</div>';
+        grid.appendChild(card);
+      });
+    }
+
+    function erdTemplateById(id) {
+      return (ERD_TEMPLATES || []).find(function (t) { return t.id === id; }) || null;
+    }
+
+    function erdPreview(t) {
+      var box = document.getElementById('erdTempPreview');
+      if (!t) { box.hidden = true; return; }
+      var rows = t.atribut.map(function (a) {
+        return '<tr><td>' + esc(a.entitas) + '</td><td>' + esc(a.atribut) + '</td>' +
+          '<td style="text-align:center">' + (a.pk ? '✓' : '–') + '</td>' +
+          '<td style="text-align:center">' + (a.fk ? '✓' : '–') + '</td></tr>';
+      }).join('');
+      var rels = t.relasi.map(function (r) {
+        return '<tr><td>' + esc(r.entitasA) + '</td><td>' + esc(r.relasi) + '</td><td>' + esc(r.entitasB) + '</td><td>' + esc(r.partisipasi) + '</td></tr>';
+      }).join('');
+      box.hidden = false;
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      box.innerHTML =
+        '<div class="erd-preview__head"><h3>' + esc(t.title) + '</h3>' +
+        '<span style="font-size:11px; opacity:.85;">' + t.entitas.length + ' entitas · ' + t.relasi.length + ' relasi</span></div>' +
+        '<div class="erd-preview__body">' +
+        '<div><h4>NARASI STUDI KASUS</h4><div class="erd-preview__narasi">' + esc(t.narasi) + '</div></div>' +
+        '<div><h4>C · ENTITAS</h4>' +
+        '<table class="wks-table"><thead><tr><th style="width:40px">#</th><th>Nama</th><th>Deskripsi</th></tr></thead><tbody>' +
+        t.entitas.map(function (e, i) { return '<tr><td>' + (i + 1) + '</td><td><strong>' + esc(e.nama) + '</strong></td><td>' + esc(e.desk) + '</td></tr>'; }).join('') +
+        '</tbody></table></div>' +
+        '<div><h4>D · ATRIBUT &amp; KEY</h4>' +
+        '<table class="wks-table"><thead><tr><th style="width:28%">Entitas</th><th>Atribut</th><th style="width:50px">PK</th><th style="width:50px">FK</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        '<div><h4>E · RELASI</h4>' +
+        '<table class="wks-table"><thead><tr><th>Entitas A</th><th style="width:80px">Kardinalitas</th><th>Entitas B</th><th style="width:110px">Partisipasi</th></tr></thead><tbody>' + rels + '</tbody></table></div>' +
+        '<div><h4>F · ASUMSI</h4><div class="erd-preview__narasi">' + esc(t.asumsi) + '</div></div>' +
+        '</div>';
+    }
+
+    function erdTerapkan(id) {
+      var t = erdTemplateById(id);
+      if (!t) return;
+      if (!confirm('Terapkan template "' + t.title + '" ke worksheet?\nIsian worksheet saat ini akan diganti.')) return;
+      var payload = {
+        identitas: { nama: '', nim: '', kelas: '', tanggal: '' },
+        studiKasus: t.id,
+        entitas: t.entitas,
+        atribut: t.atribut,
+        relasi: t.relasi,
+        asumsi: t.asumsi
+      };
+      try {
+        localStorage.setItem('basdat_wks_v1', JSON.stringify(payload));
+        document.getElementById('erdMsg').textContent = '✓ Worksheet terisi template "' + t.title + '". Membuka /praktikum…';
+        window.open('/praktikum?template=' + encodeURIComponent(t.id), '_self');
+      } catch (e) {
+        document.getElementById('erdMsg').textContent = 'Gagal menyimpan di browser ini. Coba mode penyamaran/Guest.';
+      }
+    }
+
+    var erdGridEl = document.getElementById('erdTempGrid');
+    if (erdGridEl) {
+      renderErdTemplates();
+      erdGridEl.addEventListener('click', function (e) {
+        var sol = e.target.closest('button[data-sol]');
+        if (sol) { erdPreview(erdTemplateById(sol.getAttribute('data-sol'))); return; }
+        var ap = e.target.closest('button[data-terapkan]');
+        if (ap) erdTerapkan(ap.getAttribute('data-terapkan'));
+      });
+    }
+
+    var erdResetEl = document.getElementById('erdResetWs');
+    if (erdResetEl) {
+      erdResetEl.addEventListener('click', function () {
+        if (!confirm('Reset isian worksheet /praktikum di browser ini?')) return;
+        try { localStorage.removeItem('basdat_wks_v1'); } catch (e) {}
+        document.getElementById('erdMsg').textContent = 'Worksheet direset. Membuka /praktikum…';
+        window.open('/praktikum', '_self');
+      });
+    }
 
     loadAdmin();
     loadPertemuan();

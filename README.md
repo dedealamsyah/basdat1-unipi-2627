@@ -6,7 +6,7 @@ Portal materi interaktif untuk mata kuliah **Basis Data**, Program Studi S1 Info
 
 | | |
 |---|---|
-| **Versi** | v2.2.0 |
+| **Versi** | v2.5.0 |
 | **Framework** | Astro 7.x (Static Site Generator) |
 | **Backend** | PHP 8.x + MySQL (`api/` dan `admin/`) |
 | **Content** | MDX (Markdown + JSX) via content collections |
@@ -21,6 +21,7 @@ Portal materi interaktif untuk mata kuliah **Basis Data**, Program Studi S1 Info
 - **Dashboard admin** — nilai akhir (kuis 40% + PTS 30% + UAS 30%), gradebook, impor mahasiswa, panel "Evaluasi & Integritas", mode presentasi dosen
 - **SQL Playground** (`/playground`) — SQLite di browser (WASM), tanpa server
 - **Worksheet Praktikum** (`/praktikum`) — perancangan ERD interaktif dengan auto-save
+- **Template ERD untuk mode mengajar (khusus admin)** — pilih template studi kasus lengkap, terisi otomatis di worksheet / pratinjau solusi tanpa mengetik manual
 - **Diagram ERD & SVG interaktif** — zoom, hover relasi
 - **Game edukatif**, dark mode, mobile responsive, **PWA** (offline)
 
