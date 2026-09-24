@@ -9,6 +9,27 @@
 
 ---
 
+## 0. Pembaruan Audit — 24 September 2026 (v2.6.0)
+
+**Cakupan:** dashboard admin (UI konsisten + navigasi cepat) dan perbaikan mekanisme deploy.
+
+### Hasil
+
+| Area | Status | Catatan |
+|---|---|---|
+| Kosistensi UI dashboard admin | ✅ | Kartu KPI "Ringkasan" seragam (ikon+angka+label+meta); "Rekap per Kelas" & "Distribusi Nilai" dalam panel identik; kelas memakai tag berwarna. |
+| Navigasi antar bagian dashboard | ✅ | Sticky jump-menu (10 bagian) + scroll-spy; latar blur; geser horizontal di mobile. |
+| Render kartu tangguh CSS | ✅ | `display:block` eksplisit pada label/meta; tidak ada teks "menempel" bila CSS tertinggal. |
+| **Deploy dashboard admin (Temuan)** | ✅ | UI admin lama **tidak pernah ter-update** karena `admin/index.php` membaca `panel.html`, bukan `index.html` hasil build. Diperbaiki dgn deploy `dist/admin/index.html` → `admin/panel.html`. |
+| Proses deploy statis (FTP) | ✅ | `dist/` di-upload ke `htdocs/`; PHP (`api/`, `admin/index.php`) tidak tertimpa. Rincian di `docs/DEPLOYMENT.md`. |
+
+### Catatan penting yang tersisa (bukan bagian pembaruan ini)
+
+- Transport masih **HTTP murni** — item 🔴 P1 tetap dibuka; kode siap via `is_https()` (v2.2.1).
+- N+1 agregasi nilai (`admin.php`) & pagination server-side masih di P3.
+
+---
+
 ## 1. Ringkasan Arsitektur Saat Ini
 
 Proyek berevolusi dari **statis penuh** menjadi **hibrida**:

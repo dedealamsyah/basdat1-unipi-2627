@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.6.0] - 2026-09-24
+
+### Changed — Dashboard admin: UI Ringkasan seragam & navigasi cepat antar bagian
+
+- **Kartu KPI "Ringkasan" diseragamkan**: layout ikon + angka + label + meta yang sama untuk
+  keempat kartu (Mahasiswa Terdaftar, Rata-rata Progres, Rata-rata Nilai, Tuntas 100%).
+  Varian warna teal→hijau→navy→amber konsisten antara aksen atas kartu dan chip ikon.
+- **"Rekap per Kelas" & "Distribusi Nilai"** kini dalam panel identik (`panel__title`) sehingga
+  kolom kiri–kanan seimbang; kartu kelas memakai tag kelas berwarna + nilai + baris Progres/Nilai Ø.
+  Distribusi nilai memakai track bar dengan border agar tetap terlihat saat 0.
+- **Navigasi cepat (sticky jump-menu)**: menu bagian menempel di atas layar saat scroll
+  (Mengajar, Ringkasan, Pencarian, Menu Pertemuan, Import Akun, Mahasiswa, Nilai, Integritas,
+  Tugas, Template ERD) lengkap dengan **scroll-spy** yang menyorot bagian aktif; di mobile
+  menu dapat digeser horizontal. Admin/dosen tidak perlu lagi scroll panjang.
+- **CSS lebih kokoh**: `display:block` eksplisit pada `.stat-label`, `.stat-meta`,
+  `.kcard__label`, `.kcard__rows` agar angka/label tidak pernah "menempel" bila stylesheet
+  sebagian gagal termuat; divider solid menggantikan garis putus-putus.
+
+### Fixed — Deploy dashboard admin (UI tidak pernah ter-update di server)
+
+- **Akar masalah**: `admin/index.php` di server membaca **`panel.html`** sebagai konten
+  dashboard — bukan `index.html` hasil build. Selama `panel.html` tidak diperbarui, UI lama
+  selalu tersaji meski build baru sudah di-push ke git.
+- **Perbaikan**: hasil build `dist/admin/index.html` di-deploy ke **`htdocs/admin/panel.html`**
+  (bukan `index.html`); plus CSS `_astro/admin.*.css` baru. File `admin/index.html` sisa yang
+  tidak diperlukan dihapus (akses web-nya memang di-block `.htaccess`).
+- **Deploy via FTP**: seluruh isi `dist/` di-upload ke `htdocs/` (23 file baru, 45 sama);
+  bagian PHP (`api/`, `admin/index.php`, `presentasi.php`) **tidak** ikut tertimpa.
+
+---
+
 ## [2.5.0] - 2026-09-23
 
 ### Added — Template Worksheet Perancangan ERD (mode mengajar, khusus admin)

@@ -10,6 +10,44 @@ Output generated di folder `dist/` (HTML statis, CSS, JS, aset).
 
 ---
 
+## Byethost (Hosting PHP saat ini) — Deploy Statis via FTP
+
+> Kredensial FTP & akun ada di `docs/HOSTING-RAHASIA.md` (tidak di-commit).
+
+### Tahapan
+
+1. **Build**:
+   ```bash
+   npm run build
+   ```
+2. **Upload isi `dist/` ke web root** server (Byethost: folder `htdocs`) via FTP
+   (`ftpupload.net`, login `b33_42859006`). File yang sama ukurannya boleh dilewati.
+3. **Khusus dashboard admin — jangan upload langsung ke `admin/index.html`**:
+   - `admin/index.php` adalah **guard server-side** yang membaca konten dashboard dari
+     **`panel.html`** (bukan melayani `index.html`). URL `/admin/` selalu dilayani `index.php`.
+   - Maka hasil build **`dist/admin/index.html` harus di-upload sebagai `admin/panel.html`**
+     (menimpa versi lama).
+   - File lain di folder `admin/` (`.htaccess`, `index.php`) **jangan ditimpa/hapus** —
+     `.htaccess` sengaja mem-blokir akses web semua file selain `index.php`.
+   - Sertakan juga CSS hash baru `_astro/admin.*.css` (dirujuk panel.html via path absolut).
+4. **Bagian PHP tidak tersentuh upload statis** — `api/`, `admin/index.php`, `presentasi.php`
+   di-upload manual/terpisah saat backend berubah. `api/config.php` tetap disesuaikan manual di server.
+
+### Cek cepat setelah deploy
+
+- `panel.html` berisi penanda versi baru (mis. `admin-nav` / `id="bag-ringkasan"`).
+- URL CSS `/_astro/admin.<hash>.css` yang dirujuk `panel.html` ada di server (HTTP dari IP
+  lokal bisa diblokir Byethost → verifikasi via FTP `SIZE`).
+- Login admin → buka `/admin/` (hard refresh Cmd/Ctrl+Shift+R untuk menyingkirkan cache).
+
+### Riwayat
+
+- **v2.6.0 (24 Sep 2026)** — ditemukan bahwa `panel.html` lama tersaji sehingga UI admin
+  tidak pernah ter-update meski build baru di git. Deploy ulang `panel.html` + CSS baru
+  menyelesaikannya.
+
+---
+
 ## Vercel (Recommended)
 
 ### Setup
