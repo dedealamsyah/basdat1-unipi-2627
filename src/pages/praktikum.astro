@@ -216,7 +216,17 @@ const studyCases = [
   .v-score { font-size: 22px; font-weight: 800; }
 
   @media print {
-    .wks-table input, .wks-table select,
+    .wks-table input, .wks-table select {
+      /* Jangan disembunyikan: pada elemen form, `display:none` menghilangkan
+         nilainya juga, sehingga PDF hanya berisi kolom kosong. */
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      font-size: 10pt !important;
+    }
+    .wks-table input[type="checkbox"] { width: auto; }
+    .wks-table input[readonly] { color: #555 !important; }
+
     #entitasAdd, #entitasClear, #relasiAdd, #relasiClear,
     .wks-del, #wksSave, #wksPrint, #wksReset,
     #wksValidate, #wksExport, #wksImport, #wksImportFile,
@@ -656,7 +666,16 @@ const studyCases = [
   // helper bind identitas
   function bindsInput(id, prop) {
     var el = $(id);
-    if (el) el.addEventListener("input", function () { state.identitas[prop] = this.value; save(); });
+    if (el) {
+      el.addEventListener("input", function () {
+        if (prop === "asumsi") {
+          state.asumsi = this.value;
+        } else {
+          state.identitas[prop] = this.value;
+        }
+        save();
+      });
+    }
   }
 
   // delegate edits ke state (tanpa re-render penuh agar fokus tidak hilang)
