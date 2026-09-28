@@ -36,11 +36,24 @@ try {
     $evaluasi = array();
 }
 
+// Tambahkan status tugas per pertemuan untuk notifikasi
+$tugasStatus = array();
+try {
+    $st = db()->prepare('SELECT pertemuan_id FROM tugas WHERE nim = ?');
+    $st->execute(array($u['nim']));
+    foreach ($st as $r) {
+        $tugasStatus[(int)$r['pertemuan_id']] = true;
+    }
+} catch (Throwable $e) {
+    $tugasStatus = array();
+}
+
 json_out(array('ok' => true, 'data' => array(
     'logged_in' => true,
     'user' => $u,
     'progress' => status_map($u['nim']),
     'evaluasi' => $evaluasi,
+    'tugas' => $tugasStatus,
     'active' => active_pertemuan(),
     'must_change_password' => $mustChange,
     'csrf' => $_SESSION['csrf'] ?? '',

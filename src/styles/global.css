@@ -511,6 +511,7 @@ a { color: inherit; }
 .row.prog-done .row__title { color: var(--navy-700); }
 .row.prog-done .row__num::after { content: " ✓"; color: var(--green-500); }
 .row.prog-open { opacity: 1; }
+.row.has-warning .row__num::after { content: " ⚠️ Belum Lengkap"; color: var(--amber-400); font-size: 9px; }
 
 /* Account box in sidebar */
 .sidebar__account {
