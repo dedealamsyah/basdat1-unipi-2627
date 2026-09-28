@@ -250,15 +250,26 @@ import Sidebar from '../components/Sidebar.astro';
 
   async function init() {
     initPresets();
+    
+    // Load saved query from localStorage
+    const savedQuery = localStorage.getItem('sql_playground_query');
+    const editor = $pg<HTMLTextAreaElement>("pgEditor");
+    
     try {
       SQL = await initSqlJs({ locateFile: () => "/sql-wasm.wasm" });
       setupDB();
       setStatus("✓ SQLite siap (berjalan di browser). Jalankan query untuk mulai.", true);
-      $pg<HTMLTextAreaElement>("pgEditor").value = PRESETS[0].sql;
+      editor.value = savedQuery || PRESETS[0].sql;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus("✗ Gagal memuat SQLite: " + msg, false);
+      editor.value = savedQuery || PRESETS[0].sql;
     }
+
+    // Auto-save on input
+    editor.addEventListener('input', () => {
+      localStorage.setItem('sql_playground_query', editor.value);
+    });
   }
 
   document.addEventListener("DOMContentLoaded", init);

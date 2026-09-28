@@ -336,6 +336,11 @@
   function init() {
     if (document.getElementById("accountBox")) refresh();
     loadPertemuanMeta();
+    
+    // Polling notifikasi setiap 5 menit
+    setInterval(function() {
+      if (document.getElementById("accountBox")) refresh();
+    }, 300000);
   }
   document.addEventListener("DOMContentLoaded", init);
   document.addEventListener("astro:page-load", init);
