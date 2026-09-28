@@ -6,7 +6,9 @@
    dari hosting).
    ===================================================================== */
 
-const CACHE_NAME = "basdat-unipi-v5";
+// Naikkan versinya setiap kali isi `_astro/` berubah drastic, agar SW lama
+// beserta cache lamanya dibuang saat aktivasi (activate).
+const CACHE_NAME = "basdat-unipi-v6";
 const PRECACHE_ASSETS = [
   "./",
   "./index.html",
@@ -15,6 +17,7 @@ const PRECACHE_ASSETS = [
   "./logo-unipi.png",
   "./erd-interactive.js",
   "./auth.js",
+  "./mhs-ui.js",
   "./game-entitas.js",
   "./game-fd.js",
   "./game-komponen.js",

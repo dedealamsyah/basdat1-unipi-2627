@@ -178,47 +178,23 @@
       refreshAccountBox(p);
       refreshProgressBar(p);
       refreshPertemuanStates(p);
-      refreshNotifBox(p);
       enforcePasswordChange(p);
+      // Notifikasi, dashboard, dan strip status (v2.9.0) di file terpisah:
+      // public/mhs-ui.js. Kegagalan di sana tidak boleh mengganggu auth.
+      if (window.MhsUI && window.MhsUI.render) {
+        try {
+          window.MhsUI.render(p);
+        } catch (e) {
+          /* abaikan: UI tambahan */
+        }
+      }
       return p;
     });
   }
 
-  function refreshNotifBox(p) {
-    var notifBox = document.getElementById("notifBox");
-    var notifList = document.getElementById("notifList");
-    var headerNotif = document.getElementById("headerNotif");
-
-    var missing = [];
-    if (p && p.logged_in) {
-        var meta = p.meta_pertemuan || {};
-        (p.active || []).forEach(function(id) {
-            var sId = String(id);
-            if (p.progress && (p.progress[sId] === 'open' || p.progress[sId] === 'done')) {
-                var m = meta[sId] || { has_tugas: true, has_evaluasi: true };
-                if (m.has_tugas && !(p.tugas && p.tugas[sId])) missing.push("P" + id + ": Tugas");
-                if (m.has_evaluasi && !(p.evaluasi && p.evaluasi[sId])) missing.push("P" + id + ": Evaluasi");
-            }
-        });
-    }
-
-    if (notifBox && notifList) {
-        if (missing.length > 0) {
-            notifBox.style.display = 'block';
-            notifList.innerHTML = missing.map(function(m) { return '<div>• ' + m + '</div>'; }).join('');
-        } else if (p && p.logged_in) {
-            notifBox.style.display = 'block';
-            notifList.innerHTML = '<div>✔ Semua tugas & evaluasi selesai.</div>';
-        } else {
-            notifBox.style.display = 'none';
-        }
-    }
-
-    if (headerNotif) {
-        headerNotif.style.display = missing.length > 0 ? 'block' : 'none';
-        if (missing.length > 0) headerNotif.textContent = missing.length;
-    }
-  }
+  /* Catatan: fungsi notifikasi lama (refreshNotifBox) dihapus di v2.9.0.
+     Notifikasi kini dihitung dari `rekap` (latihan/evaluasi + skor) dan
+     dirender oleh public/mhs-ui.js, bersama lonceng di header. */
 
   /* Wajib ganti password sebelum memakai portal (kecuali di halaman itu) */
   function enforcePasswordChange(p) {
@@ -237,19 +213,11 @@
       var id = row.getAttribute('data-id');
       row.classList.remove('prog-done', 'prog-locked', 'prog-open', 'has-warning');
       if (!p || !p.logged_in) return;
-      if (p.user && p.user.role === 'admin') return; 
-      
+      if (p.user && p.user.role === 'admin') return;
+
       var st = (p.progress || {})[String(id)];
       if (st === 'done') row.classList.add('prog-done');
-      else if (st === 'open') {
-        row.classList.add('prog-open');
-        // Peringatan jika belum tugas/evaluasi
-        var tugasSelesai = (p.tugas && p.tugas[String(id)]);
-        var evaluasiSelesai = (p.evaluasi && p.evaluasi[String(id)]);
-        if (!tugasSelesai || !evaluasiSelesai) {
-          row.classList.add('has-warning');
-        }
-      }
+      else if (st === 'open') row.classList.add('prog-open');
       else row.classList.add('prog-locked');
     });
   }
@@ -277,22 +245,11 @@
       if (p.progress[k] === "done") doneCount++;
     });
 
-    // Peringatan tugas/evaluasi
-    var missingItems = [];
-    (p.active || []).forEach(function(id) {
-        if ((p.progress[String(id)] === 'open' || p.progress[String(id)] === 'done')) {
-             if (!(p.tugas && p.tugas[id])) missingItems.push("Pertemuan " + id + " (Tugas)");
-             if (!(p.evaluasi && p.evaluasi[id])) missingItems.push("Pertemuan " + id + " (Evaluasi)");
-        }
-    });
-
+    // Peringatan tugas/evaluasi dipindah ke lonceng notifikasi (v2.9.0).
+    // Di sini cukup penanda peran supaya admin jelas tampilan mana.
     var isAdmin = u.role === "admin";
     var label = isAdmin ? "ADMIN" : (u.nama || u.nim);
     var kelas = u.kelas ? u.kelas : "";
-    
-    var alertHtml = missingItems.length > 0 
-        ? '<div class="acc__alert" style="color:var(--amber-400); font-size:10px; margin-top:8px;">⚠️ Belum: ' + missingItems.slice(0, 2).join(', ') + (missingItems.length > 2 ? '...' : '') + '</div>' 
-        : '';
 
     box.innerHTML =
       '<div class="acc acc--in">' +
@@ -304,7 +261,7 @@
       '<p class="acc__meta">' + esc(u.nim) + (kelas ? " · " + esc(kelas) : "") + "</p>" +
       (isAdmin
         ? '<a class="btn-sim acc__admin" href="/admin/">Dashboard Admin</a>'
-        : '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span>" + alertHtml + "</div>") +
+        : '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span></div>") +
       "</div>";
 
     var btn = document.getElementById("accLogout");
@@ -345,18 +302,32 @@
     quizState: quizState,
     changePassword: changePassword,
     readyCheck: readyCheck,
-    refresh: refresh
+    refresh: refresh,
+    esc: esc
   };
 
   // Muat otomatis saat first-load & navigasi dalam situs (astro)
   function init() {
     if (document.getElementById("accountBox")) refresh();
     loadPertemuanMeta();
-    
-    // Polling notifikasi setiap 5 menit
-    setInterval(function() {
+
+    // Polling status 5 menit: menyegarkan progres, lonceng, dan panel.
+    var timer = setInterval(function () {
       if (document.getElementById("accountBox")) refresh();
     }, 300000);
+
+    // Jangan jalankan interval saat tab disembunyikan (hemat kuota & server),
+    // tapi langsung segarkan begitu tab kembali terlihat.
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) {
+        clearInterval(timer);
+      } else {
+        refresh();
+        timer = setInterval(function () {
+          if (document.getElementById("accountBox")) refresh();
+        }, 300000);
+      }
+    });
   }
   document.addEventListener("DOMContentLoaded", init);
   document.addEventListener("astro:page-load", init);

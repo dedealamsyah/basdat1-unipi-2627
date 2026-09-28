@@ -37,6 +37,7 @@ const isActive = !pertemuan.data.locked;
         {pertemuan.data.subtitle && <p class="pageSubtitle">{pertemuan.data.subtitle}</p>}
       </div>
     </div>
+    {isActive && <div class="pageStatus" id="pageStatus" hidden></div>}
     {pertemuan.data.meta && (
       <div class="chipRow">
         <span class="chip">{pertemuan.data.meta.cpmk}</span>
@@ -44,9 +45,9 @@ const isActive = !pertemuan.data.locked;
         <span class="chip chip--amber">BOBOT {pertemuan.data.meta.bobot}</span>
         {isActive && pertemuan.data.kuis && (
           <span class="chip" data-kuis>
-            {(pertemuan.data.kuis.latihan ?? 0) > 0 && <>📝 {pertemuan.data.kuis.latihan} Latihan</>}
+            {(pertemuan.data.kuis.latihan ?? 0) > 0 && <>{pertemuan.data.kuis.latihan} soal latihan</>}
             {(pertemuan.data.kuis.latihan ?? 0) > 0 && (pertemuan.data.kuis.evaluasi ?? 0) > 0 && <> · </>}
-            {(pertemuan.data.kuis.evaluasi ?? 0) > 0 && <>📋 {pertemuan.data.kuis.evaluasi} Evaluasi</>}
+            {(pertemuan.data.kuis.evaluasi ?? 0) > 0 && <>{pertemuan.data.kuis.evaluasi} soal evaluasi</>}
           </span>
         )}
         {isActive && <span class="chip" id="progressChip">–</span>}

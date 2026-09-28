@@ -9,7 +9,26 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
 
 <BaseLayout title="Basis Data · Portal Materi UNIPI">
   <Sidebar slot="sidebar" />
-  
+
+  <!-- Dashboard mahasiswa (v2.9.0). Diisi auth.js + mhs-ui.js; untuk
+       tamu dan admin tetap tersembunyi (atribut `hidden`). -->
+  <section class="dash" id="dashWrap" hidden>
+    <div class="dash__greet" id="dashGreeting"></div>
+    <div class="dash__grid">
+      <div class="dash__next" id="dashNext"></div>
+      <div class="dash__side">
+        <div class="dash__cards" id="dashCards"></div>
+      </div>
+    </div>
+    <div class="dash__attention" id="dashAttention" hidden>
+      <div class="dash__attention-head">
+        <h2 class="dash__attention-title">Perlu perhatian</h2>
+        <span class="dash__attention-count" id="dashAttentionHead"></span>
+      </div>
+      <ul class="dash__attention-list" id="dashAttentionList"></ul>
+    </div>
+  </section>
+
   <div class="contentHeader">
     <div class="eyebrow">SELAMAT DATANG</div>
     <h1 class="pageTitle">Portal Materi Basis Data</h1>

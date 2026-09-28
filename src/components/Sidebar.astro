@@ -14,7 +14,6 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   <img src="/logo-unipi.png" alt="Logo Universitas Persatuan Islam (UNIPI)" class="sidebar__logo" width="52" height="52" />
   <p class="sidebar__title">Basis Data</p>
   <p class="sidebar__status">S1 Informatika · UNIPI</p>
-  <p class="sidebar__sub">Portal materi interaktif mata kuliah Basis Data untuk mahasiswa Program Studi S1 Informatika, Universitas Persatuan Islam (UNIPI), Semester 3 · Tahun Akademik 2026/2027.</p>
 </div>
 
 <div class="sidebar__progress">
@@ -27,10 +26,10 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   </div>
 </div>
 
-<!-- Container Notifikasi -->
-<div id="notifBox" class="sidebar__notif" style="display:none; padding:12px 20px; border-bottom:1px solid rgba(255,255,255,.07);">
-  <div style="font-family:var(--font-body); font-size:10px; font-weight:700; color:#F59E0B; margin-bottom:8px; text-transform:uppercase;">PERINGATAN TUGAS</div>
-  <div id="notifList" style="font-size:12px; color:#FDE68A; line-height:1.5;"></div>
+<!-- Pengingat ringkas: hanya mahasiswa. Rinciannya ada di panel lonceng. -->
+<div id="notifBox" class="sidebar__notif" data-level="aman" hidden>
+  <span class="sidebar__notif-icon" aria-hidden="true">!</span>
+  <span id="notifList" class="sidebar__notif-text"></span>
 </div>
 
 <div class="sidebar__search">
@@ -43,106 +42,120 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   />
 </div>
 
-<ul class="sidebar__list" id="sidebarList">
-  <li class="row timeline-link" data-kind="timeline" data-title="timeline perjalanan semester peta minggu rps">
-    <span class="row__pk" style="background:var(--amber-400); color:#4a3700;">16</span>
-    <span class="row__text">
-      <span class="row__num">PETA BELAJAR</span>
-      <span class="row__title" style="color:var(--amber-400);">Timeline Perkuliahan</span>
-    </span>
-  </li>
-  <li class="row praktikum-link" data-kind="praktikum" data-title="worksheet praktikum perancangan erd">
-    <span class="row__pk">✎</span>
-    <span class="row__text">
-      <span class="row__num">PRAKTIKUM</span>
-      <span class="row__title" style="color:#F0E7C2;">Worksheet Perancangan ERD</span>
-    </span>
-  </li>
-  <li class="row playground-link" data-kind="playground" data-title="sql playground interaktif lab sql query">
-    <span class="row__pk" style="background:var(--green-500); color:#fff;">❯</span>
-    <span class="row__text">
-      <span class="row__num">LAB</span>
-      <span class="row__title" style="color:#BDE3C4;">SQL Playground</span>
-    </span>
-  </li>
-  {sorted.map((p) => (
-    <li 
-      class={`row ${p.data.locked ? 'locked' : ''} ${p.data.id === activeId ? 'active' : ''}`}
-      data-id={p.data.id}
-      data-title={p.data.title.toLowerCase()}
-      tabindex={p.data.locked ? "-1" : "0"}
-      aria-disabled={p.data.locked ? "true" : undefined}
-    >
-      <span class="row__pk">{String(p.data.id).padStart(2, '0')}</span>
+<nav class="sidebar__nav" aria-label="Navigasi utama">
+  <ul class="sidebar__list sidebar__list--plain" id="sidebarMain">
+    <li class="row row--plain home-link" data-kind="home" data-title="beranda dashboard ringkasan">
+      <span class="row__pk row__pk--ghost" aria-hidden="true">⌂</span>
       <span class="row__text">
-        <span class="row__num">PERTEMUAN {p.data.id}</span>
-        <span class="row__title">
-          {p.data.locked ? (p.data.title || 'Belum tersedia') : p.data.title}
-        </span>
+        <span class="row__num">BERANDA</span>
+        <span class="row__title">Ringkasan belajar</span>
       </span>
     </li>
-  ))}
-</ul>
+  </ul>
+
+  <p class="sidebar__group">ALAT BANTU</p>
+  <ul class="sidebar__list sidebar__list--plain" id="sidebarTools">
+    <li class="row row--plain praktikum-link" data-kind="praktikum" data-title="worksheet praktikum perancangan erd">
+      <span class="row__pk row__pk--ghost" aria-hidden="true">✎</span>
+      <span class="row__text">
+        <span class="row__num">PRAKTIKUM</span>
+        <span class="row__title">Worksheet Perancangan ERD</span>
+      </span>
+    </li>
+    <li class="row row--plain playground-link" data-kind="playground" data-title="sql playground interaktif lab sql query">
+      <span class="row__pk row__pk--ghost" aria-hidden="true">❯</span>
+      <span class="row__text">
+        <span class="row__num">LAB</span>
+        <span class="row__title">SQL Playground</span>
+      </span>
+    </li>
+    <li class="row row--plain timeline-link" data-kind="timeline" data-title="timeline perjalanan semester peta minggu rps">
+      <span class="row__pk row__pk--ghost" aria-hidden="true">≡</span>
+      <span class="row__text">
+        <span class="row__num">RENCANA</span>
+        <span class="row__title">Timeline Perkuliahan</span>
+      </span>
+    </li>
+  </ul>
+
+  <p class="sidebar__group">MATERI</p>
+  <ul class="sidebar__list" id="sidebarList">
+    {sorted.map((p) => (
+      <li
+        class={`row ${p.data.locked ? 'locked' : ''} ${p.data.id === activeId ? 'active' : ''}`}
+        data-id={p.data.id}
+        data-title={p.data.title.toLowerCase()}
+        tabindex={p.data.locked ? "-1" : "0"}
+        aria-disabled={p.data.locked ? "true" : undefined}
+      >
+        <span class="row__pk">{String(p.data.id).padStart(2, '0')}</span>
+        <span class="row__text">
+          <span class="row__num">PERTEMUAN {p.data.id}</span>
+          <span class="row__title">
+            {p.data.locked ? (p.data.title || 'Belum tersedia') : p.data.title}
+          </span>
+        </span>
+        <span class="row__flag" data-flag=""></span>
+      </li>
+    ))}
+  </ul>
+</nav>
 
 <div class="sidebar__footer">
-  <p class="sidebar__credit">&copy; {new Date().getFullYear()} &middot; Developed by Dede Alamsyah</p>
   <div id="accountBox" class="sidebar__account"><p class="muted">Memuat…</p></div>
-  <div style="margin-top:10px;">
-    <button id="themeToggle" class="theme-btn">
-      <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
-    </button>
-  </div>
+  <button id="themeToggle" class="theme-btn">
+    <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+  </button>
+  <p class="sidebar__credit">© {new Date().getFullYear()} · Dede Alamsyah · UNIPI</p>
 </div>
 
 <script is:inline>
-  // Sidebar Search
-  const sidebarSearch = document.getElementById('sidebarSearch');
-  const sidebarList = document.getElementById('sidebarList');
-  
-  if (sidebarSearch && sidebarList) {
-    sidebarSearch.addEventListener('input', function() {
-      const filter = this.value.toLowerCase();
-      const rows = sidebarList.querySelectorAll('.row');
-      rows.forEach(row => {
-        const title = row.getAttribute('data-title') || '';
-        row.style.display = title.includes(filter) ? '' : 'none';
+  // Pencarian materi: menyaring semua daftar di sidebar (utama, alat, materi).
+  (function () {
+    const input = document.getElementById('sidebarSearch');
+    if (!input) return;
+    input.addEventListener('input', function () {
+      const q = this.value.trim().toLowerCase();
+      document.querySelectorAll('#sidebarList .row, #sidebarTools .row, #sidebarMain .row').forEach(function (row) {
+        const haystack = ((row.getAttribute('data-title') || '') + ' ' +
+          (row.getAttribute('data-id') || '') + ' ' + row.textContent).toLowerCase();
+        const cocok = !q || haystack.indexOf(q) !== -1;
+        row.style.display = cocok ? '' : 'none';
       });
     });
-  }
+  })();
 
-  // Sidebar Navigation
-  const sidebarNavRows = document.querySelectorAll('#sidebarList .row:not(.locked)');
-  sidebarNavRows.forEach(row => {
-    row.addEventListener('click', function() {
-      const kind = this.getAttribute('data-kind');
-      if (kind === 'timeline') {
-        window.location.href = '/timeline';
-        return;
-      }
-      if (kind === 'praktikum') {
-        window.location.href = '/praktikum';
-        return;
-      }
-      if (kind === 'playground') {
-        window.location.href = '/playground';
-        return;
-      }
-      const id = this.getAttribute('data-id');
-      window.location.href = `/pertemuan/${id}`;
+  // Navigasi sidebar.
+  (function () {
+    document.querySelectorAll('.sidebar .row').forEach(function (row) {
+      if (row.classList.contains('locked')) return;
+      row.addEventListener('click', function () {
+        const kind = this.getAttribute('data-kind');
+        if (kind === 'home') { location.href = '/'; return; }
+        if (kind === 'praktikum') { location.href = '/praktikum'; return; }
+        if (kind === 'playground') { location.href = '/playground'; return; }
+        if (kind === 'timeline') { location.href = '/timeline'; return; }
+        const id = this.getAttribute('data-id');
+        if (id) location.href = '/pertemuan/' + id;
+      });
     });
-  });
 
-  // Active state for praktikum link
-  if (window.location.pathname.includes('/praktikum')) {
-    const pk = document.querySelector('.praktikum-link');
-    if (pk) pk.classList.add('active');
-  }
-  if (window.location.pathname.includes('/playground')) {
-    const pg = document.querySelector('.playground-link');
-    if (pg) pg.classList.add('active');
-  }
-  if (window.location.pathname.includes('/timeline')) {
-    const tl = document.querySelector('.timeline-link');
-    if (tl) tl.classList.add('active');
-  }
+    // Tandai menu yang sedang aktif.
+    const path = location.pathname;
+    const aktif = [
+      ['/praktikum', '.praktikum-link'],
+      ['/playground', '.playground-link'],
+      ['/timeline', '.timeline-link']
+    ];
+    aktif.forEach(function (pair) {
+      if (path.indexOf(pair[0]) === 0) {
+        const el = document.querySelector(pair[1]);
+        if (el) el.classList.add('active');
+      }
+    });
+    if (path === '/' || path === '') {
+      const el = document.querySelector('.home-link');
+      if (el) el.classList.add('active');
+    }
+  })();
 </script>
