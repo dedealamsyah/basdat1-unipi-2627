@@ -13,7 +13,7 @@ $active = active_pertemuan();
 $total = count($active);
 
 /**
- * GET /api/admin.php?kunci=1 -> kunci jawaban seluruh pertemuan.
+ * GET /api/admin.php?kunci=1 -> kunci jawaban EVALUASI seluruh pertemuan.
  *
  * Kunci tidak lagi ada di HTML halaman (sebelumnya bisa dibaca lewat View
  * Source), jadi dosen perlu endpoint ini untuk menyusun soal / memeriksa
@@ -25,6 +25,31 @@ if (($_GET['kunci'] ?? '') === '1') {
         $out[(int) $pid] = array('benar' => $k['benar'], 'opsi' => $k['opsi'], 'jumlah' => count($k['benar']));
     }
     json_out(array('ok' => true, 'data' => array('kunci' => $out)));
+}
+
+/**
+ * GET /api/admin.php?kuis=1[&pertemuan_id=N] -> kunci kuis LATIHAN.
+ *
+ * Sama seperti `kunci=1`: sejak v2.8.0 kunci latihan pun tidak ada di HTML,
+ * sehingga mode presentasi (?/pertemuan/N/presentasi) tidak lagi bisa
+ * membacanya dari DOM. Dosen memintanya dari sini — endpoint admin-only, jadi
+ * akses kunci tercatat sebagai akses admin, bukan "gratis" lewat View Source.
+ */
+if (($_GET['kuis'] ?? '') === '1') {
+    $cuma = isset($_GET['pertemuan_id']) ? (int) $_GET['pertemuan_id'] : 0;
+    $out = array();
+    foreach (kuis_kunci_map() as $pid => $k) {
+        if ($cuma > 0 && (int) $pid !== $cuma) {
+            continue;
+        }
+        $out[(int) $pid] = array(
+            'benar' => $k['benar'],
+            'opsi' => $k['opsi'],
+            'jelas' => $k['jelas'],
+            'jumlah' => count($k['id']),
+        );
+    }
+    json_out(array('ok' => true, 'data' => array('kuis' => $out)));
 }
 
 $nim = trim((string) ($_GET['nim'] ?? ''));

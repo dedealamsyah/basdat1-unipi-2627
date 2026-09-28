@@ -91,7 +91,11 @@ if ($isAdmin) {
     // Deteksi hook/pemantik: kartu kuis pertama dijadikan mini studi kasus
     // (soal kasus + opsi jawaban + penjelasan kunci).
     $hook = null;
-    if (preg_match('~<div class="interactive-card" data-quiz="[^"]+">~i', $content, $dm, PREG_OFFSET_CAPTURE)) {
+    // `data-quiz` wajib ada (kartu kuis latihan) dan boleh diikuti atribut
+    // lain — hanya menyamakan `>` setelah nilai attr akan gagal kalau
+    // QuizCard menambah atribut baru, sedangkan `[^>]*` tanpa syarat
+    // `data-quiz` akan ikut menangkap kartu game yang bukan kuis.
+    if (preg_match('~<div class="interactive-card" data-quiz="[^"]+"[^>]*>~i', $content, $dm, PREG_OFFSET_CAPTURE)) {
         $start = $dm[0][1];
         $i = $start + strlen($dm[0][0]);
         $len = strlen($content);
@@ -123,16 +127,30 @@ if ($isAdmin) {
             $options = array();
             if (preg_match_all('~<button\b([^>]*)>(.*?)</button>~is', $cardHtml, $mm, PREG_SET_ORDER)) {
                 foreach ($mm as $m) {
-                    $correct = (bool) preg_match('~data-correct="true"~i', $m[1]);
-                    $expl = '';
-                    if (preg_match('~data-explanation="([^"]*)"~i', $m[1], $em)) {
-                        $expl = html_entity_decode($em[1], ENT_QUOTES, 'UTF-8');
+                    // v2.8.0: kunci tidak lagi ada di HTML halaman, jadi tidak
+                    // bisa dibaca dari `data-correct`. Yang di bawah diambil dari
+                    // `api/kunci.php` (KUIS_KUNCI) sesuai indeks opsi.
+                    $optIdx = -1;
+                    if (preg_match('~data-opt="(\d+)"~i', $m[1], $om)) {
+                        $optIdx = (int) $om[1];
                     }
                     $options[] = array(
                         'text'    => trim(strip_tags($m[2])),
-                        'correct' => $correct,
-                        'expl'    => $expl,
+                        'idx'     => $optIdx,
+                        'correct' => false,
+                        'expl'    => '',
                     );
+                }
+            }
+            $kunci = kuis_kunci($id);
+            if ($kunci !== null && isset($kunci['benar'][0])) {
+                $benarIdx = (int) $kunci['benar'][0];
+                $jelas = (string) ($kunci['jelas'][0] ?? '');
+                foreach ($options as $oi => $opt) {
+                    if ($opt['idx'] === $benarIdx) {
+                        $options[$oi]['correct'] = true;
+                        $options[$oi]['expl'] = $jelas;
+                    }
                 }
             }
             if ($question !== '' && count($options) > 0) {

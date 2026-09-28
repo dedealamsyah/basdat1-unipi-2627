@@ -476,29 +476,13 @@ Gambarkan ERD menggunakan notasi Crow's Foot, lalu validasi.
 
 ## I. Kuis Evaluasi
 
-<QuizCard question="Studi kasus SIAKAD: Relasi antara MAHASISWA dan MATAKULIAH termasuk tipe...">
-  <button class="quiz-option" data-correct="false">1:1 (One-to-One)</button>
-  <button class="quiz-option" data-correct="false">1:N (One-to-Many)</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Mahasiswa bisa mengambil banyak mata kuliah, dan satu mata kuliah bisa diambil banyak mahasiswa → M:N.">M:N (Many-to-Many)</button>
-</QuizCard>
+<QuizCard id="q1" soal="Studi kasus SIAKAD: Relasi antara MAHASISWA dan MATAKULIAH termasuk tipe..." opsi={["1:1 (One-to-One)", "1:N (One-to-Many)", "M:N (Many-to-Many)"]} benar={2} jelas="Mahasiswa bisa mengambil banyak mata kuliah, dan satu mata kuliah bisa diambil banyak mahasiswa → M:N." />
 
-<QuizCard question="Mengapa tabel NILAI pada SIAKAD diletakkan di tengah (sebagai tabel penghubung)?">
-  <button class="quiz-option" data-correct="true" data-explanation="NILAI merupakan tabel penghubung yang memecah relasi M:N antara MAHASISWA dan MATAKULIAH.">Karena memecah relasi M:N antara MAHASISWA dan MATAKULIAH</button>
-  <button class="quiz-option" data-correct="false">Karena NILAI adalah entitas kuat</button>
-  <button class="quiz-option" data-correct="false">Karena NILAI memiliki Primary Key sendiri</button>
-</QuizCard>
+<QuizCard id="q2" soal="Mengapa tabel NILAI pada SIAKAD diletakkan di tengah (sebagai tabel penghubung)?" opsi={["Karena memecah relasi M:N antara MAHASISWA dan MATAKULIAH", "Karena NILAI adalah entitas kuat", "Karena NILAI memiliki Primary Key sendiri"]} benar={0} jelas="NILAI merupakan tabel penghubung yang memecah relasi M:N antara MAHASISWA dan MATAKULIAH." />
 
-<QuizCard question="Pada studi kasus E-Commerce, relasi antara ORDER dan PEMBAYARAN adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="Satu order hanya memiliki satu pembayaran, dan satu pembayaran hanya untuk satu order → 1:1.">1:1 (One-to-One)</button>
-  <button class="quiz-option" data-correct="false">1:N (One-to-Many)</button>
-  <button class="quiz-option" data-correct="false">M:N (Many-to-Many)</button>
-</QuizCard>
+<QuizCard id="q3" soal="Pada studi kasus E-Commerce, relasi antara ORDER dan PEMBAYARAN adalah..." opsi={["1:1 (One-to-One)", "1:N (One-to-Many)", "M:N (Many-to-Many)"]} benar={0} jelas="Satu order hanya memiliki satu pembayaran, dan satu pembayaran hanya untuk satu order → 1:1." />
 
-<QuizCard question="Entitas mana yang merupakan tabel penghubung (junction table)?">
-  <button class="quiz-option" data-correct="false">PELANGGAN</button>
-  <button class="quiz-option" data-correct="false">PRODUK</button>
-  <button class="quiz-option" data-correct="true" data-explanation="ORDER_DETAIL adalah tabel penghubung yang memecah relasi M:N antara ORDER dan PRODUK.">ORDER_DETAIL</button>
-</QuizCard>
+<QuizCard id="q4" soal="Entitas mana yang merupakan tabel penghubung (junction table)?" opsi={["PELANGGAN", "PRODUK", "ORDER_DETAIL"]} benar={2} jelas="ORDER_DETAIL adalah tabel penghubung yang memecah relasi M:N antara ORDER dan PRODUK." />
 
 ## J. Rangkuman
 

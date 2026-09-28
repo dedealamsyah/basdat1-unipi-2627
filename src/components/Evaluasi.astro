@@ -626,9 +626,5 @@ const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
       console.log("[Evaluasi] p:", p, "progress[pid]:", (p.progress || {})[pertemuanId]);
       if (gate(p)) renderForm(draft());
     });
-
-    document.addEventListener('astro:before-swap', function () {
-      if (typeof window.__quizTracker !== 'undefined' && window.__quizTracker) window.__quizTracker.reset();
-    });
   })();
 </script>

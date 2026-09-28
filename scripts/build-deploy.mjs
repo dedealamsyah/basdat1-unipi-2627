@@ -94,9 +94,12 @@ console.log('');
 console.log('  TIDAK ada di _deploy/ — upload manual dari repo, urut dari kode server:');
 console.log('    1. api/config.php      (udah ada di _deploy, tapi urutan tetap penting)');
 console.log('    2. api/kunci.php');
-console.log('    3. api/*.php           (admin.php, evaluasi.php, migrate.php, ...)');
+console.log('    3. api/*.php           (admin.php, evaluasi.php, quiz.php, migrate.php, ...)');
 console.log('    4. api/.htaccess');
 console.log('    5. admin/index.php, admin/.htaccess');
+console.log('');
+console.log('  v2.8.0+: api/quiz.php WAJIB ikut terupload (endpoint penilaian latihan).');
+console.log(' Tanpa file itu, kuis latihan tidak bisa dinilai sama sekali.');
 
 // Pengaman: pastikan tidak ada kunci jawaban yang ikut ter-copy ke HTML statis.
 const html = readFileSync(join(out, 'admin', 'panel.html'), 'utf8');

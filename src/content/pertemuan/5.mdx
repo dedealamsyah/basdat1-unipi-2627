@@ -584,47 +584,19 @@ KARYAWAN_TELP(nik FK→KARYAWAN, no_telp)   PK: (nik, no_telp)
 
 ## L. Kuis Evaluasi
 
-<QuizCard question="Tabel di 1NF yang masih memiliki partial dependency berada dalam kondisi...">
-  <button class="quiz-option" data-correct="true" data-explanation="2NF mensyaratkan tidak ada atribut non-kunci yang bergantung hanya pada sebagian PK. 1NF yang masih punya partial dependency belum memenuhi 2NF.">Belum memenuhi syarat 2NF</button>
-  <button class="quiz-option" data-correct="false">Sudah otomatis berada di 3NF</button>
-  <button class="quiz-option" data-correct="false">Tidak perlu dinormalisasi lagi</button>
-</QuizCard>
+<QuizCard id="q1" soal="Tabel di 1NF yang masih memiliki partial dependency berada dalam kondisi..." opsi={["Belum memenuhi syarat 2NF", "Sudah otomatis berada di 3NF", "Tidak perlu dinormalisasi lagi"]} benar={0} jelas="2NF mensyaratkan tidak ada atribut non-kunci yang bergantung hanya pada sebagian PK. 1NF yang masih punya partial dependency belum memenuhi 2NF." />
 
-<QuizCard question="FD 'id_produk → nama_produk' pada tabel dengan PK gabungan (no_nota, id_produk) termasuk jenis...">
-  <button class="quiz-option" data-correct="true" data-explanation="Atribut bergantung hanya pada sebagian PK (id_produk), bukan seluruhnya.">Partial dependency</button>
-  <button class="quiz-option" data-correct="false">Full dependency</button>
-  <button class="quiz-option" data-correct="false">Transitive dependency</button>
-</QuizCard>
+<QuizCard id="q2" soal="FD 'id_produk → nama_produk' pada tabel dengan PK gabungan (no_nota, id_produk) termasuk jenis..." opsi={["Partial dependency", "Full dependency", "Transitive dependency"]} benar={0} jelas="Atribut bergantung hanya pada sebagian PK (id_produk), bukan seluruhnya." />
 
-<QuizCard question="Anomali yang terjadi ketika menghapus satu-satunya baris yang memuat data produk, sehingga data produk ikut hilang disebut...">
-  <button class="quiz-option" data-correct="true" data-explanation="Anomali delete: penghapusan baris turut menghapus informasi lain yang seharusnya tetap disimpan.">Anomali delete</button>
-  <button class="quiz-option" data-correct="false">Anomali insert</button>
-  <button class="quiz-option" data-correct="false">Anomali update</button>
-</QuizCard>
+<QuizCard id="q3" soal="Anomali yang terjadi ketika menghapus satu-satunya baris yang memuat data produk, sehingga data produk ikut hilang disebut..." opsi={["Anomali delete", "Anomali insert", "Anomali update"]} benar={0} jelas="Anomali delete: penghapusan baris turut menghapus informasi lain yang seharusnya tetap disimpan." />
 
-<QuizCard question="Urutan normalisasi yang benar adalah...">
-  <button class="quiz-option" data-correct="false">3NF → 2NF → 1NF</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Normalisasi bertahap: hilangkan grup berulang (1NF), lalu partial dependency (2NF), lalu transitive dependency (3NF).">1NF → 2NF → 3NF</button>
-  <button class="quiz-option" data-correct="false">1NF → 3NF → 2NF</button>
-</QuizCard>
+<QuizCard id="q4" soal="Urutan normalisasi yang benar adalah..." opsi={["3NF → 2NF → 1NF", "1NF → 2NF → 3NF", "1NF → 3NF → 2NF"]} benar={1} jelas="Normalisasi bertahap: hilangkan grup berulang (1NF), lalu partial dependency (2NF), lalu transitive dependency (3NF)." />
 
-<QuizCard question="Pada hasil normalisasi TRANSAKSI, mengapa data pelanggan dipisah ke tabel PELANGGAN?">
-  <button class="quiz-option" data-correct="true" data-explanation="no_nota → id_pelanggan → nama_pelanggan, kota membentuk transitive dependency (non-kunci → non-kunci).">Karena ada transitive dependency antara atribut non-kunci</button>
-  <button class="quiz-option" data-correct="false">Karena tabel TRANSAKSI terlalu panjang kolomnya</button>
-  <button class="quiz-option" data-correct="false">Karena id_pelanggan bukan Primary Key</button>
-</QuizCard>
+<QuizCard id="q5" soal="Pada hasil normalisasi TRANSAKSI, mengapa data pelanggan dipisah ke tabel PELANGGAN?" opsi={["Karena ada transitive dependency antara atribut non-kunci", "Karena tabel TRANSAKSI terlalu panjang kolomnya", "Karena id_pelanggan bukan Primary Key"]} benar={0} jelas="no_nota → id_pelanggan → nama_pelanggan, kota membentuk transitive dependency (non-kunci → non-kunci)." />
 
-<QuizCard question="Tabel KUNJUNGAN dengan kunci tunggal id_kunjungan yang sudah 1NF dan memiliki FD id_dokter → nama_dokter berarti...">
-  <button class="quiz-option" data-correct="false">Sudah otomatis berada di 3NF</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Kunci tunggal → pasti lolos 2NF (tidak ada partial dependency), tapi masih punya transitive dependency sehingga perlu langkah 3NF.">Lolos 2NF, namun perlu di-normalisasi lagi ke 3NF</button>
-  <button class="quiz-option" data-correct="false">Masih berada pada 1NF murni</button>
-</QuizCard>
+<QuizCard id="q6" soal="Tabel KUNJUNGAN dengan kunci tunggal id_kunjungan yang sudah 1NF dan memiliki FD id_dokter → nama_dokter berarti..." opsi={["Sudah otomatis berada di 3NF", "Lolos 2NF, namun perlu di-normalisasi lagi ke 3NF", "Masih berada pada 1NF murni"]} benar={1} jelas="Kunci tunggal → pasti lolos 2NF (tidak ada partial dependency), tapi masih punya transitive dependency sehingga perlu langkah 3NF." />
 
-<QuizCard question="Data mahasiswa 'Andi' pada Variasi 1 (tabel NILAI_MHS) muncul berulang di banyak baris. Setelah normalisasi, data itu cukup disimpan di...">
-  <button class="quiz-option" data-correct="true" data-explanation="nama_mhs tergantung partial pada nim, sehingga dipindah ke tabel MAHASISWA, cukup satu baris per mahasiswa.">Tabel MAHASISWA (satu baris per mahasiswa)</button>
-  <button class="quiz-option" data-correct="false">Tabel NILAI</button>
-  <button class="quiz-option" data-correct="false">Tabel PROGRAM_STUDI</button>
-</QuizCard>
+<QuizCard id="q7" soal="Data mahasiswa 'Andi' pada Variasi 1 (tabel NILAI_MHS) muncul berulang di banyak baris. Setelah normalisasi, data itu cukup disimpan di..." opsi={["Tabel MAHASISWA (satu baris per mahasiswa)", "Tabel NILAI", "Tabel PROGRAM_STUDI"]} benar={0} jelas="nama_mhs tergantung partial pada nim, sehingga dipindah ke tabel MAHASISWA, cukup satu baris per mahasiswa." />
 
 ## M. Rangkuman
 

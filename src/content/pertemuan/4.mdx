@@ -481,35 +481,15 @@ Hasil DDL yang Anda tulis bisa langsung diuji di **SQL Playground** bawaan porta
 
 ## L. Kuis Evaluasi
 
-<QuizCard question="Relasi 1:N antara DOSEN dan MATAKULIAH ditransformasi dengan cara...">
-  <button class="quiz-option" data-correct="false">Membuat tabel penghubung baru</button>
-  <button class="quiz-option" data-correct="true" data-explanation="FK diletakkan di tabel sisi banyak (N), yaitu MATAKULIAH. Tabel penghubung hanya untuk relasi M:N.">Meletakkan FK di tabel sisi banyak (MATAKULIAH)</button>
-  <button class="quiz-option" data-correct="false">Menggabungkan DOSEN dan MATAKULIAH menjadi satu tabel</button>
-</QuizCard>
+<QuizCard id="q1" soal="Relasi 1:N antara DOSEN dan MATAKULIAH ditransformasi dengan cara..." opsi={["Membuat tabel penghubung baru", "Meletakkan FK di tabel sisi banyak (MATAKULIAH)", "Menggabungkan DOSEN dan MATAKULIAH menjadi satu tabel"]} benar={1} jelas="FK diletakkan di tabel sisi banyak (N), yaitu MATAKULIAH. Tabel penghubung hanya untuk relasi M:N." />
 
-<QuizCard question="Relasi M:N antara MAHASISWA dan MATAKULIAH menghasilkan...">
-  <button class="quiz-option" data-correct="true" data-explanation="Tabel NILAI adalah junction table dengan PK gabungan (nim, kode_mk) serta atribut relasi nilai dan grade.">Tabel penghubung NILAI dengan PK gabungan (nim, kode_mk)</button>
-  <button class="quiz-option" data-correct="false">Cukup satu kolom tambahan di tabel MAHASISWA</button>
-  <button class="quiz-option" data-correct="false">Menggabungkan kedua entitas menjadi satu tabel</button>
-</QuizCard>
+<QuizCard id="q2" soal="Relasi M:N antara MAHASISWA dan MATAKULIAH menghasilkan..." opsi={["Tabel penghubung NILAI dengan PK gabungan (nim, kode_mk)", "Cukup satu kolom tambahan di tabel MAHASISWA", "Menggabungkan kedua entitas menjadi satu tabel"]} benar={0} jelas="Tabel NILAI adalah junction table dengan PK gabungan (nim, kode_mk) serta atribut relasi nilai dan grade." />
 
-<QuizCard question="Pada relasi 1:1 ORDER–PEMBAYARAN, peran klausa UNIQUE pada kolom FK id_order adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="UNIQUE mencegah dua baris pembayaran merujuk ke order yang sama, sehingga menjamin relasi tetap 1:1.">Menjamin satu order hanya memiliki satu pembayaran</button>
-  <button class="quiz-option" data-correct="false">Mempercepat pencarian data pembayaran</button>
-  <button class="quiz-option" data-correct="false">Membuat id_bayar menjadi Primary Key</button>
-</QuizCard>
+<QuizCard id="q3" soal="Pada relasi 1:1 ORDER–PEMBAYARAN, peran klausa UNIQUE pada kolom FK id_order adalah..." opsi={["Menjamin satu order hanya memiliki satu pembayaran", "Mempercepat pencarian data pembayaran", "Membuat id_bayar menjadi Primary Key"]} benar={0} jelas="UNIQUE mencegah dua baris pembayaran merujuk ke order yang sama, sehingga menjamin relasi tetap 1:1." />
 
-<QuizCard question="Jumlah tabel hasil transformasi ERD SIAKAD (4 entitas kuat + 1 relasi M:N) adalah...">
-  <button class="quiz-option" data-correct="false">4 tabel</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Tabel = jumlah entitas kuat + jumlah relasi M:N = 4 + 1 = 5 tabel. Relasi 1:N tidak menambah tabel.">5 tabel</button>
-  <button class="quiz-option" data-correct="false">6 tabel</button>
-</QuizCard>
+<QuizCard id="q4" soal="Jumlah tabel hasil transformasi ERD SIAKAD (4 entitas kuat + 1 relasi M:N) adalah..." opsi={["4 tabel", "5 tabel", "6 tabel"]} benar={1} jelas="Tabel = jumlah entitas kuat + jumlah relasi M:N = 4 + 1 = 5 tabel. Relasi 1:N tidak menambah tabel." />
 
-<QuizCard question="Tabel mana yang merupakan hasil transformasi atribut multivalued?">
-  <button class="quiz-option" data-correct="true" data-explanation="Atribut no_telp yang bernilai banyak dipisah ke tabel MHS_TELP(nim, no_telp).">MHS_TELP(nim FK, no_telp)</button>
-  <button class="quiz-option" data-correct="false">Menambah kolom no_telp1, no_telp2, no_telp3 di tabel MAHASISWA</button>
-  <button class="quiz-option" data-correct="false">Menghapus atribut no_telp dari sistem</button>
-</QuizCard>
+<QuizCard id="q5" soal="Tabel mana yang merupakan hasil transformasi atribut multivalued?" opsi={["MHS_TELP(nim FK, no_telp)", "Menambah kolom no_telp1, no_telp2, no_telp3 di tabel MAHASISWA", "Menghapus atribut no_telp dari sistem"]} benar={0} jelas="Atribut no_telp yang bernilai banyak dipisah ke tabel MHS_TELP(nim, no_telp)." />
 
 ## M. Rangkuman
 

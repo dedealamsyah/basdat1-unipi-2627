@@ -321,35 +321,15 @@ PDM adalah jembatan menuju implementasi. Rangkaian praktikum berikutnya mengikut
 
 ## J. Kuis Evaluasi
 
-<QuizCard question="Urutan jenjang pemodelan data yang benar adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="Pemodelan beranjak dari abstrak ke konkret: CDM (konseptual) → LDM (logis) → PDM (fisik).">CDM → LDM → PDM</button>
-  <button class="quiz-option" data-correct="false">PDM → LDM → CDM</button>
-  <button class="quiz-option" data-correct="false">LDM → CDM → PDM</button>
-</QuizCard>
+<QuizCard id="q1" soal="Urutan jenjang pemodelan data yang benar adalah..." opsi={["CDM → LDM → PDM", "PDM → LDM → CDM", "LDM → CDM → PDM"]} benar={0} jelas="Pemodelan beranjak dari abstrak ke konkret: CDM (konseptual) → LDM (logis) → PDM (fisik)." />
 
-<QuizCard question="Perbedaan utama PDM dari LDM adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="PDM menambahkan detail fisik yang spesifik DBMS: tipe data, ukuran kolom, dan constraint; struktur tabelnya sudah ditentukan LDM.">PDM menambahkan tipe data & constraint spesifik DBMS</button>
-  <button class="quiz-option" data-correct="false">PDM menghapus primary key dari tabel</button>
-  <button class="quiz-option" data-correct="false">PDM tidak berhubungan dengan normalisasi</button>
-</QuizCard>
+<QuizCard id="q2" soal="Perbedaan utama PDM dari LDM adalah..." opsi={["PDM menambahkan tipe data & constraint spesifik DBMS", "PDM menghapus primary key dari tabel", "PDM tidak berhubungan dengan normalisasi"]} benar={0} jelas="PDM menambahkan detail fisik yang spesifik DBMS: tipe data, ukuran kolom, dan constraint; struktur tabelnya sudah ditentukan LDM." />
 
-<QuizCard question="Atribut email VARCHAR(80) UNIQUE berarti...">
-  <button class="quiz-option" data-correct="true" data-explanation="UNIQUE menjamin tidak ada dua baris dengan nilai sama, tetapi tetap memperbolehkan NULL.">Nilai email harus selalu berbeda pada tiap baris</button>
-  <button class="quiz-option" data-correct="false">Email boleh kosong pada semua baris</button>
-  <button class="quiz-option" data-correct="false">Email menjadi primary key tabel</button>
-</QuizCard>
+<QuizCard id="q3" soal="Atribut email VARCHAR(80) UNIQUE berarti..." opsi={["Nilai email harus selalu berbeda pada tiap baris", "Email boleh kosong pada semua baris", "Email menjadi primary key tabel"]} benar={0} jelas="UNIQUE menjamin tidak ada dua baris dengan nilai sama, tetapi tetap memperbolehkan NULL." />
 
-<QuizCard question="Constraint yang paling tepat untuk memastikan SKS hanya bernilai 1–6 adalah...">
-  <button class="quiz-option" data-correct="false">NOT NULL</button>
-  <button class="quiz-option" data-correct="false">UNIQUE</button>
-  <button class="quiz-option" data-correct="true" data-explanation="CHECK memvalidasi nilai pada rentang yang ditentukan (BETWEEN 1 AND 6).">CHECK (sks BETWEEN 1 AND 6)</button>
-</QuizCard>
+<QuizCard id="q4" soal="Constraint yang paling tepat untuk memastikan SKS hanya bernilai 1–6 adalah..." opsi={["NOT NULL", "UNIQUE", "CHECK (sks BETWEEN 1 AND 6)"]} benar={2} jelas="CHECK memvalidasi nilai pada rentang yang ditentukan (BETWEEN 1 AND 6)." />
 
-<QuizCard question="Pada tabel nilai dengan PK gabungan (nim, kode_mk), dua FK ditulis dengan...">
-  <button class="quiz-option" data-correct="false">Cukup satu baris PRIMARY KEY saja</button>
-  <button class="quiz-option" data-correct="true" data-explanation="PK gabungan dinyatakan PRIMARY KEY (nim, kode_mk), dan masing-masing FK menunjuk ke tabel induknya lewat REFERENCES.">PRIMARY KEY (nim, kode_mk) + dua REFERENCES ke tabel mahasiswa & matakuliah</button>
-  <button class="quiz-option" data-correct="false">Menambahkan kolom id_nilai sebagai PK tunggal</button>
-</QuizCard>
+<QuizCard id="q5" soal="Pada tabel nilai dengan PK gabungan (nim, kode_mk), dua FK ditulis dengan..." opsi={["Cukup satu baris PRIMARY KEY saja", "PRIMARY KEY (nim, kode_mk) + dua REFERENCES ke tabel mahasiswa & matakuliah", "Menambahkan kolom id_nilai sebagai PK tunggal"]} benar={1} jelas="PK gabungan dinyatakan PRIMARY KEY (nim, kode_mk), dan masing-masing FK menunjuk ke tabel induknya lewat REFERENCES." />
 
 ## K. Rangkuman
 

@@ -283,35 +283,15 @@ SELECT * FROM catatan;
 
 ## H. Kuis Evaluasi
 
-<QuizCard question="Di XAMPP, database MySQL dapat diakses melalui GUI berbasis browser dengan aplikasi...">
-  <button class="quiz-option" data-correct="true" data-explanation="phpMyAdmin adalah antarmuka berbasis web bawaan XAMPP untuk mengelola MySQL/MariaDB.">phpMyAdmin</button>
-  <button class="quiz-option" data-correct="false">Termux</button>
-  <button class="quiz-option" data-correct="false">MySQL Workbench</button>
-</QuizCard>
+<QuizCard id="q1" soal="Di XAMPP, database MySQL dapat diakses melalui GUI berbasis browser dengan aplikasi..." opsi={["phpMyAdmin", "Termux", "MySQL Workbench"]} benar={0} jelas="phpMyAdmin adalah antarmuka berbasis web bawaan XAMPP untuk mengelola MySQL/MariaDB." />
 
-<QuizCard question="Perintah CREATE TABLE termasuk dalam kelompok bahasa...">
-  <button class="quiz-option" data-correct="false">DML</button>
-  <button class="quiz-option" data-correct="true" data-explanation="DDL (Data Definition Language) digunakan untuk mendefinisikan/mengubah struktur, seperti CREATE TABLE, ALTER, dan DROP.">DDL</button>
-  <button class="quiz-option" data-correct="false">DCL</button>
-</QuizCard>
+<QuizCard id="q2" soal="Perintah CREATE TABLE termasuk dalam kelompok bahasa..." opsi={["DML", "DDL", "DCL"]} benar={1} jelas="DDL (Data Definition Language) digunakan untuk mendefinisikan/mengubah struktur, seperti CREATE TABLE, ALTER, dan DROP." />
 
-<QuizCard question="Urutan yang benar untuk mulai memakai basis data di MySQL adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="CREATE DATABASE membuat basis data, lalu USE memilihnya sebagai basis data aktif untuk perintah selanjutnya.">CREATE DATABASE lalu USE</button>
-  <button class="quiz-option" data-correct="false">USE lalu CREATE DATABASE</button>
-  <button class="quiz-option" data-correct="false">SELECT lalu CREATE DATABASE</button>
-</QuizCard>
+<QuizCard id="q3" soal="Urutan yang benar untuk mulai memakai basis data di MySQL adalah..." opsi={["CREATE DATABASE lalu USE", "USE lalu CREATE DATABASE", "SELECT lalu CREATE DATABASE"]} benar={0} jelas="CREATE DATABASE membuat basis data, lalu USE memilihnya sebagai basis data aktif untuk perintah selanjutnya." />
 
-<QuizCard question="Port default yang dipakai MySQL adalah...">
-  <button class="quiz-option" data-correct="false">80</button>
-  <button class="quiz-option" data-correct="true" data-explanation="MySQL menggunakan port 3306 secara default, sementara PostgreSQL memakai 5432 dan Apache 80.">3306</button>
-  <button class="quiz-option" data-correct="false">5432</button>
-</QuizCard>
+<QuizCard id="q4" soal="Port default yang dipakai MySQL adalah..." opsi={["80", "3306", "5432"]} benar={1} jelas="MySQL menggunakan port 3306 secara default, sementara PostgreSQL memakai 5432 dan Apache 80." />
 
-<QuizCard question="Perbedaan utama SQLite dari MySQL adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="SQLite adalah DBMS embedded tanpa server: seluruh database tersimpan dalam satu file, sedangkan MySQL berjalan sebagai server.">SQLite tidak butuh server, tersimpan dalam satu file</button>
-  <button class="quiz-option" data-correct="false">SQLite hanya bisa diakses via GUI</button>
-  <button class="quiz-option" data-correct="false">SQLite tidak mendukung SELECT</button>
-</QuizCard>
+<QuizCard id="q5" soal="Perbedaan utama SQLite dari MySQL adalah..." opsi={["SQLite tidak butuh server, tersimpan dalam satu file", "SQLite hanya bisa diakses via GUI", "SQLite tidak mendukung SELECT"]} benar={0} jelas="SQLite adalah DBMS embedded tanpa server: seluruh database tersimpan dalam satu file, sedangkan MySQL berjalan sebagai server." />
 
 ## I. Rangkuman
 

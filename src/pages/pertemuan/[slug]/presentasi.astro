@@ -484,7 +484,7 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
               var optsHtml = '<ol class="ps-hook__opts">';
               opts.forEach(function (ob, oi) {
                 optsHtml +=
-                  '<li class="ps-hook__opt" data-correct="' + (ob.getAttribute('data-correct') === 'true') + '">' +
+                  '<li class="ps-hook__opt">' +
                   '<span class="ps-hook__opt-letter">' + (letters[oi] || (oi + 1)) + '</span>' +
                   '<span class="ps-hook__opt-text">' + esc(ob.textContent.trim()) + '</span>' +
                   '</li>';
@@ -504,14 +504,60 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
               revealBtn.style.background = 'var(--teal-400)';
               revealBtn.textContent = 'Lihat Jawaban';
               var ansBox = null;
+              // Kunci latihan tidak ada di HTML (v2.8.0) — diambil dari
+              // endpoint admin saat tombol diklik, jadi hanya dosen yang
+              // bisa membukanya. Gagal (belum login admin / offline) =
+              // tombol mati, bukan bocor.
+              var kunciKuis = null;
+              var kunciGagal = false;
               revealBtn.addEventListener('click', function () {
-                if (ansBox) { ansBox.remove(); ansBox = null; revealBtn.textContent = 'Lihat Jawaban'; hookEl.querySelector('#psHookHint').hidden = false; return; }
-                var correct = null;
-                opts.forEach(function (ob) {
-                  if (ob.getAttribute('data-correct') === 'true') correct = ob;
-                });
-                hookEl.querySelectorAll('.ps-hook__opt').forEach(function (li) {
-                  if (li.getAttribute('data-correct') === 'true') {
+                if (ansBox) {
+                  ansBox.remove();
+                  ansBox = null;
+                  revealBtn.textContent = 'Lihat Jawaban';
+                  hookEl.querySelector('#psHookHint').hidden = false;
+                  return;
+                }
+                if (kunciKuis === null && !kunciGagal) {
+                  revealBtn.disabled = true;
+                  revealBtn.textContent = 'Memuat kunci…';
+                  ambilKunciKuis().then(function (kunci) {
+                    revealBtn.disabled = false;
+                    if (!kunci) {
+                      kunciGagal = true;
+                      revealBtn.textContent = 'Kunci tidak tersedia';
+                      return;
+                    }
+                    kunciKuis = kunci;
+                    tampilkanKunci();
+                  });
+                  return;
+                }
+                if (kunciKuis === null) return;
+                tampilkanKunci();
+              });
+
+              async function ambilKunciKuis() {
+                try {
+                  const res = await fetch(
+                    '/api/admin.php?kuis=1&pertemuan_id=' + encodeURIComponent(pertemuanId),
+                    { credentials: 'same-origin', cache: 'no-store' }
+                  );
+                  if (!res.ok) return null;
+                  const j = await res.json();
+                  if (!j || !j.ok || !j.data || !j.data.kuis) return null;
+                  const isi = j.data.kuis[pertemuanId];
+                  if (!isi || !isi.benar || !isi.benar.length) return null;
+                  return { benar: isi.benar, jelas: isi.jelas || [] };
+                } catch (err) {
+                  return null;
+                }
+              }
+
+              function tampilkanKunci() {
+                var benarIdx = kunciKuis.benar[0];
+                hookEl.querySelectorAll('.ps-hook__opt').forEach(function (li, oi) {
+                  if (oi === benarIdx) {
                     li.classList.add('is-right');
                     var tag = document.createElement('span');
                     tag.className = 'ps-hook__opt-tag';
@@ -519,7 +565,8 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
                     li.appendChild(tag);
                   }
                 });
-                var explTxt = correct ? (correct.getAttribute('data-explanation') || '') : '';
+                var correct = opts[benarIdx];
+                var explTxt = kunciKuis.jelas[0] || '';
                 ansBox = document.createElement('div');
                 ansBox.className = 'ps-hook__ans';
                 ansBox.innerHTML =
@@ -529,7 +576,7 @@ const loginNextHref = `/login?next=${encodeURIComponent(`/pertemuan/${m.id}/pres
                 hookEl.querySelector('.ps-slide__inner').appendChild(ansBox);
                 hookEl.querySelector('#psHookHint').hidden = true;
                 revealBtn.textContent = 'Sembunyikan Jawaban';
-              });
+              }
               revealWrap.appendChild(revealBtn);
               slides.push({ el: hookEl, label: 'Studi Kasus', kind: 'hook' });
             }

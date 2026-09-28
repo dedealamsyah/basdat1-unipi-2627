@@ -1,83 +1,183 @@
 ---
+/**
+ * Kartu kuis latihan (satu soal) — v2.8.0
+ *
+ * KONTRAK KEAMANAN: prop `benar` dan `jelas` hanya dipakai saat build (untuk
+ * validasi) dan TIDAK PERNAH ditulis ke HTML. Kunci jawaban latihan mengikuti
+ * jalur yang sama dengan evaluasi: `scripts/gen-kunci.mjs` -&gt; `api/kunci.php`
+ * (KUIS_KUNCI), lalu dinilai server di `api/quiz.php`. Halaman hanya mengirim
+ * pilihan yang diklik mahasiswa; penilaian benar/tidak baru dikirim server
+ * setelah jawaban itu dinilai.
+ *
+ * Aturan main: hanya `id`, `soal`, dan `opsi` yang boleh masuk DOM.
+ * `scripts/verify-build.mjs` menjadikan pelanggaran ini menggagalkan build.
+ */
 interface Props {
-  question: string;
-  id?: string;
+  /** Id stabil per pertemuan: "q1", "q2", ... (kunci baris di sisi server) */
+  id: string;
+  soal: string;
+  opsi: string[];
+  /** Indeks opsi benar — rahasia, tidak dirender */
+  benar: number;
+  /** Penjelasan — dikirim server hanya untuk soal yang sudah dijawab */
+  jelas?: string;
 }
 
-const { question, id } = Astro.props;
-const quizId = id || `quiz-${String(Math.floor(Math.random() * 100000))}`;
+const { id, soal, opsi, benar, jelas } = Astro.props;
+
+// Validasi build: kuis yang rusak harus menggagalkan build, bukan menghasilkan
+// kunci yang diam-diam salah di server.
+const jumlahOpsi = Array.isArray(opsi) ? opsi.length : 0;
+if (jumlahOpsi < 2) {
+  throw new Error(`QuizCard ${id}: minimal 2 opsi, ditemukan ${jumlahOpsi}.`);
+}
+if (!Number.isInteger(benar) || benar < 0 || benar >= jumlahOpsi) {
+  throw new Error(`QuizCard ${id}: benar=${benar} di luar rentang opsi (0..${jumlahOpsi - 1}).`);
+}
+if (jelas !== undefined && typeof jelas !== 'string') {
+  throw new Error(`QuizCard ${id}: prop "jelas" harus berupa teks.`);
+}
 ---
 
-<div class="interactive-card" data-quiz={quizId}>
-  <p><strong>{question}</strong></p>
-  <slot />
-  <div class="quiz-feedback" style="margin-top:10px; font-weight:600;"></div>
+<div class="interactive-card" data-quiz={id}>
+  <p><strong>{soal}</strong></p>
+  {opsi.map((teks, i) => (
+    <button type="button" class="quiz-option" data-opt={String(i)}>{teks}</button>
+  ))}
+  <div class="quiz-feedback" style="margin-top:10px; font-weight:600;" aria-live="polite"></div>
 </div>
 
-<script is:inline define:vars={{ quizId }}>
-  (function() {
-    var card = document.querySelector('[data-quiz="' + quizId + '"]');
-    if (!card) return;
+<script>
+  /* -----------------------------------------------------------------------
+   * Penilaian kuis latihan.
+   *
+   * Client hanya MENGIRIM pilihan yang diklik. Kunci tidak ada di halaman,
+   * jadi nilai yang tampil dan nilai yang tercatat di tabel `progress`
+   * sama-sama berasal dari api/quiz.php.
+   *
+   * Aturan: jawaban PERTAMA untuk tiap soal yang dihitung. Server mengunci
+   * pilihan pertama per soal (per sesi login), jadi mengulang-klik opsi lain
+   * tidak mengubah nilai. Sisa celahnya dijelaskan di docs/AUDIT.md.
+   * --------------------------------------------------------------------- */
+  type HasilSoal = { opt: number; benar: boolean; jelas?: string };
 
-    // Pelacak tuntas per pertemuan: hanya lapor bila SEMUA kuis benar
-    if (!window.__quizTracker) {
-      window.__quizTracker = {
-        report: function(qid, pid) {
-          if (!pid) return;
-          var st = window.__quizState = window.__quizState || {};
-          var key = String(pid);
-          st[key] = st[key] || { done: {}, reported: false };
-          st[key].done[qid] = true;
-          var total = document.querySelectorAll('.interactive-card[data-quiz]').length;
-          var done = Object.keys(st[key].done).length;
-          if (total > 0 && done >= total && !st[key].reported) {
-            st[key].reported = true;
-            if (typeof window.APIAuth !== 'undefined') {
-              window.APIAuth.complete(pid, done, total).then(function(res) {
-                if (res && res.progress && window.APIAuth.refresh) window.APIAuth.refresh();
-              });
-            }
-          }
-        },
-        reset: function() { window.__quizState = {}; }
-      };
+  const meta = document.getElementById('pageMeta');
+  const pertemuanId = meta ? parseInt(meta.getAttribute('data-pertemuan') || '0', 10) : 0;
+  const kartu = Array.from(
+    document.querySelectorAll<HTMLElement>('.interactive-card[data-quiz]')
+  );
+  if (kartu.length > 0 && pertemuanId > 0) {
+    initKuis(pertemuanId, kartu);
+  }
+
+  function initKuis(pid: number, daftar: HTMLElement[]) {
+    /** qid -> penilaian server (sumber kebenaran tampilan di halaman ini) */
+    const dinilai: Record<string, HasilSoal> = {};
+    let sedangKirim = false;
+    let tuntas = false;
+
+    daftar.forEach((card) => {
+      Array.from(card.querySelectorAll<HTMLButtonElement>('.quiz-option')).forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (sedangKirim || tuntas) return;
+          const qid = card.getAttribute('data-quiz') || '';
+          const opt = parseInt(btn.getAttribute('data-opt') || '-1', 10);
+          if (isNaN(opt) || dinilai[qid]) return;
+          kirim(qid, opt);
+        });
+      });
+    });
+
+    // Pulihkan jawaban yang sudah dinilai di sesi server, supaya reload tidak
+    // membuat mahasiswa mengulang soal yang sebenarnya sudah tercatat.
+    const auth0 = window.APIAuth;
+    if (auth0 && auth0.quizState) {
+      auth0.quizState(pid).then((res) => {
+        if (res && res.ok && res.data) terapkan(res.data);
+      }).catch(() => {});
     }
 
-    card.querySelectorAll('.quiz-option').forEach(function(btn) {
-      btn.onclick = function() {
-        var isCorrect = this.getAttribute('data-correct') === 'true';
-        var feedback = card.querySelector('.quiz-feedback');
-
-        card.querySelectorAll('.quiz-option').forEach(function(opt) {
-          opt.classList.remove('correct', 'wrong');
-        });
-
-        feedback.textContent = '';
-        if (isCorrect) {
-          this.classList.add('correct');
-          var explanation = this.getAttribute('data-explanation') || '';
-          var span = document.createElement('span');
-          span.style.color = 'var(--green-600)';
-          span.textContent = '[Benar] ' + explanation;
-          feedback.appendChild(span);
-          var meta = document.getElementById('pageMeta');
-          if (meta) {
-            var pid = parseInt(meta.getAttribute('data-pertemuan'), 10);
-            window.__quizTracker.report(quizId, pid);
-          }
-        } else {
-          this.classList.add('wrong');
-          var span2 = document.createElement('span');
-          span2.style.color = 'var(--red-600)';
-          span2.textContent = '[Kurang tepat] Coba perhatikan kembali konsepnya.';
-          feedback.appendChild(span2);
+    function kirim(qid: string, opt: number) {
+      const auth = window.APIAuth;
+      if (!auth || !auth.gradeQuiz) {
+        pesan(qid, 'API belum siap. Muat ulang halaman.');
+        return;
+      }
+      sedangKirim = true;
+      const kirimMap: Record<string, number> = {};
+      kirimMap[qid] = opt;
+      auth.gradeQuiz(pid, kirimMap).then((res) => {
+        sedangKirim = false;
+        if (!res || !res.ok) {
+          pesan(qid, pesanError(res));
+          return;
         }
-      };
-    });
+        tuntas = !!(res.data && res.data.tuntas);
+        if (res.data) terapkan(res.data);
+        if (tuntas && auth.refresh) auth.refresh();
+      }).catch(() => {
+        sedangKirim = false;
+        pesan(qid, 'Gagal menghubungi server. Coba lagi.');
+      });
+    }
 
-    // Reset tracker saat navigasi dalam situs (pergantian halaman)
-    document.addEventListener('astro:before-swap', function() {
-      if (window.__quizTracker) window.__quizTracker.reset();
-    });
-  })();
+    function pesanError(res: HasilKuis | undefined): string {
+      if (res && res.status === 401) {
+        return 'Silakan login untuk mengerjakan latihan.';
+      }
+      if (res && res.status === 403) {
+        // 403 hanya untuk admin: endpoint mahasiswa menolak menyimpan nilai.
+        return 'Mode admin: nilai latihan tidak disimpan.';
+      }
+      return (res && res.error) || 'Gagal menyimpan jawaban. Coba lagi.';
+    }
+
+    /** Terapkan penilaian server ke kartu yang sudah dinilai. */
+    function terapkan(data: { results?: Record<string, HasilSoal> }) {
+      const results = data.results || {};
+      Object.keys(results).forEach((qid) => {
+        dinilai[qid] = results[qid];
+        render(qid, results[qid]);
+      });
+    }
+
+    function render(qid: string, q: HasilSoal) {
+      const card = cari(qid);
+      if (!card) return;
+      Array.from(card.querySelectorAll<HTMLButtonElement>('.quiz-option')).forEach((btn) => {
+        const opt = parseInt(btn.getAttribute('data-opt') || '-1', 10);
+        btn.classList.remove('correct', 'wrong');
+        // Jawaban yang tercatat adalah jawaban pertama: tampilkan apa adanya.
+        btn.disabled = true;
+        if (opt === q.opt) btn.classList.add(q.benar ? 'correct' : 'wrong');
+      });
+
+      const box = card.querySelector<HTMLElement>('.quiz-feedback');
+      if (!box) return;
+      box.textContent = '';
+      const span = document.createElement('span');
+      if (q.benar) {
+        span.style.color = 'var(--green-600)';
+        span.textContent = '[Benar] ' + (q.jelas || 'Jawaban Anda tepat.');
+      } else {
+        span.style.color = 'var(--red-600)';
+        span.textContent = '[Kurang tepat] ' + (q.jelas || 'Coba perhatikan kembali konsepnya.');
+      }
+      box.appendChild(span);
+    }
+
+    function pesan(qid: string, txt: string) {
+      const box = cari(qid)?.querySelector<HTMLElement>('.quiz-feedback');
+      if (!box) return;
+      box.textContent = txt;
+      box.style.color = 'var(--red-600)';
+    }
+
+    function cari(qid: string): HTMLElement | null {
+      for (const card of daftar) {
+        if (card.getAttribute('data-quiz') === qid) return card;
+      }
+      return null;
+    }
+  }
 </script>

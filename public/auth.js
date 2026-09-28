@@ -96,14 +96,29 @@
     });
   }
 
-  async function complete(pertemuanId, score, total) {
-    return api("/api/complete.php", {
+  /* ------------------------------------------------------------------
+   * Kuis latihan (v2.8.0): yang dikirim hanya PILIHAN yang diklik.
+   * Skor & status tuntas dihitung server dari kunci (api/quiz.php);
+   * `quiz_score` dari client sudah tidak dipercaya di mana pun.
+   * Bentuk jawaban: { "q1": 2, "q2": 0 } => indeks opsi.
+   * ------------------------------------------------------------------ */
+  async function gradeQuiz(pertemuanId, jawaban) {
+    var r = await api("/api/quiz.php", {
       method: "POST",
-      body: { pertemuan_id: pertemuanId, quiz_score: score || 1, quiz_total: total || 1 }
-    }).then(function (r) {
-      if (r.data.ok) { meCache = null; return r.data.data; }
-      return r.data;
+      body: { pertemuan_id: pertemuanId, jawaban: jawaban || {} }
     });
+    if (r.data && r.data.ok) {
+      meCache = null; // progres berubah -> paksa muat ulang di sidebar
+      return { ok: true, status: r.status, data: r.data.data || {} };
+    }
+    return { ok: false, status: r.status, error: (r.data && r.data.error) || "Gagal menyimpan jawaban." };
+  }
+
+  /* Baca jawaban yang sudah dinilai (memulihkan tampilan setelah reload). */
+  async function quizState(pertemuanId) {
+    var r = await api("/api/quiz.php?pertemuan_id=" + encodeURIComponent(pertemuanId));
+    if (r.data && r.data.ok) return { ok: true, status: r.status, data: r.data.data || {} };
+    return { ok: false, status: r.status };
   }
 
   /* ---------------- menu pertemuan dari DB (editable admin) ---------------- */
@@ -326,7 +341,8 @@
     me: me,
     login: login,
     logout: logout,
-    complete: complete,
+    gradeQuiz: gradeQuiz,
+    quizState: quizState,
     changePassword: changePassword,
     readyCheck: readyCheck,
     refresh: refresh

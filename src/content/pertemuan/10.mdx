@@ -405,35 +405,15 @@ Konsepnya: bagi daftar peminjaman dengan daftar seluruh buku; hasilnya adalah an
 
 ## K. Kuis Evaluasi
 
-<QuizCard question="Simbol yang digunakan untuk memilih baris berdasarkan kondisi pada Aljabar Relasional adalah...">
-  <button class="quiz-option" data-correct="false">π (pi)</button>
-  <button class="quiz-option" data-correct="true" data-explanation="σ (sigma) digunakan untuk select, memilih baris sesuai kondisi. π dipakai untuk project (memilih kolom).">σ (sigma)</button>
-  <button class="quiz-option" data-correct="false">ρ (rho)</button>
-</QuizCard>
+<QuizCard id="q1" soal="Simbol yang digunakan untuk memilih baris berdasarkan kondisi pada Aljabar Relasional adalah..." opsi={["π (pi)", "σ (sigma)", "ρ (rho)"]} benar={1} jelas="σ (sigma) digunakan untuk select, memilih baris sesuai kondisi. π dipakai untuk project (memilih kolom)." />
 
-<QuizCard question="Ekspresi AR untuk menampilkan nama mahasiswa prodi Informatika adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="Kerjakan σ untuk menyaring prodi Informatika, lalu π untuk mengambil kolom nama. π berada di luar karena hasil σ masih berupa relasi lengkap.">π&lt;nama&gt;( σ&lt;prodi='Informatika'&gt;(MAHASISWA) )</button>
-  <button class="quiz-option" data-correct="false">σ&lt;prodi='Informatika'&gt;( π&lt;nama&gt;(MAHASISWA) )</button>
-  <button class="quiz-option" data-correct="false">π&lt;prodi&gt;( σ&lt;nama&gt;(MAHASISWA) )</button>
-</QuizCard>
+<QuizCard id="q2" soal="Ekspresi AR untuk menampilkan nama mahasiswa prodi Informatika adalah..." opsi={["π<nama>( σ<prodi='Informatika'>(MAHASISWA) )", "σ<prodi='Informatika'>( π<nama>(MAHASISWA) )", "π<prodi>( σ<nama>(MAHASISWA) )"]} benar={0} jelas="Kerjakan σ untuk menyaring prodi Informatika, lalu π untuk mengambil kolom nama. π berada di luar karena hasil σ masih berupa relasi lengkap." />
 
-<QuizCard question="Operasi AR yang paling tepat untuk query 'cari anggota yang meminjam SEMUA buku' adalah...">
-  <button class="quiz-option" data-correct="false">Union (∪)</button>
-  <button class="quiz-option" data-correct="false">Cartesian product (×)</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Query bernuansa 'untuk semua' (universal quantification) dijawab dengan operasi division (÷).">Division (÷)</button>
-</QuizCard>
+<QuizCard id="q3" soal="Operasi AR yang paling tepat untuk query 'cari anggota yang meminjam SEMUA buku' adalah..." opsi={["Union (∪)", "Cartesian product (×)", "Division (÷)"]} benar={2} jelas="Query bernuansa 'untuk semua' (universal quantification) dijawab dengan operasi division (÷)." />
 
-<QuizCard question="Union (∪) dari dua relasi R dan S mensyaratkan...">
-  <button class="quiz-option" data-correct="true" data-explanation="Kedua relasi harus union-compatible: jumlah dan tipe/domain atribut yang bersesuaian sama.">Kedua relasi union-compatible (jumlah & domain atribut sama)</button>
-  <button class="quiz-option" data-correct="false">Kedua relasi memiliki Primary Key yang sama</button>
-  <button class="quiz-option" data-correct="false">Relasi R harus lebih besar dari S</button>
-</QuizCard>
+<QuizCard id="q4" soal="Union (∪) dari dua relasi R dan S mensyaratkan..." opsi={["Kedua relasi union-compatible (jumlah & domain atribut sama)", "Kedua relasi memiliki Primary Key yang sama", "Relasi R harus lebih besar dari S"]} benar={0} jelas="Kedua relasi harus union-compatible: jumlah dan tipe/domain atribut yang bersesuaian sama." />
 
-<QuizCard question="Klausa SQL WHERE paling dekat padanannya dengan operasi AR...">
-  <button class="quiz-option" data-correct="false">Project (π)</button>
-  <button class="quiz-option" data-correct="true" data-explanation="WHERE menyaring baris berdasarkan kondisi, persis fungsi σ (select) pada AR.">Select (σ)</button>
-  <button class="quiz-option" data-correct="false">Rename (ρ)</button>
-</QuizCard>
+<QuizCard id="q5" soal="Klausa SQL WHERE paling dekat padanannya dengan operasi AR..." opsi={["Project (π)", "Select (σ)", "Rename (ρ)"]} benar={1} jelas="WHERE menyaring baris berdasarkan kondisi, persis fungsi σ (select) pada AR." />
 
 ## L. Rangkuman
 

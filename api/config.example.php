@@ -407,6 +407,89 @@ function eval_nilai(int $pertemuanId, array $jawaban): ?array
 
 /** Sum skor & total soal evaluasi seorang mahasiswa: [skor, total].
  *  Toleran bila tabel `evaluasi` belum termigrasi → [0, 0]. */
+/* ---------------------------------------------------------------------------
+ * Kuis latihan (server-graded, v2.8.0)
+ *
+ * Kunci latihan tidak lagi ikut ter-inline ke HTML (`data-correct`), sehingga
+ * mahasiswa tidak bisa membacanya dari View Source lalu mengirim skor apa pun.
+ * Kunci dibaca dari `api/kunci.php` (KUIS_KUNCI) dan dinilai di
+ * `api/quiz.php`; halaman hanya mengirim indeks opsi yang diklik.
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Muat kunci kuis latihan dari `api/kunci.php` (hasil generate build).
+ *
+ * @return array<int,array{id:string[],benar:int[],opsi:int[],jelas:string[]}>
+ */
+function kuis_kunci_map(): array
+{
+    static $map = null;
+    if ($map !== null) {
+        return $map;
+    }
+    $file = __DIR__ . '/kunci.php';
+    if (!is_file($file)) {
+        $map = array();
+        return $map;
+    }
+    require $file;
+    $map = defined('KUIS_KUNCI') ? KUIS_KUNCI : array();
+    return $map;
+}
+
+/** Kunci kuis satu pertemuan, atau null bila tidak ada. */
+function kuis_kunci(int $pertemuanId): ?array
+{
+    $map = kuis_kunci_map();
+    return isset($map[$pertemuanId]) ? $map[$pertemuanId] : null;
+}
+
+/**
+ * Nilai jawaban kuis latihan memakai kunci server.
+ *
+ * `tuntas` hanya true bila SEMUA soal dijawab dan semuanya benar — aturan
+ * "tuntas = semua kuis benar" yang sudah dipakai `complete.php` sejak dulu,
+ * jadi angka nilai yang tercatat tidak berubah.
+ *
+ * @param array<string,int> $terpilih peta id soal (q1, q2, ...) => indeks opsi
+ * @return array{benar:int,jumlah:int,tertawab:int,tuntas:bool,rinci:array<string,bool>}|null
+ */
+function kuis_nilai(int $pertemuanId, array $terpilih): ?array
+{
+    $kunci = kuis_kunci($pertemuanId);
+    if ($kunci === null) {
+        return null;
+    }
+    $ids = $kunci['id'];
+    $jumlah = count($ids);
+    if ($jumlah < 1) {
+        return null;
+    }
+
+    $benar = 0;
+    $tertawab = 0;
+    $rinci = array();
+    foreach ($ids as $i => $qid) {
+        if (!array_key_exists($qid, $terpilih)) {
+            continue;
+        }
+        $ok = (int) $terpilih[$qid] === (int) $kunci['benar'][$i];
+        $rinci[$qid] = $ok;
+        $tertawab++;
+        if ($ok) {
+            $benar++;
+        }
+    }
+
+    return array(
+        'benar' => $benar,
+        'jumlah' => $jumlah,
+        'tertawab' => $tertawab,
+        'tuntas' => ($tertawab === $jumlah && $benar === $jumlah),
+        'rinci' => $rinci,
+    );
+}
+
 function evaluasi_sum(string $nim): array
 {
     try {

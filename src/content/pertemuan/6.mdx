@@ -269,35 +269,15 @@ Gunakan poin-poin berikut untuk memutuskan:
 
 ## J. Kuis Evaluasi
 
-<QuizCard question="Perbedaan inti antara 3NF dan BCNF adalah...">
-  <button class="quiz-option" data-correct="true" data-explanation="BCNF mengharuskan SETIAP determinan adalah superkey, tanpa pengecualian untuk atribut prime.">BCNF mensyaratkan setiap determinan FD adalah superkey</button>
-  <button class="quiz-option" data-correct="false">BCNF menghapus partial dependency sedangkan 3NF tidak</button>
-  <button class="quiz-option" data-correct="false">BCNF dan 3NF adalah istilah yang sama</button>
-</QuizCard>
+<QuizCard id="q1" soal="Perbedaan inti antara 3NF dan BCNF adalah..." opsi={["BCNF mensyaratkan setiap determinan FD adalah superkey", "BCNF menghapus partial dependency sedangkan 3NF tidak", "BCNF dan 3NF adalah istilah yang sama"]} benar={0} jelas="BCNF mengharuskan SETIAP determinan adalah superkey, tanpa pengecualian untuk atribut prime." />
 
-<QuizCard question="Pada relasi PENGAMPUAN(nim, kode_mk, nip) dengan FD nip → kode_mk, mengapa tabel ini belum BCNF?">
-  <button class="quiz-option" data-correct="false">Karena nip bukan atribut prime</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Determinan 'nip' bukan superkey (tidak menentukan nim), sehingga definisi BCNF dilanggar meskipun kode_mk prime.">Determinan nip bukan superkey</button>
-  <button class="quiz-option" data-correct="false">Karena ada dua candidate key sekaligus</button>
-</QuizCard>
+<QuizCard id="q2" soal="Pada relasi PENGAMPUAN(nim, kode_mk, nip) dengan FD nip → kode_mk, mengapa tabel ini belum BCNF?" opsi={["Karena nip bukan atribut prime", "Determinan nip bukan superkey", "Karena ada dua candidate key sekaligus"]} benar={1} jelas="Determinan 'nip' bukan superkey (tidak menentukan nim), sehingga definisi BCNF dilanggar meskipun kode_mk prime." />
 
-<QuizCard question="Dekomposisi PENGAMPUAN menjadi PENGAMPUAN_DOSEN(nip, kode_mk) dan PENGAMPUAN_MHS(nim, nip) bersifat lossless karena...">
-  <button class="quiz-option" data-correct="true" data-explanation="Irisan kedua relasi adalah nip, dan nip adalah primary key dari PENGAMPUAN_DOSEN.">Irisan (nip) adalah kunci pada salah satu relasi hasil</button>
-  <button class="quiz-option" data-correct="false">Karena kedua relasi disimpan berurutan</button>
-  <button class="quiz-option" data-correct="false">Karena atributnya sama jumlahnya</button>
-</QuizCard>
+<QuizCard id="q3" soal="Dekomposisi PENGAMPUAN menjadi PENGAMPUAN_DOSEN(nip, kode_mk) dan PENGAMPUAN_MHS(nim, nip) bersifat lossless karena..." opsi={["Irisan (nip) adalah kunci pada salah satu relasi hasil", "Karena kedua relasi disimpan berurutan", "Karena atributnya sama jumlahnya"]} benar={0} jelas="Irisan kedua relasi adalah nip, dan nip adalah primary key dari PENGAMPUAN_DOSEN." />
 
-<QuizCard question="Tabel yang sudah 3NF dan memiliki FD dengan determinan non-superkey yang dependennya atribut prime…">
-  <button class="quiz-option" data-correct="false">Pasti sudah BCNF</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Nilai prime pada dependen membuat tabel lolos 3NF, tetapi bukan jaminan BCNF; itulah celah yang ditutup BCNF.">Lolos 3NF namun belum tentu BCNF</button>
-  <button class="quiz-option" data-correct="false">Tidak memenuhi syarat 2NF</button>
-</QuizCard>
+<QuizCard id="q4" soal="Tabel yang sudah 3NF dan memiliki FD dengan determinan non-superkey yang dependennya atribut prime…" opsi={["Pasti sudah BCNF", "Lolos 3NF namun belum tentu BCNF", "Tidak memenuhi syarat 2NF"]} benar={1} jelas="Nilai prime pada dependen membuat tabel lolos 3NF, tetapi bukan jaminan BCNF; itulah celah yang ditutup BCNF." />
 
-<QuizCard question="Kelemahan utama dekomposisi BCNF dibanding 3NF adalah...">
-  <button class="quiz-option" data-correct="false">Membuat data jadi lebih banyak</button>
-  <button class="quiz-option" data-correct="true" data-explanation="BCNF menjamin lossless-join tetapi tidak selalu mempertahankan seluruh ketergantungan fungsional.">Tidak selalu dependency-preserving</button>
-  <button class="quiz-option" data-correct="false">Selalu menghasilkan join yang kompleks</button>
-</QuizCard>
+<QuizCard id="q5" soal="Kelemahan utama dekomposisi BCNF dibanding 3NF adalah..." opsi={["Membuat data jadi lebih banyak", "Tidak selalu dependency-preserving", "Selalu menghasilkan join yang kompleks"]} benar={1} jelas="BCNF menjamin lossless-join tetapi tidak selalu mempertahankan seluruh ketergantungan fungsional." />
 
 ## K. Rangkuman
 
