@@ -27,6 +27,12 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   </div>
 </div>
 
+<!-- Container Notifikasi -->
+<div id="notifBox" class="sidebar__notif" style="display:none; padding:12px 20px; border-bottom:1px solid rgba(255,255,255,.07);">
+  <div style="font-family:var(--font-body); font-size:10px; font-weight:700; color:#F59E0B; margin-bottom:8px; text-transform:uppercase;">PERINGATAN TUGAS</div>
+  <div id="notifList" style="font-size:12px; color:#FDE68A; line-height:1.5;"></div>
+</div>
+
 <div class="sidebar__search">
   <label for="sidebarSearch" class="visually-hidden">Cari materi</label>
   <input 
