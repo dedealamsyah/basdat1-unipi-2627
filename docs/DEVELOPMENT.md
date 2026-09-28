@@ -333,9 +333,27 @@ Pastikan import CSS di layout:
 |---------|--------|
 | `npm run dev` | Jalankan dev server |
 | `npm run build` | Build untuk production (termasuk gate anti-bocor kunci) |
-| `npm run test` | Semua uji PHP: smoke test endpoint + logika notifikasi |
+| `npm run test` | Semua uji: endpoint, notifikasi, layout, urutan sidebar |
 | `npm run test:api` | Smoke test endpoint (menangkap variabel tak terdefinisi) |
 | `npm run test:layout` | Periksa CSS sidebar, kartu akun, & aturan `[hidden]` di `dist/` |
+| `npm run test:sort` | Uji urutan sidebar dari posisi server (reproduksi bug `localeCompare`) |
 | `npm run test:notif` | Uji logika rekap & aturan notifikasi mahasiswa |
 | `npm run preview` | Preview hasil build |
 | `npm run astro` | Jalankan Astro CLI |
+
+## Aset Client & Cache Browser
+
+Berkas di `public/` (`auth.js`, `mhs-ui.js`, `erd-interactive.js`,
+`game-*.js`, `service-worker.js`) **tidak** diberi hash seperti bundel
+`_astro/`. Kalau isinya berubah tanpa perubahan nama, browser bisa
+menyajikan versi lama dari cache — gejalanya "tampilan tidak sama dengan yang
+baru saja dideploy".
+
+Karena itu semua pemuatannya memakai query versi:
+
+```astro
+<script is:inline src={`/auth.js?v=${asetVersi}`}></script>
+```
+
+`asetVersi` adalah konstanta di `src/layouts/BaseLayout.astro`.
+**Naikkan setiap kali isi `public/*.js` berubah.**

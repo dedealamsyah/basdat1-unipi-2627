@@ -6,7 +6,7 @@ Portal materi interaktif untuk mata kuliah **Basis Data**, Program Studi S1 Info
 
 | | |
 |---|---|
-| **Versi** | v2.9.4 |
+| **Versi** | v2.9.5 |
 | **Framework** | Astro 7.x (Static Site Generator) |
 | **Backend** | PHP 8.x + MySQL (`api/` dan `admin/`) |
 | **Content** | MDX (Markdown + JSX) via content collections |

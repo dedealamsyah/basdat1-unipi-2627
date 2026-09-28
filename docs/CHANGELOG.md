@@ -1,5 +1,78 @@
 # Changelog
 
+## [2.9.5] - 2026-09-28
+
+> Deploy statis saja (`_deploy/`). Tidak ada perubahan API.
+
+### Fixed — "klik materi, tampilannya berganti ke yang tadi"
+
+Dilaporkan dosen. Penyebabnya urutan sidebar yang salah baca:
+
+- **`localeCompare` untuk membandingkan angka posisi.** Fungsi ini bersifat
+  leksikografis, jadi `"10"` dianggap lebih kecil dari `"2"`. Urutannya
+  menjadi `1, 8, 11, 12, ..., 16, 2, 3, ...` — benar-benar terbalik, dan
+  terlihat bergeser beberapa milidetik setelah halaman terbuka karena data
+  posisi datang asynchronous dari `/api/pertemuan.php`. Klik yang jatuh
+  di antara pergeseran itu mendarat di baris lain.
+- **Node DOM dipindahkan untuk mengurutkan.** `appendChild` saat user sedang
+  membaca atau mengklik memodifikasi struktur dokumen di saat yang tidak
+  disengaja.
+- **Daftar beranda tidak ikut diperbaiki** — `#pertemuanList` tetap urut
+  statis, jadi sidebar dan beranda berbeda urutan (tidak konsisten).
+
+Kini: posisi dibandingkan sebagai **angka**, urutan diterapkan lewat properti
+CSS **`order`** pada `#sidebarList` dan `#pertemuanList` (node DOM tidak
+pernah dipindahkan), dan keduanya konsisten.
+
+### Fixed — halaman luring menampilkan beranda
+
+`service-worker.js` memakai `network-first` untuk navigasi. Bila jaringan
+gagal, fallback-nya `caches.match("./index.html")` — sehingga gagal membuka
+`/pertemuan/5/` justru **menampilkan beranda**, yang terbaca sebagai
+"halaman yang tadi terbuka", bukan "gagal memuat". Sekarang fallback-nya
+halaman "Sambungan terputus" yang jelas, dan hanya memakai cache bila memang
+ada halaman untuk URL tersebut.
+
+### Fixed — aset client bisa tertinggal versi lama
+
+`auth.js`, `mhs-ui.js`, `erd-interactive.js`, `game-*.js`, dan
+`service-worker.js` berada di `public/` sehingga **tidak** diberi hash seperti
+bundel `_astro/`. Tanpa query versi, browser bisa menyajikan versi lama dari
+cache — gejala "tampilan tidak sama dengan yang baru saja dideploy".
+Sekarang semua pemuatan memakai `?v=20260928-5` (konstanta `asetVersi` di `BaseLayout.astro`; naikkan
+setiap kali isi `public/*.js` berubah).
+
+### Improved — tampilan PC
+
+- **Judul app bar dipangkas.** `Normalisasi Basis Data (1NF–3NF) · Basis Data
+  UNIPI` menjadi `Normalisasi Basis Data (1NF–3NF)`; nama course sudah ada di
+  sebelah kiri, jadi mengulangnya hanya memakan ruang dan memicu ellipsis
+  lebih cepat.
+- **App bar punya fallback `background`.** `color-mix()` tidak didukung
+  browser lama; tanpanya appbar transparan dan teksnya sulit dibaca saat
+  halaman digulir. Sekarang ada latar solid lebih dulu.
+- **Baris aktif sidebar lebih jelas**: latar naik, garis aksen kiri 3px, judul
+  semi-tebal.
+- **Fokus keyboard** pada baris menu sidebar (`:focus-visible`) — sebelumnya
+  hanya tombol yang punya.
+- **Tabel lebar tidak lagi melebarkan halaman.** `table.dtable` di dalam
+  konten mendapat `overflow-x: auto`, jadi tabel besar bisa digulir sendiri
+  pada layar lebar alih-alih menyeret seluruh halaman.
+
+### Added — `npm run test:sort` (ikut CI)
+
+`scripts/test-urutan-sidebar.cjs` menguji urutan sidebar dari posisi server.
+Yang penting, **bug lama direproduksi lebih dulu** (`localeCompare`
+menghasilkan `1, 8, 11, ..., 16, 2, 3, ...`) lalu versi baru diperiksa
+melawannya — jadi tes ini membuktikan perbaikannya, bukan cuma menyatakan
+urutan yang diharapkan.
+
+`test:layout` ditambah tiga pemeriksaan lagi (`#sidebarList`/`#pertemuanList`
+flex column, aset client memakai `?v=`, fallback `color-mix`) dan tiga
+regresi baru di uji negatif.
+
+---
+
 ## [2.9.4] - 2026-09-28
 
 > Deploy statis saja (`_deploy/`). Tidak ada perubahan API.

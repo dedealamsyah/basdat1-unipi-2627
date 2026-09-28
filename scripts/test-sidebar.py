@@ -104,6 +104,44 @@ for label, pola in [
 cek("kartu akun tidak lagi di sidebar", ".sidebar__account" not in css,
     "-> masih ada gaya sidebar yang tidak terpakai")
 
+print("\n== Urutan sidebar (v2.9.5) ==")
+# Minifier menggabungkan selektor yang properti sama, mis.
+#   #sidebarList,#pertemuanList{flex-direction:column;display:flex}
+# Jadi jangan cari "#sidebarList{", tapi "#sidebarList" lalu blok berikutnya.
+def aturan_untuk(selektor):
+    for m in re.finditer(re.escape(selektor) + r"[^\{;}]*\{([^}]*)\}", css):
+        return m.group(1)
+    return None
+
+for sel, label in [
+    ("#sidebarList", "#sidebarList flex column (bukan pindah node DOM)"),
+    ("#pertemuanList", "#pertemuanList flex column (konsisten dengan sidebar)"),
+]:
+    badan = aturan_untuk(sel)
+    cek(label, badan is not None and re.search(r"display:flex", badan) and re.search(r"flex-direction:column", badan))
+cek("#sidebarList tidak punya max-height (tak jadi area scroll kedua)",
+    not any("max-height" in x for x in semua_blok("#sidebarList")))
+
+print("\n== Aset client diberi versi (anti cache basi) ==")
+html_beranda = io.open(os.path.join(dist, "index.html"), encoding="utf-8").read()
+for aset in ["auth.js", "mhs-ui.js", "erd-interactive.js"]:
+    pola = r'src="/' + aset + r'\?v=\d+-\d+"'
+    cek(aset + " punya ?v=", re.search(pola, html_beranda) is not None)
+cek("appbar punya fallback background (browser tanpa color-mix)",
+    re.search(r"\.appbar\s*\{[^}]*background:var\(--paper\)", css) is not None)
+
+print("\n== Service worker: fallback luring ==")
+sw_src = io.open(os.path.join(root, "public/service-worker.js"), encoding="utf-8").read()
+cek("ada halaman luring", "LURING_HTML" in sw_src)
+# Yang diperiksa adalah JALUR FALLBACK saat offline, bukan seluruh berkas:
+# "./index.html" masih sah ada di daftar precache.
+marker = "}).catch(async function()"
+segmen = sw_src.split(marker)[1].split("});")[0] if marker in sw_src else ""
+# Buang komentar: kode dan komentar sama-sama memuat "./index.html".
+segmen = re.sub(r"//[^\n]*", "", segmen)
+cek("fallback offline tidak lagi melompat ke beranda",
+    bool(segmen) and 'caches.match("./index.html")' not in segmen and "LURING_HTML" in segmen)
+
 print("\n== Account box ringkas (v2.9.3) ==")
 for label, pola in [
     (".acc__row flex (satu baris)", r"\.acc__row\{[^}]*display:flex"),
@@ -155,7 +193,7 @@ if m:
         "-> %s" % urutan)
 
 # --- uji negatif: harness harus menangkap regresi yang nyata terjadi ---
-# Tujuannya-reverse: kalau suatu perbaikan dihapus, tes ini harus GAGAL.
+# Tujuannya kebalikan: kalau suatu perbaikan dihapus, tes ini harus GAGAL.
 print("\n== Uji negatif (pola harus terdeteksi) ==")
 kasus = [
     ("sidebar__list kembali flex:1",
@@ -179,6 +217,19 @@ kasus = [
     ("kartu akun balik lagi ke sidebar",
      css + ".sidebar__account{padding:12px}",
      lambda c: bool(re.search(r"\.sidebar__account\{", c))),
+    # --- regresi v2.9.5 ---
+    ("#sidebarList kembali block (urutan via CSS order mati)",
+     re.sub(r"#sidebarList,#pertemuanList\{[^}]*\}",
+            "#sidebarList,#pertemuanList{display:block}", css, count=1),
+     lambda c: not bool(re.search(r"#sidebarList[^{}]*\{[^}]*display:flex", c))),
+    ("aset client kehilangan ?v= (cache basi)",
+     io.open(os.path.join(dist, "index.html"), encoding="utf-8").read()
+        .replace("/auth.js?v=20260928-5", "/auth.js"),
+     lambda c: 'src="/auth.js"' in c),
+    ("fallback offline kembali melompat ke beranda",
+     sw_src.replace("if (cachedPage) return cachedPage;",
+                    'return cachedPage || await caches.match("./index.html");'),
+     lambda c: 'await caches.match("./index.html")' in c),
     (".appbar__account hilang (tidak ada tempat masuk)",
      re.sub(r"\.appbar__account\{[^}]*\}", "", css, count=1),
      lambda c: not bool(re.search(r"\.appbar__account", c))),

@@ -131,6 +131,7 @@
   }
 
   function applyPertemuanMeta(list) {
+    // Judul & status per baris, di sidebar DAN daftar beranda.
     list.forEach(function (item) {
       var sel = '.sidebar__list .row[data-id="' + item.id + '"], #pertemuanList .row[data-id="' + item.id + '"]';
       document.querySelectorAll(sel).forEach(function (row) {
@@ -140,17 +141,27 @@
         row.setAttribute('data-pos', String(item.posisi));
       });
     });
-    // urutkan ulang menu sidebar sesuai posisi DB
-    var ul = document.getElementById('sidebarList');
-    if (ul) {
-      Array.prototype.slice.call(ul.children)
-        .sort(function (a, b) {
-          var pa = a.getAttribute('data-pos') || '99';
-          var pb = b.getAttribute('data-pos') || '99';
-          return pa.localeCompare(pb);
-        })
-        .forEach(function (n) { ul.appendChild(n); });
-    }
+
+    // Urutan sidebar sesuai posisi dari server.
+    //
+    // DUA perbaikannya penting:
+    //
+    // 1) Bandingkan sebagai ANGKA. `localeCompare` bersifat leksikografis,
+    //    jadi "10" dianggap lebih kecil dari "2". Urutannya jadi
+    //    1, 8, 11, 12, ..., 16, 2, 3, ... — daftar meloncat tepat setelah
+    //    data tiba, dan klik bisa mendarat di baris lain.
+    //
+    // 2) Pakai properti CSS `order`, BUKAN memindahkan node DOM. Memindahkan
+    //    node saat user sedang membaca/klik berisiko menata ulang dokumen di
+    //    saat yang tidak disengaja; `order` hanya mengubah urutan visual.
+    ['sidebarList', 'pertemuanList'].forEach(function (id) {
+      var ul = document.getElementById(id);
+      if (!ul) return;
+      list.forEach(function (item) {
+        var row = ul.querySelector('.row[data-id="' + item.id + '"]');
+        if (row) row.style.order = String(parseInt(item.posisi, 10) || 99);
+      });
+    });
   }
 
   /* ---------------- UI update ---------------- */

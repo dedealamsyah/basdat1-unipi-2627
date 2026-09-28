@@ -24,6 +24,26 @@ const PRECACHE_ASSETS = [
   "./sql-wasm.wasm"
 ];
 
+// Halaman luring: dipakai saat jaringan gagal. Sengaja TEKS SEDERHANA
+// (bukan halaman portal) supaya jelas ini pesan, bukan materi.
+const LURING_HTML = [
+  "<!doctype html><html lang=id><head><meta charset=utf-8>",
+  "<meta name=viewport content=\"width=device-width,initial-scale=1\">",
+  "<title>Luring - Portal Basis Data UNIPI</title>",
+  "<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;",
+  "background:#0E1418;color:#E7EDF3;display:grid;place-items:center;",
+  "min-height:100vh;margin:0;padding:24px}",
+  ".k{max-width:420px;text-align:center}",
+  "h1{font-size:19px;margin:0 0 8px}",
+  "p{font-size:14px;line-height:1.6;color:#9AA8B5;margin:0 0 18px}",
+  "button{font:inherit;font-weight:600;padding:10px 20px;border-radius:9px;",
+  "border:0;background:#176B4D;color:#fff;cursor:pointer}</style></head>",
+  "<body><div class=k><h1>Sambungan terputus</h1>",
+  "<p>Halaman ini belum tersimpan di perangkat dan server tidak dapat dihubungi. ",
+  "Periksa koneksi, lalu coba lagi.</p>",
+  "<button onclick=\"location.reload()\">Coba lagi</button></div></body></html>"
+].join("");
+
 // Jangan simpan respons yang berpotensi HTML challenge anti-bot dari hosting.
 // Cache hanya respons aset yang benar-benar berguna.
 function cacheable(response) {
@@ -86,8 +106,18 @@ self.addEventListener("fetch", function(event) {
         }
         return networkResponse;
       }).catch(async function() {
+        // Offline / hosting tidak menjawab. Tampilkan halaman yang benar-benar
+        // dicache untuk URL ini, atau halaman "luring" yang jelas.
+        //
+        // DULUM fallback-nya caches.match("./index.html") — jadi gagal membuka
+        // "/pertemuan/5/" menampilkan beranda, yang terbaca sebagai "halaman
+        // yang tadi terbuka", bukan "gagal memuat".
         var cachedPage = await caches.match(event.request);
-        return cachedPage || caches.match("./index.html");
+        if (cachedPage) return cachedPage;
+        return new Response(LURING_HTML, {
+          status: 503,
+          headers: { "Content-Type": "text/html; charset=utf-8" }
+        });
       })
     );
     return;
