@@ -626,94 +626,107 @@ a { color: inherit; }
 .row.prog-done .row__title { color: var(--navy-700); }
 .row.prog-open { opacity: 1; }
 
-/* Account box in sidebar */
+/* Account box in sidebar — v2.9.3: satu baris ringkas.
+   Versi lama menumpuk chip peran + nama + meta + baris progres dalam kotak
+   berlapis; padahal progres sudah tampil di bar "PROGRES BELAJAR" di atas,
+   jadi angkanya tampil dua kali. Kotak setinggi ~120px di sidebar 300px
+   terasa berat. Sekarang: avatar + nama/NIM + tombol keluar, satu baris. */
 .sidebar__account {
-  margin-bottom: 10px;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .07);
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .06);
 }
 
-.acc__title {
-  font-family: var(--font-body);
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #E7EDE6;
-  margin: 0 0 4px;
-}
-
-.acc__hint {
-  font-size: 10.5px;
-  color: #9DB2A4;
-  margin: 6px 0 0;
-}
-
-.acc__login {
-  display: block;
-  text-align: center;
-  margin-top: 8px;
-  text-decoration: none;
-}
-
-.acc--in .acc__head {
+.acc__row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
 }
 
-.acc__chip {
-  font-family: var(--font-body);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
+.acc__avatar {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   background: var(--teal-300);
   color: #221A02;
-  padding: 2px 9px;
-  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.acc__id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.acc__name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 150px;
+}
+
+.acc__meta {
+  font-size: 10.5px;
+  color: #8FA696;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .acc__logout {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   background: none;
-  border: 1px solid rgba(255, 255, 255, .18);
-  color: #DDE6F0;
+  border: 1px solid rgba(255, 255, 255, .16);
+  color: #C3D2C8;
   border-radius: 8px;
-  padding: 3px 10px;
-  font-size: 11px;
   cursor: pointer;
-  transition: background .2s;
+  transition: background .15s, color .15s, border-color .15s;
 }
 
-.acc__logout:hover { background: rgba(255, 255, 255, .1); }
+.acc__logout:hover {
+  background: rgba(196, 58, 47, .22);
+  border-color: rgba(196, 58, 47, .5);
+  color: #F2C9C4;
+}
 
-.acc__name {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  margin: 10px 0 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.acc__logout:focus-visible { outline: 2px solid var(--teal-300); outline-offset: 2px; }
+
+.acc__adminlink {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: var(--teal-300);
+  color: #221A02;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-decoration: none;
   white-space: nowrap;
 }
 
-.acc__meta { font-size: 11px; color: #9DB2A4; margin: 0; }
-.acc__mini { margin-top: 8px; font-size: 11px; color: var(--teal-400); font-weight: 600; }
+.acc__adminlink:hover { background: var(--teal-400); }
 
-.acc__admin {
-  display: block;
-  text-align: center;
-  text-decoration: none;
-  margin-top: 10px;
-  background: var(--teal-400);
-  color: #221A02;
-}
+/* Tampilan tamu (belum login) */
+.acc--out { text-align: center; }
+.acc__title { font-size: 11.5px; font-weight: 600; color: #E7EDE6; margin: 0 0 6px; }
+.acc__hint { font-size: 10.5px; color: #9DB2A4; margin: 6px 0 0; }
+.acc__login { display: block; text-align: center; text-decoration: none; }
 
 .sidebar__footer {
   flex: 0 0 auto;

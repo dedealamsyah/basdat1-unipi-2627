@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.9.3] - 2026-09-28
+
+> Deploy statis saja (`_deploy/`). Tidak ada perubahan API.
+
+### Fixed — kotak akun sidebar terlalu besar
+
+Kotak akun di sidebar menumpuk lima baris dalam ~120px: chip peran berisi
+nama, tombol Keluar, nama lagi, meta NIM · kelas, lalu baris "Progres: 3 / 4".
+Secara teknis tidak salah, tapi:
+
+- **Nama tampil dua kali.** `acc__chip` sudah berisi `u.nama`, lalu
+  `acc__name` mencantumkannya lagi.
+- **Angka progres tampil dua kali.** Bar "PROGRES BELAJAR" di bagian atas
+  sidebar sudah menunjukkan `3 / 4`; kotak akun mengulang angka yang sama.
+
+Kini satu baris: avatar lingkaran (huruf awal) + nama dengan NIM · kelas di
+bawahnya + tombol keluar berbentuk ikon. Total ±38px, turun sekitar 68%.
+Kelas `.acc__chip`, `.acc__head`, `.acc__mini`, dan `.acc__admin` dihapus —
+salah satunya kembali tegak, kotak akan tinggi lagi. Nama panjang dipotong
+dengan ellipsis, dan tombol keluar punya `:focus-visible` untuk keyboard.
+Admin tetap mendapat tautan "Dashboard" (sebelumnya tombol penuh selebar).
+
+### Added — cakupan tes layout
+
+`test:layout` kini memeriksa struktur account box (`.acc__row` flex,
+`.acc__id` `min-width:0`, `.acc__name` ellipsis, `.acc__logout` lebar tetap)
+**dan** memastikan kelas lama `.acc__mini`/`.acc__chip`/`.acc__head` benar-benar
+hilang dari CSS ter-build. Dua kasus uji negatif baru diuji balik: memunculkan
+lagi `.acc__mini` dan membuat `.acc__logout` melebar — keduanya harus terdeteksi.
+
+---
+
 ## [2.9.2] - 2026-09-28
 
 > ⚠️ **Deploy perbaikan tampilan.** Tidak ada perubahan API — cukup upload ulang

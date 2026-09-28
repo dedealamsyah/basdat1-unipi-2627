@@ -238,30 +238,33 @@
     }
 
     var u = p.user || {};
-    var total = p.active ? p.active.length : 0;
-    var doneCount = 0;
-    p.progress = p.progress || {};
-    Object.keys(p.progress).forEach(function (k) {
-      if (p.progress[k] === "done") doneCount++;
-    });
 
     // Peringatan tugas/evaluasi dipindah ke lonceng notifikasi (v2.9.0).
     // Di sini cukup penanda peran supaya admin jelas tampilan mana.
     var isAdmin = u.role === "admin";
-    var label = isAdmin ? "ADMIN" : (u.nama || u.nim);
-    var kelas = u.kelas ? u.kelas : "";
+    var kelas = u.kelas ? " · " + u.kelas : "";
 
+    // Ringkas: satu baris identitas + tombol keluar. Versi sebelumnya
+    // menumpuk chip peran, nama, meta, dan baris progres — padahal progres
+    // sudah tampil di bar "PROGRES BELAJAR" di atas sidebar, jadi angka
+    // yang sama muncul dua kali dan kotaknya memakan tinggi layar.
     box.innerHTML =
       '<div class="acc acc--in">' +
-      '<div class="acc__head">' +
-      '<span class="acc__chip">' + esc(label) + "</span>" +
-      "<button type=\"button\" class=\"acc__logout\" id=\"accLogout\">Keluar</button>" +
-      "</div>" +
-      '<p class="acc__name">' + esc(u.nama || u.nim) + "</p>" +
-      '<p class="acc__meta">' + esc(u.nim) + (kelas ? " · " + esc(kelas) : "") + "</p>" +
+      '<div class="acc__row">' +
+      '<span class="acc__avatar" aria-hidden="true">' + esc((u.nama || u.nim).charAt(0).toUpperCase()) + "</span>" +
+      '<span class="acc__id">' +
+      '<span class="acc__name">' + esc(u.nama || u.nim) + "</span>" +
+      '<span class="acc__meta">' + esc(u.nim) + esc(kelas) + "</span>" +
+      "</span>" +
       (isAdmin
-        ? '<a class="btn-sim acc__admin" href="/admin/">Dashboard Admin</a>'
-        : '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span></div>") +
+        ? '<a class="acc__adminlink" href="/admin/" title="Buka dashboard admin">Dashboard</a>'
+        : '<button type="button" class="acc__logout acc__logout--icon" id="accLogout"' +
+          ' title="Keluar" aria-label="Keluar dari akun">' +
+          '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"' +
+          ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/>' +
+          '<path d="M21 12H9"/></svg></button>') +
+      "</div>" +
       "</div>";
 
     var btn = document.getElementById("accLogout");

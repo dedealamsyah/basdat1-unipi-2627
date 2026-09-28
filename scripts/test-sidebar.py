@@ -88,6 +88,27 @@ u = set(re.findall(r'var\((--[a-z0-9-]+)', css))
 hilang = sorted(u - d)
 cek("tidak ada var() tanpa definisi", not hilang, "-> %s" % ", ".join(hilang))
 
+print("\n== Account box ringkas (v2.9.3) ==")
+for label, pola in [
+    (".acc__row flex (satu baris)", r"\.acc__row\{[^}]*display:flex"),
+    # minifier menulis `flex:auto` untuk `flex: 1 1 auto`, dan `flex:none`
+    # untuk `flex: 0 0 auto` — terima keduanya.
+    (".acc__id flex+min-width:0 (membuang ruang sisa)", r"\.acc__id\{[^}]*flex:(auto|1)[^}]*min-width:0"),
+    (".acc__name ellipsis (nama panjang tidak melebar)", r"\.acc__name\{[^}]*text-overflow:ellipsis"),
+    (".acc__logout fixed size (tidak melebar)", r"\.acc__logout\{[^}]*width:28px"),
+    (".acc__avatar 30px", r"\.acc__avatar\{[^}]*width:30px"),
+    (".acc__logout ada aksi fokus keyboard", r"\.acc__logout:focus-visible"),
+]:
+    cek(label, re.search(pola, css) is not None)
+
+# Class yang DIHAPUS harus benar-benar hilang, kalau tidak kotak tetap tinggi.
+tersisa = 0
+for mati in ["acc__mini", "acc__chip", "acc__head"]:
+    if re.search(r"\." + mati + r"\s*\{", css):
+        print("  GAGAL class lama masih ada: .%s (kotak tetap tinggi)" % mati)
+        tersisa += 1
+cek("class lama (.acc__mini/.acc__chip/.acc__head) hilang", tersisa == 0)
+
 print("\n== Padding .main (bug 'konten merapat ke atas') ==")
 # .main punya beberapa aturan (desktop + 2 media query + print). Yang dicari
 # adalah versi DESKTOP: padding 40px. Versi mobile sengaja 60px (ruang untuk
@@ -133,6 +154,12 @@ kasus = [
     (".sidebar desktop overflow kembali auto",
      re.sub(r'\.sidebar\{([^}]*?)overflow:hidden', r'.sidebar{\1overflow-y:auto', css, count=1),
      lambda c: not bool(re.search(r"\.sidebar\{width:var\(--sidebar-w\)[^}]*overflow:hidden", c))),
+    ("kelas lama .acc__mini muncul lagi (kotak jadi tinggi)",
+     css + ".acc__mini{margin-top:8px}",
+     lambda c: bool(re.search(r"\.acc__mini\{", c))),
+    (".acc__logout kembali melebar (tanpa width tetap)",
+     re.sub(r"\.acc__logout\{[^}]*\}", ".acc__logout{padding:3px 10px}", css, count=1),
+     lambda c: not bool(re.search(r"\.acc__logout\{[^}]*width:28px", c))),
 ]
 for nama, rusak, deteksi in kasus:
     if rusak == css:
