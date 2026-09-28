@@ -24,9 +24,18 @@ if (strtolower($nim) === ADMIN_DEFAULT_NIM || strtolower($nim) === 'admin') {
 
 $pdo = db();
 $pdo->beginTransaction();
-$pdo->prepare('DELETE FROM progress WHERE nim = ?')->execute(array($nim));
+// Hapus seluruh data yang menempel pada NIM. `evaluasi`/`tugas` mungkin belum
+// ada (belum termigrasi) — itu ditoleransi agar penghapusan akun tetap jalan.
+// Nama tabel berasal dari literal di bawah (bukan input pengguna).
+$tables = array('progress', 'grades', 'evaluasi', 'tugas');
+foreach ($tables as $t) {
+    try {
+        $pdo->prepare('DELETE FROM ' . $t . ' WHERE nim = ?')->execute(array($nim));
+    } catch (Throwable $e) {
+        // tabel belum ada -> abaikan
+    }
+}
 $pdo->prepare('DELETE FROM users WHERE nim = ?')->execute(array($nim));
-$deleted = $pdo->prepare('SELECT ROW_COUNT()');
 $pdo->commit();
 
 json_out(array('ok' => true, 'data' => array('deleted' => true, 'nim' => $nim)));

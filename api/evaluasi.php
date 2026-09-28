@@ -1,12 +1,26 @@
 <?php
 /**
  * Simpan hasil evaluasi pertemuan (1x per mahasiswa) + telemetri integritas.
+ *
+ * POST /api/evaluasi.php?action=start
+ *   -> mencatat waktu mulai di SESI server, membalas { server_now }.
+ *      Client memanggil ini saat form evaluasi dibuka.
+ *
  * POST /api/evaluasi.php  body: {
- *   pertemuan_id, skor, total, jumlah_soal,
- *   jawaban: [idx-opsi-terpilih],
- *   paste_count, copy_count, blur_count, time_spent_ms
+ *   pertemuan_id,
+ *   jawaban: [idx-opsi-terpilih],   // indeks ASLI (sebelum diacak)
+ *   paste_count, copy_count, blur_count
  * }
- * Jawaban benar/salah TIDAK dikembalikan; hanya skor agregat.
+ *
+ * PENTING: skor DIHITUNG DI SERVER dari kunci jawaban (api/kunci.php).
+ * Nilai `skor` dari client TIDAK pernah dipercaya — kalau dulu begitu,
+ * mahasiswa bisa mengirim skor sempurna tanpa menjawab. Kunci jawaban juga
+ * tidak pernah dikirim ke browser.
+ *
+ * Yang masih client-reported (tidak bisa diverifikasi tanpa proctoring):
+ * paste_count, copy_count, blur_count. Angka ini bersifat ADVISORY — sinyal
+ * indikatif untuk dosen, bukan bukti. Waktu dihitung server dari `action=start`.
+ *
  * Evaluasi hanya boleh dikerjakan setelah pertemuan itu TUNTAS (latihan selesai).
  */
 declare(strict_types=1);
@@ -26,26 +40,75 @@ if (($u['role'] ?? '') === 'admin') {
 
 $in = json_in();
 $pertemuanId = (int) ($in['pertemuan_id'] ?? 0);
-$skor = (int) ($in['skor'] ?? -1);
-$total = (int) ($in['total'] ?? 0);
-$jumlahSoal = (int) ($in['jumlah_soal'] ?? 0);
-$jawaban = is_array($in['jawaban'] ?? null) ? $in['jawaban'] : array();
-$pasteCount = max(0, (int) ($in['paste_count'] ?? 0));
-$copyCount = max(0, (int) ($in['copy_count'] ?? 0));
-$blurCount = max(0, (int) ($in['blur_count'] ?? 0));
-$timeSpentMs = max(0, (int) ($in['time_spent_ms'] ?? 0));
+
+/* ---------------------------------------------------------------------------
+ * action=start — catat waktu mulai di server.
+ * Durasi pengerjaan dihitung dari selisih waktu server sendiri, sehingga
+ * mahasiswa tidak bisa memperpendek/memperpanjang durasi sesuka hatinya.
+ * (Yang masih bisa dimanipulasi: menundasubmission — tapi itu hanya membuat
+ *  waktunya terlihat lebih lama, tidak pernah lebih cepat.)
+ * ------------------------------------------------------------------------- */
+if (($_GET['action'] ?? '') === 'start') {
+    if ($pertemuanId < 1) {
+        json_out(array('ok' => false, 'error' => 'pertemuan_id tidak valid.'), 422);
+    }
+    if (eval_kunci($pertemuanId) === null) {
+        json_out(array('ok' => false, 'error' => 'Evaluasi belum tersedia.'), 422);
+    }
+    start_session();
+    if (!isset($_SESSION['eval_start']) || !is_array($_SESSION['eval_start'])) {
+        $_SESSION['eval_start'] = array();
+    }
+    $_SESSION['eval_start'][$pertemuanId] = (int) round(microtime(true) * 1000);
+    json_out(array('ok' => true, 'data' => array('server_now' => (int) round(microtime(true) * 1000))));
+}
+
+$jawaban = isset($in['jawaban']) && is_array($in['jawaban']) ? $in['jawaban'] : array();
+$pasteCount = max(0, min(1000, (int) ($in['paste_count'] ?? 0)));
+$copyCount = max(0, min(1000, (int) ($in['copy_count'] ?? 0)));
+$blurCount = max(0, min(1000, (int) ($in['blur_count'] ?? 0)));
 
 if ($pertemuanId < 1) {
     json_out(array('ok' => false, 'error' => 'pertemuan_id tidak valid.'), 422);
 }
-if ($total < 1 || $total > 1000) {
-    json_out(array('ok' => false, 'error' => 'Total skor evaluasi tidak valid.'), 422);
+
+// Kunci harus ada (hasil generate build) sebelum bisa dinilai.
+$kunci = eval_kunci($pertemuanId);
+if ($kunci === null) {
+    json_out(array('ok' => false, 'error' => 'Kunci jawaban belum tersedia di server. Hubungi dosen.'), 503);
 }
-if ($skor < 0 || $skor > $total) {
-    json_out(array('ok' => false, 'error' => 'Skor evaluasi tidak valid.'), 422);
+$jumlahSoal = count($kunci['benar']);
+
+// Client hanya mengirim jawaban; skor dihitung di sini.
+if (count($jawaban) !== $jumlahSoal) {
+    json_out(array('ok' => false, 'error' => 'Jumlah jawaban tidak sesuai jumlah soal.'), 422);
 }
-if ($jumlahSoal < 1 || $jumlahSoal > 200) {
-    json_out(array('ok' => false, 'error' => 'Jumlah soal tidak valid.'), 422);
+// Setiap indeks harus berada dalam rentang opsi soal tsb.
+foreach ($kunci['benar'] as $i => $idxBenar) {
+    $pilih = $jawaban[$i] ?? null;
+    $jmlOpsi = (int) ($kunci['opsi'][$i] ?? 0);
+    if (!is_int($pilih) && !(is_string($pilih) && ctype_digit($pilih))) {
+        json_out(array('ok' => false, 'error' => 'Jawaban tidak valid.'), 422);
+    }
+    $pilih = (int) $pilih;
+    if ($pilih < 0 || $pilih >= $jmlOpsi) {
+        json_out(array('ok' => false, 'error' => 'Pilihan di luar rentang.'), 422);
+    }
+}
+
+$hasil = eval_nilai($pertemuanId, array_map('intval', $jawaban));
+if ($hasil === null) {
+    json_out(array('ok' => false, 'error' => 'Gagal menghitung skor.'), 500);
+}
+$skor = $hasil['skor'];
+$total = $hasil['total'];
+
+// Durasi dari waktu server (lihat action=start di atas).
+$timeSpentMs = 0;
+start_session();
+if (isset($_SESSION['eval_start'][$pertemuanId])) {
+    $timeSpentMs = max(0, min(86400000, (int) round(microtime(true) * 1000) - (int) $_SESSION['eval_start'][$pertemuanId]));
+    unset($_SESSION['eval_start'][$pertemuanId]);
 }
 
 // Evaluasi hanya setelah latihan pertemuan itu selesai (status done).
@@ -85,14 +148,15 @@ try {
     // abaikan bila tidak berhak membuat tabel; cek berikutnya akan mengungkap
 }
 
-// Satu percobaan saja per pertemuan.
+// Satu percobaan saja per pertemuan. UNIQUE KEY (nim, pertemuan_id) yang
+// menjadi penjaga sebenarnya; pengecekan di bawah hanya untuk pesan ramah.
 $exists = $pdo->prepare('SELECT id FROM evaluasi WHERE nim = ? AND pertemuan_id = ? LIMIT 1');
 $exists->execute(array($u['nim'], $pertemuanId));
 if ($exists->fetch()) {
     json_out(array('ok' => false, 'error' => 'Evaluasi pertemuan ini sudah pernah dikumpulkan.'), 409);
 }
 
-// Deteksi integritas (deterrent + laporan dosen):
+// Sinyal integritas (ADVISORY — berasal dari client, bukan bukti):
 //  bit 0 (1) : ada percobaan paste/copy
 //  bit 1 (2) : terlalu sering pindah tab (>=4 kali)
 //  bit 2 (4) : waktu mengerjakan terlalu cepat (< 10 dtk/soal)
@@ -103,37 +167,50 @@ if ($pasteCount > 0 || $copyCount > 0) {
 if ($blurCount >= 4) {
     $flagged |= 2;
 }
-if ($jumlahSoal > 0 && $timeSpentMs > 0 && $timeSpentMs < $jumlahSoal * 10000) {
-    $flagged |= 4;
-}
-if ($timeSpentMs < 3000) {
-    $flagged |= 4; // hampir pasti membuka-isi langsung
+// Durasi diukur server, jadi mahasiswa tak bisa membuat waktunya terlihat
+// singkat. timeSpentMs == 0 berarti tidak ada action=start (sesi hilang /
+// reload) — dalam hal itu durasi tidak bisa dinilai sama sekali.
+if ($timeSpentMs > 0) {
+    if ($timeSpentMs < $jumlahSoal * 10000 || $timeSpentMs < 3000) {
+        $flagged |= 4;
+    }
 }
 
-$pdo->prepare(
-    'INSERT INTO evaluasi
-        (nim, pertemuan_id, skor, total, jumlah_soal, jawaban,
-         paste_count, copy_count, blur_count, time_spent_ms, flagged, submitted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())'
-)->execute(array(
-    $u['nim'],
-    $pertemuanId,
-    $skor,
-    $total,
-    $jumlahSoal,
-    json_encode($jawaban, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-    $pasteCount,
-    $copyCount,
-    $blurCount,
-    $timeSpentMs,
-    $flagged,
-));
+// Sisipkan. Kalau dua request berebut, UNIQUE KEY menolak yang kedua —
+// tangkap dan balas 409 agar tidak jadi 500.
+try {
+    $pdo->prepare(
+        'INSERT INTO evaluasi
+            (nim, pertemuan_id, skor, total, jumlah_soal, jawaban,
+             paste_count, copy_count, blur_count, time_spent_ms, flagged, submitted_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())'
+    )->execute(array(
+        $u['nim'],
+        $pertemuanId,
+        $skor,
+        $total,
+        $jumlahSoal,
+        json_encode($jawaban, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        $pasteCount,
+        $copyCount,
+        $blurCount,
+        $timeSpentMs,
+        $flagged,
+    ));
+} catch (PDOException $e) {
+    if ((string) $e->getCode() === '23000') {
+        json_out(array('ok' => false, 'error' => 'Evaluasi pertemuan ini sudah pernah dikumpulkan.'), 409);
+    }
+    throw $e; // biarkan handler global yang menangani
+}
 
 json_out(array(
     'ok' => true,
     'data' => array(
         'skor' => $skor,
         'total' => $total,
+        'benar' => $hasil['benar'],
+        'jumlah' => $jumlahSoal,
         'flagged' => $flagged,
         'submitted_at' => date('Y-m-d H:i:s'),
     ),

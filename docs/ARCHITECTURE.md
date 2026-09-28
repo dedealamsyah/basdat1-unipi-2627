@@ -219,8 +219,10 @@ Browser (statis Astro)
    ├─ pertemuan.php: GET metadata menu (publik) / POST update (admin)
    ├─ import_users.php : POST impor massal nim,nama,kelas (admin)
    ├─ delete_user.php  : POST hapus akun (admin)
-   ├─ migrate.php : buat tabel bila belum ada (admin; idempoten; seed akun dummy)
-   └─ setup_db.php: setup awal + admin pertama (token; dikunci .htaccess)
+   ├─ migrate.php : buat tabel bila belum ada (POST + sesi admin + CSRF; GET hanya
+   │                 membaca status skema; idempoten; seed akun dummy)
+   └─ setup_db.php: setup awal + admin pertama (token; dikunci .htaccess;
+                    HAPUS dari server setelah instalasi)
 ```
 
 ### Skema MySQL
@@ -272,5 +274,8 @@ Pertemuan pertama selalu terbuka. `active_pertemuan()` menentukan daftar konten 
 ### Catatan deployment
 
 - Credential DB ada di `api/config.php` (gitignored); `api/config.example.php` sebagai template.
-- `api/.htaccess` menonaktifkan listing direktori & memblokir `config.php`/`setup_db.php`.
+- `api/.htaccess` menonaktifkan listing direktori, memblokir `config.php`/`setup_db.php`,
+  dan menutup berkas non-web (`*.sql`, `*.json`, `*.log`, …).
+- Kunci jawaban evaluasi hanya di `api/kunci.php` (hasil `gen-kunci`, gitignored);
+  `scripts/verify-build.mjs` gagalkan build kalau bocor ke `dist/`.
 - Situs berjalan di HTTP (Byethost) → PWA & flag `Secure` tak aktif; lihat rekomendasi HTTPS di docs/AUDIT.md.

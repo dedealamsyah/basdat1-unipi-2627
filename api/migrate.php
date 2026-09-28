@@ -1,34 +1,73 @@
 <?php
 /**
  * Migrasi DB (admin): membuat tabel tambahan bila belum ada.
- * GET /api/migrate.php  (admin, idempoten)
+ * Wajib sesi admin (tidak ada jalur token setup).
+ *
+ * Bootstrap awal tetap lewat `setup_db.php` (wajib token, dan file itu
+ * diblokir di `api/.htaccess`). Jalur token di file ini pernah membuka
+ * reset password admin tanpa autentikasi — sudah dihapus.
+ *
+ * PEMANGGILAN:
+ *   GET  /api/migrate.php            -> hanya MEMBACA status skema (aman,
+ *                                        tidak mengubah apa pun; dipanggil
+ *                                        sebelum POST).
+ *   POST /api/migrate.php            -> menjalankan DDL. Wajib CSRF, jadi
+ *                                        tidak bisa dipicu hanya dengan
+ *                                        membuka URL / klik tautan.
+ *   POST /api/migrate.php            body: { "clear_attempts": true }
+ *                                        (ops: bersihkan log percobaan login
+ *                                        untuk IP pemanggil)
+ *
+ * Kenapa DDL harus POST: `CREATE/ALTER TABLE` adalah perubahan state. Kalau
+ * cukup GET, satu tautan yang diklik admin (atau prefetch browser) bisa
+ * memaksa rebuild tabel + `UPDATE users` tanpa ihdal. Dulu persis begitu.
  */
 declare(strict_types=1);
 require __DIR__ . '/config.php';
 
-// Jalankan migrasi bila: sesi admin ATAU token setup (untuk bootstrap saat login belum siap).
-$auth = current_user();
-$isAdmin = $auth && ($auth['role'] ?? '') === 'admin';
-$token = (string) ($_GET['token'] ?? '');
-if (!$isAdmin && $token !== SETUP_TOKEN) {
-    json_out(array('ok' => false, 'error' => 'Silakan login sebagai admin terlebih dahulu.'), 401);
+require_auth('admin');
+
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+/** Tabel yang dicek oleh status read-only. */
+$CEK_TABEL = array('users', 'progress', 'grades', 'pertemuan', 'login_attempts', 'evaluasi', 'tugas');
+
+if ($method === 'GET') {
+    // Hanya baca: tidak ada CREATE/ALTER/UPDATE di jalur ini.
+    $ada = array();
+    foreach ($CEK_TABEL as $t) {
+        try {
+            $ada[$t] = (bool) db()->query("SHOW TABLES LIKE '" . $t . "'")->fetchColumn();
+        } catch (Throwable $e) {
+            $ada[$t] = false;
+        }
+    }
+    $hilang = array();
+    foreach ($ada as $t => $ok) {
+        if (!$ok) {
+            $hilang[] = $t;
+        }
+    }
+    json_out(array('ok' => true, 'data' => array(
+        'tabel' => $ada,
+        'belum_ada' => $hilang,
+        'siap' => empty($hilang),
+        'hint' => 'POST /api/migrate.php (dengan header X-CSRF-Token) untuk menjalankan migrasi.',
+    )));
 }
 
-// Utilitas: bersihkan log percobaan login untuk IP tertentu (ops opsional)
-if (isset($_GET['clear_attempts']) && $_GET['clear_attempts'] === '1') {
+if ($method !== 'POST') {
+    json_out(array('ok' => false, 'error' => 'Gunakan POST.'), 405);
+}
+
+require_csrf();
+
+$in = json_in();
+
+// Utilitas: bersihkan log percobaan login untuk IP pemanggil (ops opsional).
+if (($in['clear_attempts'] ?? false) === true) {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     db()->prepare('DELETE FROM login_attempts WHERE ip = ?')->execute(array($ip));
-}
-
-// Utilitas: reset password admin (token ops)
-if (isset($_GET['reset_admin']) && $_GET['reset_admin'] === '1' && $token === SETUP_TOKEN) {
-    $np = (string) ($_GET['newpass'] ?? '');
-    if (strlen($np) < 8) {
-        json_out(array('ok' => false, 'error' => 'Password baru minimal 8 karakter.'), 422);
-    }
-    db()->prepare('UPDATE users SET pass_hash = ?, must_change_password = 1 WHERE nim = ?')
-        ->execute(array(password_hash($np, PASSWORD_DEFAULT), ADMIN_DEFAULT_NIM));
-    json_out(array('ok' => true, 'data' => array('status' => 'password admin di-reset (wajib diganti saat login)')));
 }
 
 $pdo = db();

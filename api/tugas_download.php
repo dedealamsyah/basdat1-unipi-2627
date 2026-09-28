@@ -35,8 +35,17 @@ if (!empty($r['drive_link'])) {
     exit;
 }
 
-// Mode lama: berkas PDF tersimpan di server
-$path = tugas_dir() . '/' . (int) $r['pertemuan_id'] . '/' . $r['filename'];
+// Mode lama: berkas PDF tersimpan di server.
+// `filename` berasal dari DB (baris pengumpulan versi berkas). Jalur ini tidak
+// pernah dipakai untuk pengumpulan baru (v2.4.0+ memakai tautan Drive), tapi
+// `basename()` tetap wajib: tanpa itu, nilai berisi `../..` bisa membuat
+// `readfile()` membaca berkas lain milik PHP (mis. api/config.php).
+$safeName = basename((string) $r['filename']);
+if ($safeName === '' || $safeName === '.' || $safeName === '..') {
+    http_response_code(404);
+    exit('Berkas tidak ada di server.');
+}
+$path = tugas_dir() . '/' . (int) $r['pertemuan_id'] . '/' . $safeName;
 if (!is_file($path)) {
     http_response_code(404);
     exit('Berkas tidak ada di server.');

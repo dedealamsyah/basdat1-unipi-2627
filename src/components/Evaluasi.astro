@@ -11,6 +11,12 @@ interface Props {
 }
 
 const { pid, data } = Astro.props;
+
+// Kunci jawaban (field `benar`) TIDAK pernah dikirim ke browser. Yang dikirim
+// hanya teks soal & opsi; indeks jawaban benar hidup di `api/kunci.php` dan
+// hanya dibaca server untuk menghitung skor. Kalau bocor ke View Source,
+// mahasiswa bisa menyalin kunci dan mengirim jawaban yang dijamin benar.
+const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
 ---
 
 <section class="evaluasi" id="evaluasiBox" data-pid={pid}>
@@ -155,7 +161,7 @@ const { pid, data } = Astro.props;
   .evaluasi__locked b { color: var(--navy-800); }
 </style>
 
-<script is:inline define:vars={{ pid, data }}>
+<script is:inline define:vars={{ pid, soalTanpaKunci }}>
   (function () {
     var box = document.getElementById('evaluasiBox');
     if (!box) return;
@@ -163,7 +169,7 @@ const { pid, data } = Astro.props;
     var stateEl = document.getElementById('evaluasiState');
     var formEl = document.getElementById('evaluasiForm');
     var pertemuanId = pid;
-    var questions = data || [];
+    var questions = soalTanpaKunci || [];
 
     if (!questions.length) { stateEl.textContent = ''; return; }
 
@@ -178,8 +184,9 @@ const { pid, data } = Astro.props;
     });
 
     var sel = {};          // qi -> original option index
+    var draftOwner = '';
+    window.APIAuth.me().then(function(p) { if (p && p.logged_in) draftOwner = p.user.nim; });
     var backupKey = 'eval_draft_p' + pertemuanId;
-    var startedAt = Date.now();
     var pasteCount = 0, copyCount = 0, blurCount = 0;
     var submitted = false;
     var submitting = false;
@@ -255,10 +262,23 @@ const { pid, data } = Astro.props;
       if (current < 0 || current >= questions.length) current = 0;
       draw();
       armAntiCheat();
+      armStartTimer();
+    }
+
+    // Minta server mencatat waktu mulai (durasi dihitung server, bukan client).
+    // Gagal tidak memblokir evaluasi — durasi akan tercatat 0 dan sinyal
+    // "waktu terlalu singkat" otomatis tidak dihitung.
+    function armStartTimer() {
+      api('/api/evaluasi.php?action=start', { method: 'POST', body: { pertemuan_id: pertemuanId } })
+        .catch(function () {});
     }
 
     function savePos() {
-      try { localStorage.setItem(backupKey, JSON.stringify({ sel: sel, current: current, stage: stage })); } catch (e) {}
+      try {
+        localStorage.setItem(backupKey, JSON.stringify({
+          sel: sel, current: current, stage: stage, user: draftOwner
+        }));
+      } catch (e) {}
     }
 
     function draw() {
@@ -286,7 +306,7 @@ const { pid, data } = Astro.props;
         '<li>Jawaban benar/salah <strong>tidak ditampilkan</strong>; Anda hanya melihat skor akhir.</li>' +
         '<li>Aktivitas salin/tempel (copy-paste) <strong>diblokir dan dicatat</strong>.</li>' +
         '<li>Berpindah tab/jendela selama mengerjakan <strong>dilaporkan ke dosen</strong>.</li>' +
-        '<li>Waktu pengerjaan diukur dari kartu ini dibuka hingga tombol kumpul ditekan.</li>' +
+        '<li>Waktu pengerjaan dicatat <b>di server</b> dari saat Anda membuka pengantar hingga menekan tombol kumpul.</li>' +
         '</ul>' +
         '<button class="btn-sim" id="evStart" style="background:var(--amber-400);">Mulai Evaluasi →</button>' +
         '</div>';
@@ -388,7 +408,17 @@ const { pid, data } = Astro.props;
     }
 
     function draft() {
-      try { return JSON.parse(localStorage.getItem(backupKey) || 'null'); } catch (e) { return null; }
+      try {
+        var raw = localStorage.getItem(backupKey);
+        if (!raw) return null;
+        var d = JSON.parse(raw);
+        // Abaikan bila draft ini milik akun lain pada browser bersama
+        if (!d || typeof d !== 'object' || d.user !== draftOwner) {
+          localStorage.removeItem(backupKey);
+          return null;
+        }
+        return d;
+      } catch (e) { return null; }
     }
 
     function submit() {
@@ -405,22 +435,13 @@ const { pid, data } = Astro.props;
       if (btn) { btn.disabled = true; btn.textContent = 'Mengumpulkan…'; }
       if (msg) msg.textContent = 'Mengirim jawaban ke server…';
 
-      var n = questions.length;
-      var base = Math.floor(100 / n);
-      var rem = 100 - base * n;
-      var skor = 0, total = 100;
+      // Kirim jawaban saja. Skor dihitung SERVER dari kunci jawaban.
       var jawaban = [];
-      questions.forEach(function (q, qi) {
-        jawaban.push(sel[qi]);
-        var w = base + (qi < rem ? 1 : 0);
-        if (sel[qi] === q.benar) skor += w;
-      });
+      questions.forEach(function (_, qi) { jawaban.push(sel[qi]); });
 
       var payload = {
-        pertemuan_id: pertemuanId, skor: skor, total: total,
-        jumlah_soal: questions.length, jawaban: jawaban,
-        paste_count: pasteCount, copy_count: copyCount,
-        blur_count: blurCount, time_spent_ms: Date.now() - startedAt
+        pertemuan_id:_permissionPt, jawaban: jawaban,
+        paste_count: pasteCount, copy_count: copyCount, blur_count: blurCount
       };
 
       api('/api/evaluasi.php', { method: 'POST', body: payload }).then(function (d) {
@@ -428,7 +449,7 @@ const { pid, data } = Astro.props;
         if (d.ok) {
           submitted = true;
           try { localStorage.removeItem(backupKey); } catch (e) {}
-          showResult(d.data || { skor: skor, total: total, flagged: 0 });
+          showResult(d.data || {});
           if (typeof window.APIAuth !== 'undefined' && window.APIAuth.me) window.APIAuth.me(true);
           return;
         }
@@ -441,21 +462,30 @@ const { pid, data } = Astro.props;
           });
           return;
         }
-        // Server gagal menyimpan -> simpan lokal sebagai cadangan (tetap tampilkan skor)
-        localSaveAndShow(skor, total, d.error || 'Server tidak dapat menyimpan jawaban.');
+        // Server gagal menyimpan. Skor tidak lagi bisa dihitung di browser — jadi
+        // di sini TIDAK ditampilkan nilai apa pun. (Sebelumnya nilai lokal bisa
+        // "dibuat" hanya dengan memutus koneksi ke server.)
+        showGagal(d.error || 'Server tidak dapat menyimpan jawaban.');
       }).catch(function () {
         submitting = false;
-        localSaveAndShow(skor, total, 'Tidak dapat terhubung ke server.');
+        showGagal('Tidak dapat terhubung ke server.');
       });
     }
 
-    function localSaveAndShow(skor, total, alasan) {
-      try { localStorage.setItem('eval_local_p' + pertemuanId, JSON.stringify({ skor: skor, total: total, waktu: Date.now() })); } catch (e) {}
-      showResult({ skor: skor, total: total, flagged: 0, submitted_at: null });
-      var w = document.querySelector('.evaluasi__result .evaluasi__warn');
-      if (w) {
-        w.textContent = alasan + ' Jawaban tersimpan sementara di perangkat Anda dan belum terkirim ke server. Hubungi dosen bila masalah berlanjut.';
-      }
+    function showGagal(alasan) {
+      isActive = false;
+      disarmAntiCheat();
+      submitting = false;
+      var btn = document.getElementById('evSubmit');
+      if (btn) { btn.disabled = false; btn.textContent = 'Kumpulkan Evaluasi'; }
+      stateEl.innerHTML =
+        '<div class="evaluasi__locked">' +
+        '<b>Jawaban belum tersimpan di server.</b><br>' + esc(alasan) +
+        '<br><br>Skor hanya dihitung di server, jadi belum ada nilai yang bisa ' +
+        'ditampilkan. Pilihan Anda masih ada di halaman ini — tekan ' +
+        '<b>Kumpulkan Evaluasi</b> untuk mencoba lagi.' +
+        '</div>';
+      formEl.hidden = false;
     }
 
     function flagLabels(flagged) {

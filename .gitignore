@@ -1,5 +1,6 @@
 # build output
 dist/
+_deploy/
 
 # generated types
 .astro/
@@ -25,6 +26,12 @@ pnpm-debug.log*
 
 # konfigurasi API berisi kredensial (jangan di-commit)
 api/config.php
+
+# kunci jawaban evaluasi (BERKAS RAHASIA — hasil generate, jangan di-commit)
+api/kunci.php
+
+# panel admin hasil build (di-deploy manual ke server sebagai admin/panel.html)
+admin/panel.html
 
 # kredensial hosting (jangan di-commit)
 docs/HOSTING-RAHASIA.md

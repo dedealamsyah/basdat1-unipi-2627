@@ -1,6 +1,7 @@
 -- ============================================================
 -- Portal Materi Basis Data UNIPI
--- Schema database MySQL (Byethost: b33_42859006_basdat1)
+-- Schema database MySQL (nama DB & kredensial ada di docs/HOSTING-RAHASIA.md,
+-- file gitignored — jangan ditulis di sini)
 -- Dibuat otomatis oleh api/setup_db.php
 -- ============================================================
 
@@ -54,7 +55,8 @@ CREATE TABLE IF NOT EXISTS evaluasi (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Akun admin awal (dibuat oleh setup_db.php bila belum ada):
---   nim = 'admin' / password = 'AdminUNIPI2026'
+--   nim = 'admin', password = nilai ADMIN_DEFAULT_PASS di api/config.php
+--   (jangan tuliskan nilainya di sini — file ini ter-track git).
 -- Mohon segera diganti setelah login pertama.
 
 -- Pengumpulan tugas per mahasiswa per pertemuan via tautan Google Drive (boleh replace)

@@ -4,7 +4,7 @@
  *
  * Cara pakai (sekali setelah deploy):
  *   POST /api/setup_db.php
- *   body: { "token": "Basdat1UNIPI2026" }
+ *   body: { "token": "<SETUP_TOKEN dari api/config.php>" }
  *
  * Membuat tabel users & progress + akun admin awal bila belum ada.
  */
@@ -86,7 +86,8 @@ json_out(array(
     'data' => array(
         'status' => 'database siap',
         'admin_created' => $createdAdmin,
-        'login_admin' => ADMIN_DEFAULT_NIM . ' / ' . ADMIN_DEFAULT_PASS,
-        'note' => 'Segera ubah password admin default setelah login.',
+        'note' => 'Password akun admin ada di api/config.php (ADMIN_DEFAULT_PASS) — '
+            . 'segera ganti lewat menu ganti-password, lalu HAPUS setup_db.php dari server '
+            . 'dan rotasi SETUP_TOKEN.',
     ),
 ));

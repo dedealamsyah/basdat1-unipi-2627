@@ -58,6 +58,6 @@
 
 | NIM/NIP | Nama | Role | Password Awal |
 |---------|------|------|---------------|
-| `admin` | Administrator Portal | admin | `AdminUNIPI2026` |
+| `admin` | Administrator Portal | admin | Lihat `docs/HOSTING-RAHASIA.md` (file gitignored) — wajib diganti saat login pertama |
 
 > **Penting:** Segera ganti password admin default pada panel ganti password.

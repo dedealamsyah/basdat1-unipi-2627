@@ -1,5 +1,188 @@
 # Changelog
 
+## [2.7.2] - 2026-09-28
+
+### Security & Hardening
+- **Logout via POST + CSRF**: `api/logout.php` dan `public/auth.js` diubah menjadi POST dengan validasi token CSRF (`require_csrf()`). Mencegah forced logout / DoS pemicuan GET via prefetch link/navigasi luar.
+- **Rate Limit Login IP + Username**: `api/config.php` memeriksa `username = ? OR ip = ?` untuk menahan serangan enumerasi dan penguncian akun (lock-out) terdistribusi dari satu sumber IP.
+- **Isolasi Draft Evaluasi di LocalStorage**: `src/components/Evaluasi.astro` menyertakan NIM pemilik draft; draft langsung dibersihkan otomatis jika akun yang login berbeda, mencegah kebocoran sisa jawaban di komputer bersama.
+
+---
+
+## [2.7.1] - 2026-09-27
+
+> ⚠️ **DEPLOY — BACA DULU.** Rilisan ini memindahkan kunci jawaban evaluasi ke server dan
+> menambahkan berkas baru yang **tidak ada di git**. QName & urutan upload ada di
+> `docs/DEPLOYMENT.md`. Ringkasnya:
+>
+> 1. `npm run deploy:prep` → menghasilkan `_deploy/` (statis + `admin/panel.html`
+>    + `api/config.php` + `api/kunci.php`).
+> 2. Upload `_deploy/` ke `htdocs/`.
+> 3. Upload manual dari repo, **berurutan**: `api/config.php` → `api/kunci.php` →
+>    `api/*.php` → `api/.htaccess` → `admin/index.php` + `admin/.htaccess`.
+>
+> Tanpa `api/kunci.php` di server, semua endpoint evaluasi menjawab 503
+> ("Kunci jawaban belum tersedia di server").
+
+### Security — Grading evaluasi dipindah ke server (kunci tidak lagi di browser)
+
+Ini menutup temuan paling serius di audit v2.6.1: **40% nilai akhir bisa dimanipulasi
+mahasiswa dan seluruh deteksi integritas bisa dipalsukan.**
+
+- **Kunci jawaban tidak lagi ada di HTML.** Sebelumnya `Evaluasi.astro` melakukan
+  `define:vars={{ data }}` atas bank soal yang masih memuat field `benar` — jadi seluruh
+  kunci bisa dibaca dari View Source, lalu jawaban dikirim lagi agar dijamin benar.
+  Kini hanya `soal` + `opsi` yang dikirim (`soalTanpaKunci`).
+- **Skor dihitung server, `skor` dari client dibuang.** `evaluasi.php` kini memuat
+  `api/kunci.php` lewat helper `eval_nilai()` dan menghitung sendiri dari `jawaban`.
+  Field `skor`, `total`, dan `jumlah_soal` dari client **tidak pernah dibaca lagi**.
+  Bobot per soal tetap sama seperti versi lama (rata; sisa dibagi ke soal awal), jadi
+  angka yang sudah tercatat tidak berubah.
+- **Durasi dihitung server dari waktu yang dicatat server.** Endpoint baru
+  `POST /api/evaluasi.php?action=start` menyimpan waktu mulai di sesi server saat form
+  dibuka; saat submit, durasi = selisih waktu server. Mahasiswa tidak lagi bisa
+  mengarang `time_spent_ms` (mis. melaporkan 5 detik untuk 15 soal). Sisa celahnya:
+  menunda submission — tapi itu hanya membuat waktu terlihat lebih lama, tidak pernah
+  lebih cepat.
+- **Telemetri ditandai jujur sebagai advisory.** `paste_count`, `copy_count`,
+  `blur_count` tetap dikirim browser dan **tetap bisa dimalsukan**; tidak ada cara
+  memverifikasinya tanpa proctoring. Ketiganya kini diberi batas atas (0–1000) dan
+  dilabeli indikatif di panel admin, bukan bukti. Ini trade-off yang disengaja:
+  sistem tidak lagi menyiratkan-integritas yang tidak dimilikinya.
+- **Dosen diberi akses kunci lewat endpoint khusus** `GET /api/admin.php?kunci=1`
+  (admin-only) + tombol "Lihat kunci jawaban" di dashboard. Sebelumnya akses ini
+  "gratis" lewat View Source; sekarang eksplisit dan tercatat sebagai akses admin.
+- **Kegagalan server tidak lagi menampilkan skor palsu.** Dulu `localSaveAndShow()`
+  menghitung skor di browser dan menampilkannya walau request gagal — cukup memutus
+  koneksi untuk melihat nilai. Sekarang skor hanya ada di server; kalau gagal, tampil
+  pesan dan jawaban tetap bisa di-submit ulang.
+
+### Added
+
+- **`scripts/gen-kunci.mjs`** — mengekstrak kunci jawaban dari `src/content/pertemuan/*.mdx`
+  (field `benar`) ke `api/kunci.php`. Dijalankan otomatis oleh `npm run build`/`check`/`dev`.
+  Validasi keras: jumlah `benar` harus cocok dengan jumlah field `soal:` (penghitung
+  independen dari parser, supaya pergeseran format tidak lolos diam-diam), indeks harus
+  dalam rentang opsi, dan `export const EVAL_` tanpa soal dianggap error. Build **gagal**
+  kalau salah satu tidak terpenuhi. Output berisi jawaban → di-gitignore.
+- **`api/kunci.php`** — hasil generate: `EVAL_KUNCI[pertemuan_id] = ['benar' => [...], 'opsi' => [...]]`.
+- **`api/config.php`**: `eval_kunci_map()`, `eval_kunci()`, `eval_nilai()`.
+- **`npm run deploy:prep`** (`scripts/build-deploy.mjs`) — build lalu menyiapkan `_deploy/`:
+  menyalin `dist/admin/index.html` → `admin/panel.html` (langkah yang dulu harus
+  dilakukan manual dan pernah terlewat → dashboard admin diam-diam menyajikan UI lama),
+  membuang `admin/index.html` yang tidak pernah dilayani, menyertakan
+  `api/config.php` + `api/kunci.php`, lalu **memverifikasi panel.html tidak memuat kunci
+  jawaban** sebelum keluar sebagai "siap upload".
+- **Error/exception handler global** di `config.php`. Sebelumnya `PDOException` yang tak
+  tertangani berakhir sebagai *fatal error*; bila `display_errors` aktif di hosting, path,
+  query, dan detail koneksi bocor ke mahasiswa. Sekarang semua kegagalan jadi JSON minimal
+  500, sementara detail lengkap tetap masuk `error_log` server.
+
+### Fixed
+
+- **Race pada `evaluasi.php`**: pengecekan "sudah pernah dikumpulkan" berjalan sebelum
+  `INSERT`, sehingga dua request bersamaan bisa lolos. Pelanggaran `UNIQUE KEY` kini
+  ditangkap dan dibalas 409 (bukan 500).
+- **`api/config.php` & `api/kunci.php` di-`.gitignore`**, bersama `admin/panel.html` dan
+  `_deploy/` — artefak build 84KB tidak lagi bisa ikut ter-commit `git add -A`.
+- **`tsconfig.json`**: `exclude` `backup` → `_deploy` (folder lama sudah dihapus).
+
+### Removed
+
+- **`backup/`** — versi pra-Astro portal (729 baris `app.js`, `content.js`, PWA sendiri).
+  Tidak direferensikan dari `src/`, `public/`, atau config build; terakhir disentuh saat
+  migrasi ke Astro. README-nya masih menyuruh "buka `index.html` langsung di browser" dan
+  mengarahkan edit materi ke `content.js`, yang sudah tidak berlaku — jadi hanya menyesatkan.
+  Dipulihkan bila perlu: `git checkout HEAD -- backup/` (masih ada di riwayat).
+
+---
+
+## [2.6.1] - 2026-09-26
+
+> ⚠️ **URUTAN DEPLOY WAJIB (v2.6.1)** — `api/config.php` ada di `.gitignore`, jadi
+> perubahan helper di sana **tidak ikut** saat upload via git/FTP massal.
+> `api/admin.php` dan `api/grade.php` kini memanggil `compute_nilai_dari()`, yang hanya ada
+> di `config.php` versi baru. **Upload `api/config.php` DULU**, baru `api/admin.php` &
+> `api/grade.php`. Kalau terbalik → *fatal error* `Call to undefined function`.
+> Daftar fungsi wajib sinkron antara `api/config.php` (server) dan `api/config.example.php`
+> (repo) — keduanya kini identik modulo 4 konstanta kredensial.
+
+### Security — Tutup bypass reset password admin tanpa autentikasi
+
+- **`api/migrate.php` tidak lagi menerima jalur token setup.** Sebelumnya
+  `GET /api/migrate.php?token=<SETUP_TOKEN>&reset_admin=1&newpass=...` mengganti password
+  admin **tanpa perlu login**, hanya dengan mengetahui token. `migrate.php` juga tidak
+  tercakup blokir di `api/.htaccess` (hanya `config.php` + `setup_db.php`), sehingga
+  endpoint ini benar-benar terjangkau publik.
+  - Kini seluruh `migrate.php` wajib sesi admin (`require_auth('admin')`); jalur token dihapus.
+  - Utilitas `reset_admin` dihapus — tidak berguna sebagai ops saat sudah login (pakai
+    `change_password.php`). Pemulihan password admin yang lupa kini lewat phpMyAdmin/hosting.
+  - Utilitas `clear_attempts` dipindah ke **POST + `require_csrf()`** agar tidak bisa
+    dipicu GET (prefetch, riwayat, pratinjau tautan).
+  - Bootstrap awal tidak terganggu: tetap lewat `setup_db.php` (wajib token, diblokir `.htaccess`).
+- **`.htaccess` ditulis dual-sintaks (Apache 2.4 + 2.2)** di `api/` dan `admin/`.
+  Sebelumnya hanya `order allow,deny` / `deny from all` (2.2). Bila host Apache 2.4 tanpa
+  `mod_access_compat`, blokir tersebut tidak berlaku — berisiko `config.php` (kredensial DB)
+  bisa terunduh. Sekarang memakai `<IfModule mod_authz_core.c>Require all denied</IfModule>`
+  dengan fallback 2.2, mengikuti pola yang sudah dipakai `api/uploads/.htaccess`.
+
+### Security — Kredensial yang bocor ke file ter-track git
+
+Nilai kredensial sengaja **tidak ditulis ulang** di entri ini — hanya lokasinya.
+
+- **`docs/DEPLOYMENT.md` menuliskan username cPanel/FTP.** Username adalah separuh kredensial.
+  Diganti rujukan ke `docs/HOSTING-RAHASIA.md` (gitignored).
+- **`api/schema.sql` menuliskan nama database** (mengandung username yang sama) → diganti
+  keterangan umum.
+- **Password admin default tercantum** di `api/schema.sql` (komentar), `api/setup_db.php`
+  (docblock), dan `docs/AKUN-MAHASISWA.md` (tabel akun) — nilainya persis sama dengan
+  `ADMIN_DEFAULT_PASS` di `config.php`. Siapa pun yang membaca repo akan tahu password
+  pertama yang harus dicoba. Ketiganya diganti rujukan.
+- **Password database sendiri tidak pernah masuk git** (tetap hanya di `api/config.php` yang
+  di-gitignore) — diverifikasi ulang di seluruh riwayat revisi.
+- **Efek git tidak bisa dihapus Fully.** Nilai-nilai ini masih ada di riwayat revisi.
+  Karena itu **langkah yang benar-benar perlu dilakukan: rotasi** password admin default,
+  `SETUP_TOKEN`, dan password database. Redaksi berkas hanya mencegah kebocoran lanjutan.
+
+### Performance — Hilangkan N+1 di `admin.php`
+
+- **`admin.php` jalur daftar tidak lagi query per mahasiswa.** Sebelumnya `compute_nilai()`
+  dipanggil di dalam loop (3 query × N: `progress`, `grades`, `evaluasi`). Sekarang semua
+  agregasi diambil satu kali per sumber data (`GROUP BY` pada `progress`, satu query penuh
+  `grades`, satu query `evaluasi` JOIN `users`), lalu nilai tiap mahasiswa dihitung di PHP
+  lewat `compute_nilai_dari()`.
+  - 40 mahasiswa: ~125 query → **6 query**. 500 mahasiswa: ~1505 → tetap **6 query**.
+- **`evaluasi_list()` tidak lagi dipanggil dua kali.** Satu query `evaluasi` sekarang mencakup
+  tiga kebutuhan sekaligus: agregat per mahasiswa, daftar panel integritas, dan grid nilai
+  (`eval_by_student`). Fungsi `evaluasi_list()` yang jadi tak terpakai sudah dihapus.
+- **`done_count` hanya menghitung pertemuan yang aktif.** Sebelumnya `COUNT(p.pertemuan_id)`
+  menghitung semua baris `progress`, termasuk pertemuan yang lalu dinonaktifkan/diubah admin —
+  persentase progres bisa melewati 100%. Sekarang dibatasi `IN (id_aktif)`.
+- **Fungsi matematika dipisah dari query.** `compute_nilai()` (satu mahasiswa, dipakai
+  `grade.php` & `admin.php?nim=`) kini mengumpulkan agregat lalu mendelegasikan ke
+  `compute_nilai_dari()` yang murni aritmatika — teruji 17 kasus (kombinasi latihan/evaluasi,
+  nilai manual kosong, konversi huruf).
+- `evaluasi_pct()` ditulis ulang di atas helper `evaluasi_sum()` baru (tanpa mengubah
+  perilaku: tetap `null` bila tabel belum termigrasi).
+
+### Fixed — `delete_user.php` meninggalkan baris yatim & dead code
+
+- **Hapus akun kini bersih.** Sebelumnya hanya menghapus `progress` + `users`, sehingga
+  `grades`, `evaluasi`, dan `tugas` menggantung sebagai baris yatim (FK tidak dideklarasikan,
+  jadi tidak ada error — diam-diam menumpuk). Kini keempat tabel dihapus dalam satu transaksi.
+- **Dead code dibuang**: `$deleted = $pdo->prepare('SELECT ROW_COUNT()')` disiapkan tapi
+  tak pernah dieksekusi.
+
+### Fixed — `config.example.php` tertinggal 4 fungsi
+
+- Contoh konfigurasi tidak lagi mendefinisikan `evaluasi_list`, `evaluasi_rows`, `tugas_dir`,
+  dan `tugas_ensure`. Anyone yang deploy dari contoh itu akan mendapat **fatal error** di
+  `admin.php`, `me.php`, `upload_tugas.php`, dan `tugas_download.php`. Kini contoh adalah
+  salinan penuh `config.php` dengan kredensial di-placeholder, diverifikasi hanya berbeda di
+  4 konstanta kredensial + marker `DO_NOT_LOG`.
+
+---
+
 ## [2.6.0] - 2026-09-24
 
 ### Changed — Dashboard admin: UI Ringkasan seragam & navigasi cepat antar bagian
@@ -249,8 +432,9 @@
   delete, pertemuan POST, change_password).
 - **Security headers** (`api/.htaccess`): `X-Content-Type-Options`, `X-Frame-Options`,
   `Referrer-Policy`.
-- `migrate.php` dapat dipanggil via token setup saat bootstrap (login belum siap),
-  plus utilitas `?clear_attempts=1`.
+- ~~`migrate.php` dapat dipanggil via token setup saat bootstrap (login belum siap),
+  plus utilitas `?clear_attempts=1`.~~ → **Dihapus di 2.6.1**: jalur token membuka reset
+  password admin tanpa autentikasi. Kini wajib sesi admin; `clear_attempts` via POST+CSRF.
 
 ### Changed
 - `me.php`/`login.php` mengembalikan `must_change_password`; `me` juga memberikan `csrf`.

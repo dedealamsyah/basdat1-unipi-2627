@@ -189,6 +189,8 @@ import { erdTemplates } from '../data/erdTemplates';
     <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
       <button class="btn-sim" id="ptSave" style="background:var(--green-600);">Simpan Menu Pertemuan</button>
       <button class="btn-sim" id="ptReset" style="background:var(--navy-800);">Batal Perubahan</button>
+      <button class="btn-sim" id="ptMigrate" style="background:var(--navy-700);" title="Buat/ perbarui tabel yang belum ada (idempoten)">Jalankan Migrasi Skema</button>
+      <button class="btn-sim" id="ptMigrateStatus" style="background:var(--teal-500);" title="Cek tabel mana yang sudah ada (hanya baca)">Cek Status Skema</button>
     </div>
     <p class="muted" id="ptMsg" style="margin-top:10px;"></p>
   </section>
@@ -262,6 +264,7 @@ import { erdTemplates } from '../data/erdTemplates';
     <div class="section-head">
       <h2 class="section-title"><span class="section-badge">7</span> Evaluasi &amp; Integritas</h2>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <button type="button" class="btn-sim" id="btnKunci" style="background:var(--navy-800);">Lihat kunci jawaban</button>
         <label class="integ-filter">
           <input type="checkbox" id="onlyFlagged" />
           <span>Hanya yang terindikasi</span>
@@ -270,8 +273,14 @@ import { erdTemplates } from '../data/erdTemplates';
       </div>
     </div>
     <p class="muted" style="font-size:12px; margin-top:0;">
-      Hasil evaluasi berkunci (1x percobaan, tanpa kunci jawaban) beserta deteksi integritas:
-      salin/tempel, perpindahan tab, dan durasi terlalu singkat. Klik NIM untuk melihat detail.
+      Hasil evaluasi (1x percobaan) beserta sinyal integritas: salin/tempel, perpindahan tab,
+      dan durasi terlalu singkat. Klik NIM untuk melihat detail.
+      <br />
+      <b>Catatan pembedaan bukti:</b> <b>skor</b> dihitung server dari kunci jawaban dan
+      tidak bisa dimanipulasi mahasiswa. Sebaliknya, hitungan salin/tempel &amp; perpindahan tab
+      <b>dikirim dari browser</b> dan hanya bersifat indikatif — bisa dimalsukan, jadi
+      perlakukan sebagai indikasi untuk diperiksa, bukan bukti. Durasi dihitung server
+      sejak form dibuka.
     </p>
     <div style="overflow-x:auto; margin-top:12px;">
       <table class="dtable tbl-scroll" id="evalTable">
@@ -282,6 +291,9 @@ import { erdTemplates } from '../data/erdTemplates';
         <tbody id="evalTbody"><tr><td colspan="11" class="muted">Memuat…</td></tr></tbody>
       </table>
     </div>
+    <pre id="kunciBox" hidden style="margin-top:12px; padding:12px; background:var(--paper);
+      border:1.5px solid var(--line); border-radius:12px; overflow-x:auto;
+      font-family:var(--font-mono); font-size:12px; line-height:1.7;"></pre>
   </section>
 
   <!-- PENGUMPULAN TUGAS -->
@@ -1159,6 +1171,36 @@ import { erdTemplates } from '../data/erdTemplates';
     }
 
     document.getElementById('onlyFlagged').addEventListener('change', renderEvaluasi);
+
+    // Kunci jawaban tidak lagi ada di HTML halaman (bisa dibaca lewat View
+    // Source), jadi dosen mengambilnya dari endpoint khusus admin ini.
+    (function () {
+      var btn = document.getElementById('btnKunci');
+      var box = document.getElementById('kunciBox');
+      if (!btn || !box) return;
+      btn.addEventListener('click', function () {
+        if (!box.hidden) { box.hidden = true; btn.textContent = 'Lihat kunci jawaban'; return; }
+        btn.disabled = true;
+        btn.textContent = 'Memuat…';
+        fetch('/api/admin.php?kunci=1', { credentials: 'same-origin', cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            var k = (j && j.data && j.data.kunci) || {};
+            var ids = Object.keys(k);
+            if (!ids.length) { box.textContent = 'Kunci jawaban belum tersedia di server. Jalankan: npm run build (menghasilkan api/kunci.php), lalu upload file tsb.'; }
+            else {
+              box.textContent = ids.map(function (id) {
+                var r = k[id];
+                return 'Pertemuan ' + id + ' (' + r.jumlah + ' soal)\n  indeks benar (0-3): ' + r.benar.join(', ');
+              }).join('\n\n');
+            }
+            box.hidden = false;
+            btn.textContent = 'Sembunyikan kunci';
+          })
+          .catch(function () { box.textContent = 'Gagal memuat kunci jawaban.'; box.hidden = false; })
+          .then(function () { btn.disabled = false; });
+      });
+    })();
     document.getElementById('evalTbody').addEventListener('click', function (e) {
       var a = e.target.closest('a[data-nim]');
       if (a) { e.preventDefault(); loadDetail(a.getAttribute('data-nim')); }
@@ -1341,7 +1383,12 @@ import { erdTemplates } from '../data/erdTemplates';
       var csv = rows.map(function (r) {
         return r.map(function (c) {
           var s = String(c);
-          return (s.indexOf(',') !== -1 || s.indexOf('"') !== -1) ? '"' + s.replace(/"/g, '""') + '"' : s;
+          // Cegah formula injection: Excel/Sheets menjalankan sel yang diawali
+          // = + - @ sebagai formula. Nama mahasiswa bisa mengandung karak tsb
+          // (mis. "-0902 stuff"), jadi netralkan dengan awalan tanda kutip.
+          if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+          // Quote bila mengandung pemisah, kutip, atau baris baru.
+          return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
         }).join(',');
       }).join('\r\n');
       var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
@@ -1507,6 +1554,33 @@ import { erdTemplates } from '../data/erdTemplates';
     document.getElementById('ptReset').addEventListener('click', function () {
       document.getElementById('ptMsg').textContent = '';
       loadPertemuan();
+    });
+    //Migrasi skema DB (CREATE/ALTER TABLE + seed) hanya boleh lewat POST+CSRF,
+    // jadi tidak bisa dipicu sekadar membuka URL. Tombol di bawah adalah jalurnya.
+    document.getElementById('ptMigrate').addEventListener('click', function () {
+      var btn = document.getElementById('ptMigrate');
+      var msg = document.getElementById('ptMsg');
+      if (!window.confirm('Jalankan migrasi skema database?\n\nIdempoten (aman diulang), tapi dapat mengubah struktur tabel.')) return;
+      btn.disabled = true; btn.textContent = 'Menjalankan…';
+      api('/api/migrate.php', { method: 'POST', body: {} }).then(function (d) {
+        btn.disabled = false; btn.textContent = 'Jalankan Migrasi Skema';
+        msg.textContent = d.ok
+          ? 'Migrasi selesai. Status tabel: ' + (d.data.tabel ? Object.keys(d.data.tabel).filter(function (k) { return !d.data.tabel[k]; }).join(', ') || 'lengkap' : '?')
+          : 'Gagal: ' + (d.error || '?');
+        if (d.ok) { loadPertemuan(); loadAdmin(); }
+      }).catch(function () {
+        btn.disabled = false; btn.textContent = 'Jalankan Migrasi Skema';
+        msg.textContent = 'Gagal menghubungi server.';
+      });
+    });
+    document.getElementById('ptMigrateStatus').addEventListener('click', function () {
+      var msg = document.getElementById('ptMsg');
+      api('/api/migrate.php').then(function (d) {
+        if (!d.ok) { msg.textContent = 'Gagal: ' + (d.error || '?'); return; }
+        var t = d.data.tabel || {};
+        var rows = Object.keys(t).map(function (k) { return k + ': ' + (t[k] ? 'ada' : 'BELUM ADA'); });
+        msg.textContent = 'Status skema — ' + rows.join(' · ');
+      });
     });
 
     // ===== Template worksheet ERD (mode mengajar) =====

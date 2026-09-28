@@ -77,7 +77,7 @@
   }
 
   async function logout() {
-    return api("/api/logout.php").then(function () {
+    return api("/api/logout.php", { method: "POST" }).then(function () {
       meCache = null;
       csrfToken = null;
       return refresh();
@@ -137,6 +137,24 @@
   }
 
   /* ---------------- UI update ---------------- */
+
+  /**
+   * Escape HTML untuk sisip ke innerHTML.
+   *
+   * WAJIB: nama/kelas/NIM berasal dari database (diisi admin lewat
+   * import_users.php, atau hasil migrasi/seed) dan TIDAP pernah disanitasi
+   * di sisi server. Tanpa escape di sini, satu baris CSV berisi
+   * `<img src=x onerror=...>` akan dieksekusi di sidebar SETIAP pengguna
+   * yang login — termasuk admin. Semua nilai dari API wajib lewat sini.
+   */
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
 
   async function refresh() {
     return me(true).then(function (p) {
@@ -202,11 +220,11 @@
     box.innerHTML =
       '<div class="acc acc--in">' +
       '<div class="acc__head">' +
-      '<span class="acc__chip">' + label + "</span>" +
+      '<span class="acc__chip">' + esc(label) + "</span>" +
       "<button type=\"button\" class=\"acc__logout\" id=\"accLogout\">Keluar</button>" +
       "</div>" +
-      '<p class="acc__name">' + (u.nama || u.nim) + "</p>" +
-      '<p class="acc__meta">' + u.nim + (kelas ? " · " + kelas : "") + "</p>" +
+      '<p class="acc__name">' + esc(u.nama || u.nim) + "</p>" +
+      '<p class="acc__meta">' + esc(u.nim) + (kelas ? " · " + esc(kelas) : "") + "</p>" +
       (isAdmin
         ? '<a class="btn-sim acc__admin" href="/admin/">Dashboard Admin</a>'
         : '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span></div>") +

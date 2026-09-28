@@ -1,9 +1,11 @@
 <?php
 /**
- * Logout. GET /api/logout.php
+ * Logout. POST /api/logout.php
  */
 declare(strict_types=1);
 require __DIR__ . '/config.php';
+
+require_csrf();
 
 start_session();
 $_SESSION = array();

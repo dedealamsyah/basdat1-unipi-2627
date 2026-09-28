@@ -48,6 +48,77 @@ function json_in(): array
     return is_array($data) ? $data : array();
 }
 
+/**
+ * Error/exception handler global.
+ *
+ * Tanpa ini, PDOException yang tidak tertangani (mis. pelanggaran UNIQUE saat
+ * dua request evaluasi berebut) akan berakhir sebagai *fatal error*. Bila
+ * `display_errors` aktif di hosting, itu membocorkan path, query, dan detail
+ * koneksi ke mahasiswa. Semua kegagalan jadi JSON minimal 500 tanpa detail.
+ */
+set_exception_handler(function (Throwable $e): void {
+    error_log('[api] ' . get_class($e) . ': ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+    }
+    echo json_encode(
+        array('ok' => false, 'error' => 'Terjadi kesalahan di server. Silakan coba lagi.'),
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+    );
+});
+
+set_error_handler(function (int $severity, string $message, string $file = '', int $line = 0): bool {
+    // Dielevationkan ke exception supaya tidak pernah bocor ke output.
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
+
+/** Direktori penyimpanan berkas tugas LAma (versi PDF di server).
+ *  Hanya dipakai fallback `tugas_download.php` untuk data sebelum v2.4.0;
+ *  pengumpulan baru menyimpan tautan Google Drive, bukan berkas. */
+function tugas_dir(): string
+{
+    $d = __DIR__ . '/uploads/tugas';
+    if (!is_dir($d)) {
+        @mkdir($d, 0775, true);
+    }
+    return $d;
+}
+
+/** Sinkronkan skema tabel `tugas` (idempoten; menambah kolom bila masih versi berkas). */
+function tugas_ensure(): void
+{
+    try {
+        db()->exec(
+            "CREATE TABLE IF NOT EXISTS tugas (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nim VARCHAR(24) NOT NULL,
+                pertemuan_id INT NOT NULL,
+                filename VARCHAR(255) NOT NULL DEFAULT '',
+                original_name VARCHAR(255) NOT NULL DEFAULT '',
+                mime VARCHAR(120) NOT NULL DEFAULT 'google-drive',
+                size INT NOT NULL DEFAULT 0,
+                drive_file_id VARCHAR(255) NULL,
+                drive_link VARCHAR(700) NULL,
+                submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_tugas_nim_ptm (nim, pertemuan_id),
+                KEY idx_tugas_ptm (pertemuan_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+        );
+    } catch (Throwable $e) {
+        // tabel sudah ada
+    }
+    try {
+        $has = db()->query("SHOW COLUMNS FROM tugas LIKE 'drive_link'")->fetch();
+        if (!$has) {
+            db()->exec("ALTER TABLE tugas ADD COLUMN drive_link VARCHAR(700) NULL AFTER drive_file_id");
+        }
+    } catch (Throwable $e) {
+        // abaikan bila tabel belum tersedia
+    }
+}
+
 /** Deteksi HTTPS, termasuk saat di belakang proxy (Cloudflare). */
 function is_https(): bool
 {
@@ -70,7 +141,8 @@ function start_session(): void
     if (session_status() === PHP_SESSION_NONE) {
         // Catatan: flag `Secure` sengaja TIDAK dipakai selama akses masih campur
         // http/https (Byethost). Cookie Secure tidak dikirim lintas skema dan
-        // akan membuat sesi "hilang". Aktifkan kembali hanya setelah HTTPS penuh.
+        // akan membuat sesi "hilang" (server:0). Aktifkan kembali hanya setelah
+        // HTTPS termaktif penuh (mis. via Cloudflare).
         session_set_cookie_params(array(
             'httponly' => true,
             'samesite' => 'Lax',
@@ -232,21 +304,131 @@ function manual_grades(string $nim): array
     return $out;
 }
 
-/** Persentase evaluasi gabungan (skor/total seluruh pertemuan), null bila kosong */
-function evaluasi_pct(string $nim): ?int
+/** Semua baris evaluasi seorang mahasiswa: map { pertemuan_id => row } */
+function evaluasi_rows(string $nim): array
+{
+    try {
+        $st = db()->prepare(
+            'SELECT pertemuan_id, skor, total, jumlah_soal, flagged, paste_count, copy_count,
+                    blur_count, time_spent_ms, submitted_at
+             FROM evaluasi WHERE nim = ? ORDER BY pertemuan_id'
+        );
+        $st->execute(array($nim));
+        $out = array();
+        foreach ($st as $r) {
+            $out[(int) $r['pertemuan_id']] = array(
+                'skor' => (int) $r['skor'],
+                'total' => (int) $r['total'],
+                'jumlah_soal' => (int) $r['jumlah_soal'],
+                'flagged' => (int) $r['flagged'],
+                'paste_count' => (int) $r['paste_count'],
+                'copy_count' => (int) $r['copy_count'],
+                'blur_count' => (int) $r['blur_count'],
+                'time_spent_ms' => (int) $r['time_spent_ms'],
+                'submitted_at' => $r['submitted_at'],
+            );
+        }
+        return $out;
+    } catch (Throwable $e) {
+        return array(); // tabel belum termigrasi
+    }
+}
+
+/**
+ * Muat kunci jawaban evaluasi dari `api/kunci.php` (hasil generate build).
+ *
+ * Kunci TIDAK pernah dikirim ke browser — hanya server yang memakainya untuk
+ * menghitung skor. Berkas kunci di-gitignore karena berisi jawaban.
+ *
+ * @return array<int,array{benar:int[],opsi:int[]}> map pertemuan_id => kunci
+ */
+function eval_kunci_map(): array
+{
+    static $map = null;
+    if ($map !== null) {
+        return $map;
+    }
+    $file = __DIR__ . '/kunci.php';
+    if (!is_file($file)) {
+        $map = array();
+        return $map;
+    }
+    require $file;
+    $map = defined('EVAL_KUNCI') ? EVAL_KUNCI : array();
+    return $map;
+}
+
+/** Kunci satu pertemuan, atau null bila tidak ada (mis. belum di-generate). */
+function eval_kunci(int $pertemuanId): ?array
+{
+    $map = eval_kunci_map();
+    return isset($map[$pertemuanId]) ? $map[$pertemuanId] : null;
+}
+
+/** Hitung skor 0..100 dari jawaban mahasiswa memakai kunci server.
+ *
+ *  Bobot per soal dibagi rata agar total selalu 100 (sama seperti versi
+ *  client-side sebelumnya: base = floor(100/n), sisa dibagikan ke soal awal).
+ *
+ * @param int[] $jawaban indeks opsi yang dipilih, urutan soal
+ * @return array{skor:int,total:int,benar:int,jumlah:int}|null null bila kunci tak ada
+ */
+function eval_nilai(int $pertemuanId, array $jawaban): ?array
+{
+    $kunci = eval_kunci($pertemuanId);
+    if ($kunci === null) {
+        return null;
+    }
+    $kunciBenar = $kunci['benar'];
+    $jumlah = count($kunciBenar);
+    if ($jumlah < 1 || count($jawaban) !== $jumlah) {
+        return null;
+    }
+
+    $benar = 0;
+    foreach ($kunciBenar as $i => $idx) {
+        if (isset($jawaban[$i]) && (int) $jawaban[$i] === (int) $idx) {
+            $benar++;
+        }
+    }
+
+    // Bobot rata; sisa pembagian diberikan ke soal-soal awal (base + 1).
+    $base = (int) floor(100 / $jumlah);
+    $sisa = 100 - $base * $jumlah;
+    $skor = 0;
+    for ($i = 0; $i < $jumlah; $i++) {
+        if (isset($jawaban[$i]) && (int) $jawaban[$i] === (int) $kunciBenar[$i]) {
+            $skor += $base + ($i < $sisa ? 1 : 0);
+        }
+    }
+
+    return array('skor' => $skor, 'total' => 100, 'benar' => $benar, 'jumlah' => $jumlah);
+}
+
+/** Sum skor & total soal evaluasi seorang mahasiswa: [skor, total].
+ *  Toleran bila tabel `evaluasi` belum termigrasi → [0, 0]. */
+function evaluasi_sum(string $nim): array
 {
     try {
         $st = db()->prepare('SELECT SUM(skor) s, SUM(total) t FROM evaluasi WHERE nim = ? AND total > 0');
         $st->execute(array($nim));
         $r = $st->fetch();
         if (!$r || (int) $r['t'] <= 0) {
-            return null;
+            return array(0, 0);
         }
-        return (int) round(((int) $r['s'] / (int) $r['t']) * 100);
+        return array((int) $r['s'], (int) $r['t']);
     } catch (Throwable $e) {
-        return null;
+        return array(0, 0); // tabel belum termigrasi
     }
 }
+
+/** Persentase evaluasi gabungan (skor/total seluruh pertemuan), null bila kosong */
+function evaluasi_pct(string $nim): ?int
+{
+    list($s, $t) = evaluasi_sum($nim);
+    return $t > 0 ? (int) round(($s / $t) * 100) : null;
+}
+
 
 /** Konversi 0-100 ke nilai huruf (skala SN-Dikti umum) */
 function grade_huruf(float $n): string
@@ -261,24 +443,25 @@ function grade_huruf(float $n): string
 }
 
 /**
- * Hitung nilai akhir dari skor kuis + nilai manual.
- * Komponen kuis = rata-rata persentase LATIHAN dan EVALUASI (masing-masing 50% dari 40%).
- * Return array { kuis_latihan, kuis_evaluasi, kuis_pct, pts, uas, tugas, hadir, akhir, huruf }.
+ * Hitung nilai akhir dari agregat yang SUDAH terkumpul (tanpa query).
+ *
+ * Dipakai `compute_nilai()` (satu mahasiswa) dan `admin.php` (bulk satu query
+ * untuk seluruh mahasiswa — Hindari N+1). Komponen kuis = rata-rata persentase
+ * LATIHAN dan EVALUASI (masing-masing 50% dari 40%).
+ *
+ * @param int|null $latihanSkor  SUM(quiz_score), null bila belum ada latihan
+ * @param int      $latihanTotal SUM(quiz_total)
+ * @param int      $evalSkor     SUM(skor) evaluasi
+ * @param int      $evalTotal    SUM(total) evaluasi
+ * @param array    $grades       map komponen => nilai
+ * @return array { kuis_latihan, kuis_evaluasi, kuis_pct, pts, uas, tugas, hadir, akhir, huruf }
  */
-function compute_nilai(string $nim): array
+function compute_nilai_dari(?int $latihanSkor, int $latihanTotal, int $evalSkor, int $evalTotal, array $grades): array
 {
-    $st = db()->prepare(
-        'SELECT quiz_score, quiz_total FROM progress WHERE nim = ? AND quiz_total > 0'
-    );
-    $st->execute(array($nim));
-    $qs = 0;
-    $qt = 0;
-    foreach ($st as $r) {
-        $qs += (int) $r['quiz_score'];
-        $qt += (int) $r['quiz_total'];
-    }
-    $latihanPct = $qt > 0 ? round(($qs / $qt) * 100) : null;
-    $evaluasiPct = evaluasi_pct($nim);
+    $latihanPct = ($latihanTotal > 0 && $latihanSkor !== null)
+        ? (int) round(($latihanSkor / $latihanTotal) * 100)
+        : null;
+    $evaluasiPct = $evalTotal > 0 ? (int) round(($evalSkor / $evalTotal) * 100) : null;
 
     if ($latihanPct !== null && $evaluasiPct !== null) {
         $kuisPct = (int) round(($latihanPct + $evaluasiPct) / 2);
@@ -286,14 +469,13 @@ function compute_nilai(string $nim): array
         $kuisPct = $latihanPct !== null ? $latihanPct : $evaluasiPct;
     }
 
-    $g = manual_grades($nim);
-    $pts = $g['pts'] ?? null;
-    $uas = $g['uas'] ?? null;
+    $pts = $grades['pts'] ?? null;
+    $uas = $grades['uas'] ?? null;
 
     $akhir = null;
     if ($kuisPct !== null && $pts !== null && $uas !== null) {
         $w = grade_weights();
-        $akhir = round(
+        $akhir = (int) round(
             $kuisPct * $w['kuis'] + $pts * $w['pts'] + $uas * $w['uas']
         );
     }
@@ -304,9 +486,28 @@ function compute_nilai(string $nim): array
         'kuis_pct' => $kuisPct,
         'pts' => $pts,
         'uas' => $uas,
-        'tugas' => $g['tugas'] ?? null,
-        'hadir' => $g['hadir'] ?? null,
+        'tugas' => $grades['tugas'] ?? null,
+        'hadir' => $grades['hadir'] ?? null,
         'akhir' => $akhir,
         'huruf' => $akhir !== null ? grade_huruf($akhir) : null,
     );
+}
+
+/**
+ * Hitung nilai akhir seorang mahasiswa (satu agregat per sumber data).
+ * Return array { kuis_latihan, kuis_evaluasi, kuis_pct, pts, uas, tugas, hadir, akhir, huruf }.
+ */
+function compute_nilai(string $nim): array
+{
+    $st = db()->prepare(
+        'SELECT SUM(quiz_score) s, SUM(quiz_total) t FROM progress WHERE nim = ? AND quiz_total > 0'
+    );
+    $st->execute(array($nim));
+    $q = $st->fetch();
+    $latihanTotal = $q ? (int) $q['t'] : 0;
+    $latihanSkor = $latihanTotal > 0 ? (int) $q['s'] : null;
+
+    list($evalSkor, $evalTotal) = evaluasi_sum($nim);
+
+    return compute_nilai_dari($latihanSkor, $latihanTotal, $evalSkor, $evalTotal, manual_grades($nim));
 }

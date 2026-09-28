@@ -1,17 +1,44 @@
-# Blokir akses langsung ke file konfigurasi privat
+# Blokir akses langsung ke file konfigurasi privat & tool setup.
+# Blok ditulis dua-sintaks (Apache 2.4 `Require` dan 2.2 `Order`) karena
+# `mod_access_compat` tidak selalu aktif di shared hosting.
+# Kalau `mod_authz_core` tidak tersedia, blok 2.4 dilewati dan blok 2.2 dipakai.
 <Files "config.php">
-  order allow,deny
-  deny from all
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    order allow,deny
+    deny from all
+  </IfModule>
 </Files>
 
-# Protek: tool setup hanya boleh dijalankan saat migrasi, token selain itu nonaktif
+# Tool bootstrap hanya boleh dijalankan saat instalasi awal.
 <Files "setup_db.php">
-  order allow,deny
-  deny from all
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    order allow,deny
+    deny from all
+  </IfModule>
 </Files>
+
+# Skema DB & berkas pendukung tidak pernah dilayani sebagai teks mentah:
+# `schema.sql` bisa diunduh via URL (padahal tidak ada kredensial di dalamnya,
+# strukturnya tetapoglobin info tidak perlu). Dual-sintaks seperti di atas.
+<FilesMatch "\.(sql|sqlite|db|log|bak|old|orig|swp|ini|sh|json)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    order allow,deny
+    deny from all
+  </IfModule>
+</FilesMatch>
 
 # Matikan daftar direktori pada folder api
 Options -Indexes
+
 # Header keamanan dasar (bila mod_headers aktif; aman bila tidak)
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"

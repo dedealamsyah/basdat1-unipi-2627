@@ -105,7 +105,10 @@ if ($method === 'GET') {
         'pertemuan_id' => $pid,
         'drive_link' => $row['drive_link'],
         'drive_file_id' => $row['drive_file_id'],
-        'access' => $row['drive_link'] ? 'public' : null,
+        // Akses TIDAK diverifikasi ulang saat dibaca (cek publik hanya terjadi
+        // saat POST, agar tidak memanggil Google di tiap polling). Nilai null
+        // berarti "tidak diketahui" — bukan "publik".
+        'access' => null,
         'original_name' => $row['original_name'],
         'submitted_at' => $row['submitted_at'],
     ) : null));
@@ -119,6 +122,13 @@ require_csrf();
 
 if ($pid <= 0) {
     json_out(array('ok' => false, 'error' => 'Pertemuan tidak valid.'), 422);
+}
+
+// Hanya pertemuan yang aktif (konten tersedia) yang boleh dikumpulkan —
+// kalau tidak, mahasiswa bisa mengirim tautan ke pertemuan non-aktif
+// (mis. UTS/UAS atau materi yang belum/non-aktif) lewat crafted request.
+if (!in_array($pid, active_pertemuan(), true)) {
+    json_out(array('ok' => false, 'error' => 'Pertemuan belum tersedia untuk pengumpulan tugas.'), 422);
 }
 
 $rawLink = trim((string) ($in['drive_link'] ?? ''));
