@@ -56,7 +56,9 @@
         var d = r.data || {};
         if (d.ok && d.data && d.data.user) {
           // sukses atomik: keputusan tidak bergantung panggilan me() lanjutan
-          meCache = { logged_in: true, user: d.data.user, progress: d.data.progress || {} };
+          // Simpan SELURUH payload login (user, progress, tugas, evaluasi, active)
+          // supaya UI peringatan langsung terisi tanpa fetch ulang.
+          meCache = d.data;
           // session diregenerasi di server tetapi data sesi (termasuk CSRF) dipertahankan,
           // jadi token lama tetap valid; muat ulang token juga bila respons login menyediakan.
           if (d.data.csrf) csrfToken = d.data.csrf;
@@ -222,9 +224,23 @@
     Object.keys(p.progress).forEach(function (k) {
       if (p.progress[k] === "done") doneCount++;
     });
+
+    // Peringatan tugas/evaluasi
+    var missingItems = [];
+    (p.active || []).forEach(function(id) {
+        if ((p.progress[String(id)] === 'open' || p.progress[String(id)] === 'done')) {
+             if (!(p.tugas && p.tugas[id])) missingItems.push("Pertemuan " + id + " (Tugas)");
+             if (!(p.evaluasi && p.evaluasi[id])) missingItems.push("Pertemuan " + id + " (Evaluasi)");
+        }
+    });
+
     var isAdmin = u.role === "admin";
     var label = isAdmin ? "ADMIN" : (u.nama || u.nim);
     var kelas = u.kelas ? u.kelas : "";
+    
+    var alertHtml = missingItems.length > 0 
+        ? '<div class="acc__alert" style="color:var(--amber-400); font-size:10px; margin-top:8px;">⚠️ Belum: ' + missingItems.slice(0, 2).join(', ') + (missingItems.length > 2 ? '...' : '') + '</div>' 
+        : '';
 
     box.innerHTML =
       '<div class="acc acc--in">' +
@@ -236,7 +252,7 @@
       '<p class="acc__meta">' + esc(u.nim) + (kelas ? " · " + esc(kelas) : "") + "</p>" +
       (isAdmin
         ? '<a class="btn-sim acc__admin" href="/admin/">Dashboard Admin</a>'
-        : '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span></div>") +
+        : '<div class="acc__mini"><span>Progres: ' + doneCount + " / " + total + "</span>" + alertHtml + "</div>") +
       "</div>";
 
     var btn = document.getElementById("accLogout");
