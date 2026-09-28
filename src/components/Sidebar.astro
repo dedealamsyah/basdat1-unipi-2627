@@ -26,7 +26,9 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
   </div>
 </div>
 
-<!-- Pengingat ringkas: hanya mahasiswa. Rinciannya ada di panel lonceng. -->
+<!-- Pill pengingat: hanya mahasiswa. Rinciannya ada di panel lonceng.
+     `hidden` adalah sumber kebenaran; CSS tidak boleh override `display`
+     untuk elemen ini (lihat `.sidebar__notif[hidden]`). -->
 <div id="notifBox" class="sidebar__notif" data-level="aman" hidden>
   <span class="sidebar__notif-icon" aria-hidden="true">!</span>
   <span id="notifList" class="sidebar__notif-text"></span>

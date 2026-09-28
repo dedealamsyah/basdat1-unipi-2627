@@ -41,6 +41,7 @@ jobs:
           php -l api/me.php
           php scripts/test-endpoints.php   # smoke test: variabel tak terdefinisi, dll
           php scripts/test-rekap.php        # logika rekap & aturan notifikasi
+          python3 scripts/test-sidebar.py   # struktur sidebar & aturan [hidden] di dist/
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

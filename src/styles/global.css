@@ -271,6 +271,9 @@ a { color: inherit; }
 .back-to-top:hover { box-shadow: var(--shadow-lg); color: var(--teal-500); }
 
 /* ================= SIDEBAR ================= */
+/* Sidebar tinggi penuh, flex column: brand + progress + notif + search
+   selalu terlihat, hanya nav yang menggulir, footer menempel di bawah.
+   `overflow: hidden` (bukan auto) mencegah sidebar ikut bergulir. */
 .sidebar {
   width: var(--sidebar-w);
   flex: 0 0 var(--sidebar-w);
@@ -281,10 +284,12 @@ a { color: inherit; }
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar__brand {
+  flex: 0 0 auto;
   padding: 28px 22px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, .07);
 }
@@ -331,6 +336,7 @@ a { color: inherit; }
 }
 
 .sidebar__progress {
+  flex: 0 0 auto;
   padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, .07);
 }
@@ -362,6 +368,7 @@ a { color: inherit; }
 }
 
 .sidebar__search {
+  flex: 0 0 auto;
   padding: 12px 14px 8px;
 }
 
@@ -391,7 +398,8 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 16px 10px;
+  flex: 0 0 auto;
+  margin: 10px 16px 4px;
   padding: 8px 10px;
   border-radius: 9px;
   font-size: 11.5px;
@@ -400,6 +408,13 @@ a { color: inherit; }
   background: rgba(180, 85, 45, .16);
   color: #FDE68A;
 }
+
+/* WAJIB: `display: flex` di atas akan mengalahkan atribut `hidden` (karena
+   UA stylesheet memakai `display: none !important`? tidak — browser memakai
+   `[hidden] { display: none }` dengan spesifisitas lebih rendah dari class).
+   Tanpa aturan ini, pill pengingat tetap terlihat albeit kosong untuk tamu
+   dan admin. Aturan serupa ada untuk .appbar, .pageStatus, .dash. */
+.sidebar__notif[hidden] { display: none; }
 
 .sidebar__notif[data-level="aman"] {
   border-left-color: var(--green-500);
@@ -425,8 +440,8 @@ a { color: inherit; }
 
 /* Grup label di sidebar */
 .sidebar__group {
-  margin: 14px 0 6px;
-  padding: 0 20px;
+  margin: 16px 0 4px;
+  padding: 0 22px;
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: .14em;
@@ -434,8 +449,27 @@ a { color: inherit; }
   text-transform: uppercase;
 }
 
-.sidebar__list--plain { padding-bottom: 4px; }
-.sidebar__nav { flex: 1; overflow-y: auto; }
+.sidebar__group:first-child { margin-top: 6px; }
+
+/* Nav adalah satu-satunya area yang menggulir. Sebelumnya `.sidebar` juga
+   punya `overflow-y: auto` sekaligus `.sidebar__nav` flex:1 + overflow →
+   dua scrollbar bertumpuk dan footer ikut ter-scroll. Sidebar jadi flex
+   column setinggi layar; hanya nav yang boleh menggulir. */
+.sidebar__nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Scrollbar tipis supaya tidak memakan lebar sidebar yang hanya ~300px. */
+.sidebar__nav::-webkit-scrollbar { width: 6px; }
+.sidebar__nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar__nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .12);
+  border-radius: 3px;
+}
+.sidebar__nav::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .22); }
 
 .row--plain { background: transparent; border-color: transparent; }
 .row--plain:hover { background: rgba(255, 255, 255, .06); }
@@ -469,8 +503,7 @@ a { color: inherit; }
 .sidebar__list {
   list-style: none;
   margin: 0;
-  padding: 8px 10px 20px;
-  flex: 1;
+  padding: 4px 10px;
 }
 
 /* Generic row (used in light content areas, e.g. beranda) */
@@ -595,7 +628,7 @@ a { color: inherit; }
 
 /* Account box in sidebar */
 .sidebar__account {
-  margin-top: 12px;
+  margin-bottom: 10px;
   padding: 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, .05);
@@ -683,8 +716,10 @@ a { color: inherit; }
 }
 
 .sidebar__footer {
-  padding: 14px 20px 20px;
+  flex: 0 0 auto;
+  padding: 12px 20px 16px;
   border-top: 1px solid rgba(255, 255, 255, .07);
+  background: var(--navy-950);
   font-family: var(--font-mono);
   font-size: 10px;
   color: #5F7A8C;
@@ -748,7 +783,9 @@ a { color: inherit; }
   border-bottom: 1px solid var(--line);
 }
 
-/* Saat app bar disembunyikan, kembalikan ruang atas ke kondisi semula. */
+/* Saat app bar disembunyikan, kembalikan ruang atas ke kondisi semula.
+   Sama seperti .sidebar__notif[hidden]: `display: flex` di atas mengalahkan
+   atribut `hidden`, jadi aturan ini wajib ada. */
 .appbar[hidden] { display: none; }
 
 .appbar__ctx {
@@ -823,6 +860,10 @@ a { color: inherit; }
 
 .iconbtn--dark .badge { box-shadow: 0 0 0 2px var(--navy-950); }
 
+/* Badge memakai `hidden` untuk "tidak ada pengingat". Tanpa ini, lingkaran
+   kosong tetap muncul di pojok lonceng. */
+.iconbtn .badge[hidden] { display: none; }
+
 /* ================= Panel pengingat ================= */
 .notif-panel {
   position: fixed;
@@ -865,6 +906,7 @@ a { color: inherit; }
 .notif-panel__hint { font-size: 11px; color: var(--ink-soft); }
 .notif-panel__list { display: flex; flex-direction: column; }
 .notif-panel__empty { padding: 18px 16px; font-size: 12.5px; color: var(--ink-soft); }
+.notif-panel__empty[hidden] { display: none; }
 
 .notif-item {
   display: flex;
@@ -1771,6 +1813,9 @@ ul.refs li {
   body { flex-direction: column; }
   .mobile-header { display: flex; }
 
+  /* Drawer: biarkan sidebar yang bergulir, nav tidak lagi ober.
+     Dua area scroll di layar selebar 320px hanya menghasilkan dua
+     scrollbar yang saling berebut ruang. */
   .sidebar {
     position: fixed;
     left: -100%;
@@ -1778,6 +1823,7 @@ ul.refs li {
     width: 85%;
     max-width: 320px;
     height: 100vh;
+    max-height: 100vh;
     z-index: 999;
     flex: none;
     overflow-y: auto;
@@ -1787,10 +1833,9 @@ ul.refs li {
 
   .sidebar.open { left: 0; }
 
-  .sidebar__list {
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-    padding: 10px 8px 16px;
+  .sidebar__nav {
+    flex: 0 0 auto;
+    overflow-y: visible;
   }
 
   .main { padding: 60px 16px 60px; flex: 1; }
@@ -1831,6 +1876,8 @@ ul.refs li {
    ===================================================================== */
 
 /* ---------- Dashboard di beranda ---------- */
+.dash[hidden] { display: none; }
+
 .dash {
   margin-bottom: 30px;
   padding-bottom: 26px;
@@ -1989,6 +2036,10 @@ ul.refs li {
   gap: 8px;
   margin: 0 0 18px;
 }
+
+/* Sama seperti .appbar[hidden] & .sidebar__notif[hidden] — `display: flex`
+   di atas mengalahkan atribut `hidden`. */
+.pageStatus[hidden] { display: none; }
 
 .pstatus {
   display: flex;

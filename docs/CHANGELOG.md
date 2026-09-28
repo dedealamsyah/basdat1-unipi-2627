@@ -1,5 +1,57 @@
 # Changelog
 
+## [2.9.2] - 2026-09-28
+
+> ⚠️ **Deploy perbaikan tampilan.** Tidak ada perubahan API — cukup upload ulang
+> `_deploy/` (statis saja). `api/` tidak berubah dari v2.9.1.
+
+### Fixed — sidebar berantakan (v2.9.0/v2.9.1)
+
+Empat penyebab, semuanya tak terlihat oleh `astro check` maupun `php -l`:
+
+- **Dua area scroll di sidebar.** `.sidebar` punya `overflow-y: auto` **dan**
+  `.sidebar__nav` (baru) `flex: 1` + `overflow-y: auto`. Akibatnya dua
+  scrollbar saling berebut ruang dan footer ikut ter-scroll. Kini `.sidebar`
+  `overflow: hidden` + `max-height: 100vh`, dan **hanya** nav yang bergulir,
+  dengan `min-height: 0` (tanpa itu flex item tidak mau menyusut) dan
+  scrollbar tipis 6px.
+- **`.sidebar__list { flex: 1 }` dipakai tiga kali.** Aturan itu warisan dari
+  versi satu-daftar; setelah sidebar dipecah jadi tiga daftar (Beranda /
+  Alat Bantu / Materi), tiap `<ul>` berebut ruang yang sama. Padding
+  `8px 10px 20px` juga diulang tiga kali → ~60px ruang kosong. `flex: 1`
+  dihapus, padding jadi `4px 10px`.
+- **`display: flex` mengalahkan atribut `hidden`.** `.appbar`,
+  `.sidebar__notif`, `.pageStatus`, `.dash`, `.iconbtn .badge`, dan
+  `.notif-panel__empty` semuanya punya `display` eksplisit di CSS, sehingga
+  atribut `hidden` **tidak berefek** (spesifisitas class > `[hidden]`).
+  Akibatnya tamu/admin melihat pill pengingat kosong, badge lonceng kosong,
+  dan strip status kosong. Masing-masing kini punya aturan `[hidden] { display: none }`.
+- **Drawer mobile punya daftar kedua yang bergulir.** Media query 880px masih
+  memberi `.sidebar__list { max-height: calc(100vh - 200px); overflow-y: auto }`
+  — bentrok dengan scroll sidebar. Dihapus; di mobile sidebar yang bergulir.
+
+### Added — `scripts/test-sidebar.py` (`npm run test:layout`)
+
+- **`scripts/test-sidebar.py`** (`npm run test:layout`, ikut CI): memeriksa CSS
+  **setelah build** (bukan sumbernya) — struktur flex sidebar, keberadaan
+  aturan `[hidden]`, variabel CSS tanpa definisi, padding atas `.main`, dan
+  keutuhan markup sidebar di `dist/`.
+  Menangkap kelas bug yang tidak terlihat oleh typecheck: CSS ter-build
+  diminifikasi dan `.sidebar` punya dua aturan (desktop + drawer), jadi
+  pemeriksaan harus memilih yang tepat.
+- **Uji negatif dipakai**: harness diuji balik dengan sengaja mengembalikan
+  tiap perbaikan (`:hover`-nya dibuang, `flex: 1` dikembalikan,
+  `[hidden]` dihapus, `padding` jadi 0) — semua harus terdeteksi. Ini
+  membuktikan tesnya benar-benar berguna, bukan selalu hijau.
+
+### Fixed — skrip upload lagi
+
+`SIZE` ditolak server untuk path yang belum ada (`550 Can't check for file
+existence`), jadi `ftplib.size()` melempar galat dan upload berhenti. Sekarang
+nama berkas remote dikumpulkan sekali lewat `NLST`.
+
+---
+
 ## [2.9.1] - 2026-09-28
 
 > ⚠️ **Deploy perbaikan.** Rilis 2.9.0 sempat membuat **seluruh portal tidak bisa

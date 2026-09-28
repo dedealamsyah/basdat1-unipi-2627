@@ -328,6 +328,7 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 ```
 [~] HTTPS termaktif (tidak lagi HTTP murni) — kode siap (flag Secure otomatis); aktivasi Cloudflare/hosting tersisa
 [x] `api/me.php` tidak lagi bisa menjatuhkan seluruh portal (fail-soft + smoke test) — v2.9.1
+[x] Layout sidebar punya satu area scroll & aturan `[hidden]` berlaku (tes `test:layout`) — v2.9.2
 [x] Password default sudah tidak valid / force-change aktif — selesai v2.0.1
 [x] Rate limit login berfungsi (uji brute-force) — selesai v2.0.1
 [~] Progresi sinkron dengan menu pertemuan yang diedit — sebagian (DB aktif), urutan frontend menyusul
