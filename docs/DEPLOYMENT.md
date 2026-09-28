@@ -14,15 +14,24 @@ npm run build
 Output generated di folder `dist/` (HTML statis, CSS, JS, aset).
 
 Samping build, `npm run build` (dan `check`/`dev`) menjalankan `scripts/gen-kunci.mjs` yang
-menghasilkan **`api/kunci.php`** dari field `benar` di `src/content/pertemuan/*.mdx`.
-Build **gagal** kalau jumlah kunci tidak cocok dengan jumlah soal atau indeksnya di luar
-rentang opsi — jadi kunci tidak mungkin diam-diam tidak sinkron dengan halaman.
+menghasilkan **`api/kunci.php`** dari `src/content/pertemuan/*.mdx`, memuat dua konstanta:
+
+| Konstanta | Sumber | Dipakai |
+|---|---|---|
+| `EVAL_KUNCI` | field `benar` pada bank soal (`{ soal, opsi, benar }`) | `api/evaluasi.php` |
+| `KUIS_KUNCI` | atribut `benar` tiap `<QuizCard id="q1" … benar={n} />` | `api/quiz.php` (kuis latihan) |
+
+Build **gagal** kalau jumlah kunci tidak cocok dengan jumlah soal, indeksnya di luar rentang
+opsi, `id` kuis tidak urut/duplikat, atau `<QuizCard>` tidak self-closing — jadi kunci tidak
+mungkin diam-diam tidak sinkron dengan halaman.
 
 Setelah `astro build`, `npm run build` juga menjalankan **`scripts/verify-build.mjs`**:
-build **gagal** kalau kunci jawaban evaluasi ternyata ikut masuk ke `dist/`
-(`"benar": <angka>`, literal `EVAL_KUNCI`, atau urutan kunci panjang sebagai array JSON),
-atau kalau ada bank soal di server yang halamannya tidak merender blok evaluasi.
-Jadi kebocoran kunci tidak lagi bergantung pada "seseorang sempat grep".
+build **gagal** kalau kunci jawaban ikut masuk ke `dist/` (`"benar": <angka>`, literal
+`EVAL_KUNCI`/`KUIS_KUNCI`, urutan kunci panjang sebagai array JSON, atau atribut
+`data-correct`/`data-explanation` yang dulu menumpang di HTML), kalau bank soal di server
+halamannya tidak merender blok evaluasi, atau kalau jumlah kartu kuis yang ter-render di
+sebuah halaman tidak sama dengan jumlah soal di `KUIS_KUNCI`. Jadi kebocoran kunci tidak lagi
+bergantung pada "seseorang sempat grep".
 
 Untuk memeriksa tanpa build ulang (mis. setelah `astro build` manual):
 
@@ -43,7 +52,7 @@ Sama seperti `build`, ditambah menyiapkan folder **`_deploy/`** yang siap di-upl
 | seluruh `dist/` | halaman statis |
 | `admin/panel.html` | `admin/index.php` membaca berkas **ini**, bukan `index.html`. Dulu harus disalin manual dan pernah terlewat → dashboard diam-diam menyajikan UI lama. |
 | `api/config.php` | kredensial DB — tidak ada di git, tapi tetap milik server ini |
-| `api/kunci.php` | kunci jawaban — tidak ada di git. **Tanpa ini semua evaluasi membalas 503.** |
+| `api/kunci.php` | kunci jawaban (evaluasi **dan** kuis latihan) — tidak ada di git. **Tanpa ini semua evaluasi membalas 503 dan semua kuis latihan tidak bisa dinilai.** |
 
 Skrip juga membuang `admin/index.html` hasil build (tidak pernah dilayani — `index.php` menang,
 dan membocorkan isi dashboard lewat URL langsung), lalu **memverifikasi `panel.html` tidak
@@ -75,9 +84,9 @@ Folder `_deploy/` sendiri di-gitignore.
 
    | # | Berkas | Alasan |
    |---|---|---|
-   | 1 | `api/config.php` | `compute_nilai_dari()`, `eval_kunci()` dipakai endpoint lain. Terbalik → *fatal error*. |
-   | 2 | `api/kunci.php` | Kunci jawaban. Tanpa ini semua evaluasi membalas **503**. |
-   | 3 | `api/*.php` | `admin.php`, `evaluasi.php`, `migrate.php`, `delete_user.php`, … |
+   | 1 | `api/config.php` | `compute_nilai_dari()`, `eval_kunci()`, `kuis_kunci()` dipakai endpoint lain. Terbalik → *fatal error*. |
+   | 2 | `api/kunci.php` | Kunci jawaban (evaluasi + kuis latihan). Tanpa ini semua evaluasi membalas **503** dan kuis latihan tidak bisa dinilai. |
+   | 3 | `api/*.php` | `admin.php`, `evaluasi.php`, **`quiz.php` (baru di v2.8.0)**, `migrate.php`, `delete_user.php`, … |
    | 4 | `api/.htaccess` | Blokir `config.php`, `setup_db.php`, & berkas non-web (`*.sql`, `*.json`, …) (dual-sintaks 2.4/2.2). |
    | 5 | `admin/index.php`, `admin/.htaccess` | Guard server-side + blokir akses file lain. |
 
@@ -91,9 +100,16 @@ Folder `_deploy/` sendiri di-gitignore.
 > ```bash
 > diff <(grep -o '^function [a-z_]*' api/config.php) \
 >      <(grep -o '^function [a-z_]*' api/config.example.php)   # harus kosong
-> node scripts/gen-kunci.mjs                                  # harus sukses, kunci 58 soal
-> node scripts/verify-build.mjs                               # harus lulus, kunci tidak bocor
+> node scripts/gen-kunci.mjs       # harus sukses: 58 soal evaluasi + 42 soal latihan
+> node scripts/verify-build.mjs   # harus lulus, kunci tidak bocor
 > ```
+
+> ⚠️ **Setelah v2.8.0, `api/kunci.php` WAJIB versi baru.** Kalau yang terupload masih
+> versi lama, setiap halaman yang punya kuis latihan akan menampilkan kuis yang bisa diklik
+> tetapi server menjawab *"Kunci latihan belum tersedia di server"* (503). Gejalanya: mahasiswa
+> melihat tombol tidak memberi nilai sama sekali — cek `api/kunci.php` di server lebih dulu
+> bila ada keluhan. `api/quiz.php` juga wajib ada; tanpanya endpoint 404 dan latihan
+> tidak bisa diselesaikan.
 
 ### Pengerasan setelah instalasi (WAJIB, sekali)
 

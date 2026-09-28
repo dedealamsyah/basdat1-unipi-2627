@@ -1,5 +1,213 @@
 # Changelog
 
+## [2.9.0] - 2026-09-28
+
+> ⚠️ **DEPLOY.** Ada berkas baru yang wajib ada di server dan di build:
+> `public/mhs-ui.js` (ikut statis) dan `api/me.php` versi baru (responsnya
+> sekarang memuat `rekap` + `nilai`). Tidak ada migrasi database, dan
+> **tidak ada perubahan Schema** — `rekap` dihitung dari tabel yang sudah ada.
+
+### Student UI/UX
+
+- **App bar desktop** (`.appbar`): nama-course, judul halaman, dan lonceng
+  pengingat. Sticky di atas konten; hilang di mobile (mobile header sudah
+  punya lonceng sendiri).
+- **Lonceng + panel pengingat**: ikon bel di header desktop & mobile dengan
+  badge jumlah. Panel berisi daftar yang bisa diklik langsung ke pertemuan
+  yang bermasalah. Tutup dengan klik di luar atau tekan `Esc`.
+- **Dashboard beranda** (`.dash`): sapaan sesuai waktu (pagi/siang/sore/malam)
+  + nama, kartu "Lanjut belajar" ke pertemuan pertama yang belum tuntas,
+  4 kartu statistik (pertemuan tuntas, nilai latihan, nilai evaluasi, nilai
+  akhir), dan daftar "Perlu perhatian". Untuk tamu & admin seluruh blok ini
+  disembunyikan — beranda tetap seperti sedia.
+- **Sidebar dirombak**: Beranda masuk sebagai item menu, alat bantu dikelompokkan
+  (Praktikum, Playground, Timeline) dengan label grup "ALAT BANTU" / "MATERI",
+  pencarian sekarang menyaring semua daftar, dan tiap baris pertemuan punya
+  badge status (`✓` tuntas, `•`/`!` ada yang perlu, `🔒` terkunci, `→` dibuka).
+- **Pill pengingat di sidebar** menggantikan daftar teks panjang: satu kalimat
+  ("3 pengingat, 1 perlu segera" / "Semua beres").
+- **Strip status di halaman materi**: chip `Latihan` · `Evaluasi` · `Tugas` dengan
+  skor dan warna sesuai kondisi (hijau selesai, amber perlu, merah berat).
+- **Pinggalkan** petal emoji di chip (📝/📋/⚠️) dan `has-warning` berbasis
+  `::after`; ketiganya diganti badge & panel nyata.
+- Service worker naik ke `v6` + `mhs-ui.js` masuk precache, agar file UI baru
+  tidak tertinggal di cache-first setelah deploy.
+
+### Notifikasi mahasiswa (baru)
+
+Pemicunya **pengerjaan latihan/evaluasi dan skor** — bukan tugas:
+
+| Pemicu | Level | Kapan muncul |
+|---|---|---|
+| Evaluasi belum dikerjakan | tinggi | Latihan sudah tuntas, tapi evaluasi belum dikirim |
+| Skor evaluasi < 60% | tinggi | Perlu konsultasikan ke dosen |
+| Latihan belum tuntas | sedang | Pertemuan terbuka, latihan belum tuntas |
+| Skor evaluasi 60–74% | sedang | Masih di bawah target 75% |
+| Skor latihan < 75% | sedang | Hanya kalau admin menginput nilai parsial |
+| Nilai kuis berjalan < 75% | sedang/tinggi | Gabungan latihan + evaluasi |
+
+- **Ambang dua tingkat: 75% (perlu latihan ulang) dan 60% (berat).** Bisa diubah
+  di satu tempat: `AMBANG_AMAN` / `AMBANG_BERAT` di `public/mhs-ui.js`.
+- **Admin tidak menerima notifikasi sama sekali** — lonceng disembunyikan,
+  badge nol, panel kosong, pill sidebar disembunyikan, dashboard tidak
+  muncul. Dia yang menginput nilai, bukan yang perlu diingatkan.
+- **Tugas sengaja tidak jadi pemicu** (sesuai permintaan): indikator tugas
+  tetap ada di strip status halaman materi, tapi tidak menggantung di lonceng.
+- Pertemuan terkunci tidak pernah memunculkan pengingat.
+- Notifikasi urut: level "tinggi" dulu, lalu nomor pertemuan.
+
+### Data
+
+- **`api/me.php` mengirim `rekap`** — satu objek per pertemuan aktif berisi
+  `status`, `ada_latihan`, `ada_evaluasi`, `ada_tugas`, `latihan.{skor,total,pct}`,
+  dan `evaluasi.{skor,total,pct,flagged}`. Field lama (`progress`, `tugas`,
+  `evaluasi`, `meta_pertemuan`) tetap ada agar tidak merusak konsumen lain.
+- **`api/me.php` mengirim `nilai`** — nilai berjalan dari `compute_nilai()`.
+  Dibatasi `try/catch` agar instalasi lama tanpa tabel `grades` tetap 200.
+- **Pembeda penting: `pct` = `null` berarti belum dikerjakan, `0` berarti sudah
+  dikerjakan dan nilainya nol.** Tanpa ini, notifikasi "skor 0%" akan muncul
+  untuk soal yang belum dijawab. Field `ada_latihan`/`ada_evaluasi` diambil dari
+  kunci (`kuis_kunci()`/`eval_kunci()`), jadi pertemuan tanpa bank soal tidak
+  pernah diminta untuk mengerjakan sesuatu yang tidak ada.
+- Query `progress` tambahan: 1 (sudah tercakup `compute_nilai`), tidak ada N+1.
+
+### Testing
+
+- **`scripts/test-rekap.php`** (`npm run test:notif`, ikut CI): menguji
+  perhitungan `rekap` dan aturan ambang dengan data contoh — termasuk kasus
+  yang harus TIDAK memunculkan notifikasi (pertemuan terkunci, tanpa bank soal,
+  tugas belum kirim).
+- Model notifikasi `mhs-ui.js` diuji dengan DOM minimal (Node, tanpa browser)
+  untuk 4 skenario: tamu, admin, mahasiswa beres, mahasiswa dengan 5 pengingat,
+  plus uji penahanan XSS (nama dari DB wajib ter-escape).
+
+### Changed
+
+- `auth.js`: `refreshNotifBox()` (daftar tugas/evaluasi) **dihapus**; notifikasi
+  pindah ke `mhs-ui.js`. `refresh()` meneruskan data ke `window.MhsUI.render(p)`
+  dengan `try/catch` supaya kegagalan UI tidak mengganggu auth.
+- `Sidebar.astro` markup & script ditulis ulang (grup, Beranda, badge).
+- `BaseLayout.astro`: app bar + panel pengingat + pemuatan `mhs-ui.js`.
+- Teks peringatan lama di blok akun ("⚠️ Belum: …") dihapus; sekarang cuma
+  peran (Admin/Mahasiswa) yang ditunjukkan.
+
+---
+
+## [2.8.0] - 2026-09-28 - 2026-09-28
+
+> ⚠️ **DEPLOY — BACA DULU.** Rilisan ini menutup celah terakhir di checklist
+> audit ("skor kuis latihan diverifikasi server") dan menambah **berkas baru
+> di server**: `api/quiz.php`. Selain itu `api/kunci.php` sekarang memuat
+> kunci kuis latihan juga, dan bentuk kuis di MDX berubah total.
+>
+> 1. `npm run deploy:prep` → `_deploy/` (statis + `admin/panel.html` +
+>    `api/config.php` + `api/kunci.php` **versi baru**).
+> 2. Upload `_deploy/` ke `htdocs/`.
+> 3. Upload manual dari repo, **berurutan**: `api/config.php` →
+>    `api/kunci.php` → `api/quiz.php` (baru) → `api/*.php` → `api/.htaccess`
+>    → `admin/index.php` + `admin/.htaccess`.
+>
+> **`api/kunci.php` versi lama akan membuat setiap halaman yang punya kuis
+> latihan gagal:** kuis tetap tampil dan bisa diklik, tapi server menjawab
+> "Kunci latihan belum tersedia di server". Jangan sampai terlewat.
+
+### Security — Kuis latihan dinilai server
+
+Ini menutup item terakhir di audit §6: komponen yang bobotnya 40% nilai
+akhir, tetapi kuncinya bocor ke View Source dan skornya dipercaya dari
+client.
+
+- **Kunci latihan tidak lagi ada di HTML.** Dulu tiap opsi ditulis
+  `<button class="quiz-option" data-correct="true" data-explanation="…">`.
+  Cukup satu "View Source" untuk mendapat seluruh kunci latihan, dan
+  atribut yang sama juga dibaca mode mengajar. Kini MDX memakai bentuk props
+  (`<QuizCard id="q1" soal="…" opsi={[…]} benar={1} jelas="…" />`) dan yang
+  dirender hanya `{ id, soal, opsi }`.
+- **`api/complete.php` tidak lagi percaya `quiz_score` dari client.**
+  Dulu endpoint itu menerima `{pertemuan_id, quiz_score, quiz_total}` apa
+  adanya: satu permintaan dengan `quiz_score = quiz_total` menandai
+  pertemuan **tuntas tanpa menjawab satu soal pun** — cukup untuk membuka
+  pertemuan berikutnya dan memanipulasi komponen kuis. Sekarang mahasiswa hanya boleh
+  mengirim `jawaban` (indeks opsi), dan server menghitungnya sendiri lewat
+  `kuis_nilai()`.
+- **Endpoint baru `api/quiz.php`.** `GET ?pertemuan_id=N` mengembalikan
+  jawaban yang sudah dinilai di sesi (memulihkan tampilan setelah reload);
+  `POST {pertemuan_id, jawaban}` menilai soal dan menandai tuntas bila
+  seluruh soal dijawab benar. Wajib login + CSRF; admin ditolak (403),
+  sama seperti `evaluasi.php`.
+- **Jawaban pertama yang dihitung.** Server mengunci pilihan pertama untuk
+  tiap soal di sesi login. Mengulang-klik opsi lain tidak mengubah nilai
+  yang tercatat, dan tombolnya langsung dinonaktifkan setelah dinilai.
+- **Penjelasan dikirim server, bukan ditanam di HTML.** `jelas` hanya ikut
+  respons untuk soal yang sudah dijawab, jadi tidak bisa dibaca sebelum
+  menjawab.
+- **Angka yang sudah tercatat tidak berubah.** `progress` tetap ditulis
+  hanya saat tuntas dengan skor penuh (jumlah/jumlah), sama seperti
+  `complete.php` lama. Yang berubah adalah cara memperoleh kunci, bukan
+  angkanya.
+- **Mode mengajar ikut diperbarui, di kedua sisi.** `presentasi.astro`
+  (interaktif) tidak lagi membaca `data-correct` dari DOM; tombol "Lihat
+  Jawaban" mengambil kunci dari `GET /api/admin.php?kuis=1&pertemuan_id=N`
+  (admin-only, sejajar dengan `?kunci=1` untuk evaluasi). Gagal atau belum
+  login → tombol mati, bukan bocor. `presentasi.php` (mode
+  server-rendered, dipakai tombol "▶ Presentasikan") membaca kunci langsung
+  dari `kuis_kunci()`; regex deteksi kartunya dilonggarkan agar tetap cocok
+  dengan markup baru.
+- **`verify-build.mjs` jadi gerbang keras.** `data-correct`,
+  `data-explanation`, atau `KUIS_KUNCI` di `dist/` kini **menggagalkan
+  build**. Ditambah pemeriksaan silang: jumlah kartu kuis yang ter-render
+  di tiap halaman harus sama dengan jumlah soal di `KUIS_KUNCI`, dan
+  halaman yang merender kuis tanpa kunci di server ikut gagal.
+
+### Changed
+- **`scripts/gen-kunci.mjs` kini membaca `<QuizCard>` juga** dan menulis
+  `KUIS_KUNCI[pertemuan_id] = { id, benar, opsi, jelas }` ke berkas yang
+  sama dengan `EVAL_KUNCI`. Parser menyisir tag sambil menghormati kutip
+  dan kurung kurawal — pola `[^>]*` akan terpotong oleh teks soal yang memuat
+  `>` (mis. `σ<prodi='Informatika'>`) dan kunci pun bergeser diam-diam.
+  Validasi baru: jumlah `<QuizCard` harus cocok dengan jumlah kartu
+  ter-parse, `id` wajib urut dan unik (`q1`, `q2`, …), `benar` harus dalam
+  rentang opsi, minimal dua opsi, entitas HTML tak dikenal menggagalkan
+  build.
+- **`QuizCard.astro` tidak lagi memakai slot dan satu `<script is:inline>`
+  per kartu.** Sekarang props + satu script ter-bundle untuk seluruh
+  halaman (Astro menduplikasi jadi satu berkas), sehingga lima kartu tidak
+  lagi berarti lima salinan kode. `src/env.d.ts` mendeklarasikan
+  `window.APIAuth` supaya `astro check` tetap 0 error.
+- **42 blok `<QuizCard>` di 9 MDX dikonversi** ke bentuk props. Teks soal
+  dan urutan opsi dipastikan identik dengan sebelumnya (dicek otomatis
+  terhadap baseline `dist/` sebelum perubahan).
+- **`APIAuth.complete()` dihapus**, digantikan `APIAuth.gradeQuiz()` dan
+  `APIAuth.quizState()`. Tidak ada lagi jalur kode yang mengirim skor ke
+  server.
+- **`api/config.example.php` ikut mendapat helper** `kuis_kunci_map()`,
+  `kuis_kunci()`, `kuis_nilai()` — tanpa ini `api/quiz.php` akan fatal di
+  server.
+- `scripts/build-deploy.mjs` sekarang mengingatkan `api/quiz.php` sebagai
+  berkas yang wajib terupload manual.
+- **Efek samping yang diterima:** teks di dalam `opsi={[…]}` tidak lagi
+  melewati `remark-smartypants`, sehingga `‘Informatika’` kini tampil
+  sebagai `'Informatika'`. Untuk ekspresi SQL/AR tanda kutip lurus justru
+  lebih tepat. Sisanya (42 soal, 123 opsi) identik.
+
+### Sisa celah (dinyatakan terbuka, bukan disembunyikan)
+- **Kuis latihan bukan alat ukur integritas.** Yang dijamin server: angka
+  yang tercatat tidak bisa digelembungkan dari luar, dan nilai hanya naik
+  bila jawaban yang dikirim benar-benar benar. Yang tidak bisa dicegah
+  tanpa mode ujian: mengulang dengan sesi/cookie baru, atau mengklik opsi
+  satu per satu sampai ketemu. Itu sebabnya **evaluasi** (1× percobaan,
+  server-graded) yang menjadi jangkar integritas.
+- **Penguncian jawaban pertama hidup di sesi PHP**, jadi berlaku selama
+  sesi login, bukan selamanya. Menghapus cookie akan menghapus penguncian
+  itu. Menyimpannya di DB dengan konsekuensi "salah sekali terkunci
+  selamanya" ditolak: itu merusak pembelajaran, bukan integritas.
+- **`attempts` bertambah sekali per penyelesaian**, bukan per klik, jadi
+  tidak lagi menjadi sinyal apakah mahasiswa mencoba berkali-kali. Kalau
+  nanti dipakai sebagai sinyal integritas, ubah baris `attempts` di
+  `kuis_catat_tuntas()`.
+
+---
+
 ## [2.7.2] - 2026-09-28
 
 ### Security & Hardening

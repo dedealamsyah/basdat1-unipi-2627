@@ -9,9 +9,52 @@
 
 ---
 
-## 0. Pembaruan Audit — 27 September 2026 (v2.7.1)
+## 0. Pembaruan Audit — 28 September 2026 (v2.8.0)
 
-**Cakupan:** audit lanjutan pada **lapisan client &操作 ops** — dac yang terlewat di v2.7.0
+**Cakupan:** komponen yang belum pernah disentuh audit sebelumnya — **kuis latihan**, yaitu
+40% nilai akhir. Dua temuan di bawah ditutup; sisanya dinyatakan terbuka sebagai trade-off.
+
+### Temuan yang ditutup di v2.8.0
+
+| Area | Severity | Status | Catatan |
+|---|---|---|---|
+| Kunci latihan inline di HTML (`data-correct`) | 🟠 Sedang | ✅ | Kunci pindah ke `api/kunci.php` (`KUIS_KUNCI`), dinilai `api/quiz.php`. Bentuk MDX jadi props; hanya `{id, soal, opsi}` yang dirender. Gate build gagal kalau `data-correct`/`data-explanation`/`KUIS_KUNCI` muncul di `dist/`. |
+| Skor latihan client-reported (`complete.php`) | 🔴 Tinggi | ✅ | `POST {pertemuan_id, quiz_score, quiz_total}` dulu menuntaskan tanpa menjawab. Sekarang client hanya mengirim indeks opsi, server menghitung via `kuis_nilai()`. Tidak ada endpoint yang lagi membaca `quiz_score` dari client (kecuali jalur admin). |
+
+### Yang diverifikasi pada pass ini
+
+- `npm run check` → **0 error, 0 warning, 0 hint** (32 berkas).
+- `npm run build` sukses, **39 halaman**; `verify-build.mjs` lulus atas **52 berkas teks**,
+  9 bank evaluasi + 9 bank kuis latihan, jumlah kartu kuis per halaman cocok dengan kunci.
+- `php -l` bersih untuk seluruh `api/*.php` dan `admin/*.php`.
+- **Paritas konten:** 42 soal + 123 opsi di 9 halaman dibandingkan otomatis dengan baseline
+  `dist/` pra-perubahan — teks dan urutan identik (satu-satunya beda: tanda kutip melengkung
+  `‘Informatika’` menjadi `'Informatika'`, karena teks di dalam `opsi={[…]}` tidak lagi
+  melewati `remark-smartypants`; untuk ekspresi SQL/AR ini justru lebih tepat).
+- **Skor diuji langsung** dengan PHP CLI: `kuis_nilai()` mengembalikan tuntas hanya bila
+  seluruh soal dijawab benar, dan `null` untuk pertemuan tanpa kunci latihan.
+- Gate `verify-build` diuji gagal dengan benar: menyuntik `data-correct` ke
+  `dist/pertemuan/1/index.html` → build dibatalkan.
+
+### Yang masih terbuka (disengaja)
+
+- **Kuis latihan bukan alat ukur integritas.** Server menjamin angka tercatat tidak bisa
+  digelembungkan dari luar dan hanya naik bila jawaban yang dikirim benar. Yang tidak bisa
+  dicegah tanpa mode ujian: mengulang dengan sesi/cookie baru, atau mengklik opsi satu per
+  satu sampai ketemu. Jangkar integritas tetap **evaluasi** (1× percobaan, server-graded).
+- **Penguncian jawaban pertama disimpan di sesi PHP**, bukan DB. Konsekuensinya, menghapus
+  cookie menghapus penguncian itu. Menyimpannya di DB dengan konsekuensi "salah sekali
+  terkunci selamanya" ditolak karena merusak pembelajaran.
+- **`attempts` bertambah sekali per penyelesaian**, bukan per klik, jadi tidak lagi dapat
+  dipakai sebagai sinyal "mencoba berkali-kali".
+
+> Rincian perubahan: `docs/CHANGELOG.md` v2.8.0.
+
+---
+
+## 0.1 Pembaruan Audit — 27 September 2026 (v2.7.1)
+
+**Cakupan:** audit lanjutan pada **lapisan client & operasi** — bagian yang terlewat di v2.7.0
 karena fokusnya ada di `api/`. Semua temuan di bawah sudah **diperbaiki**, kecuali tiga
 yang sengaja didokumentasikan sebagai trade-off atau|v2.8.0.
 
@@ -21,7 +64,7 @@ yang sengaja didokumentasikan sebagai trade-off atau|v2.8.0.
 |---|---|---|---|
 | **Stored XSS lewat nama mahasiswa** | 🔴 Tinggi | ✅ | `public/auth.js:199-209` menyisipkan `nama`/`nim`/`kelas` dari DB ke `innerHTML` **tanpa escape** — di sidebar yang tampil di **setiap halaman** setiap pengguna yang login. `nama` diisi dari CSV lewat `import_users.php` yang tidak menyanitasi apa pun, jadi satu baris CSV berisi `<img src=x onerror=…>` akan dieksekusi untuk semua mahasiswa **dan admin** (admin bisa ikut—when diklik/diambil CSRF-nya). Rantai ini nyata karena transport masih HTTP (password bisa disadap). Dashboard admin sendiri sudah aman (`esc()`); yang bocor justru komponen global. |
 | **`setup_db.php` mengembalikan password admin** | 🟠 Sedang | ✅ | Respons JSON memuat `'login_admin' => ADMIN_DEFAULT_NIM . ' / ' . ADMIN_DEFAULT_PASS` — jadi whoever yang berhasil melewati blokir `.htaccess` **dapat membaca password admin** dalam plaintext. Field ini dihapus; hanya `admin_created` + instruksi yang dikembalikan. |
-| **`api/schema.sql` bisa diunduh lewat URL** | 🟡 Rendah | ✅ | Ter-track di git, tidak ada blokir di `api/.htaccess` →ZXJ为之 teks mentah (struktur tabel & asumsi), termasuk `api/gdrive-service.json` bila nanti ter-upload. `api/.htaccess` kini menutup `*.sql *.sqlite *.db *.log *.bak *.old *.orig *.swp *.ini *.sh *.json` (dual-sintaks). |
+| **`api/schema.sql` bisa diunduh lewat URL** | 🟡 Rendah | ✅ | Ter-track di git, tidak ada blokir di `api/.htaccess` → menyajikan teks mentah (struktur tabel & asumsi), termasuk `api/gdrive-service.json` bila nanti ter-upload. `api/.htaccess` kini menutup `*.sql *.sqlite *.db *.log *.bak *.old *.orig *.swp *.ini *.sh *.json` (dual-sintaks). |
 | **DDLvia GET di `migrate.php`** | 🟠 Sedang | ✅ | `GET /api/migrate.php` menjalankan `CREATE/ALTER TABLE` + `UPDATE users` — cukup satu tautan yang diklik admin untuk memicu (state-changing GET; `SameSite=Lax` mengizinkan cookie pada navigasi tingkat atas). Kini DDL **wajib POST + CSRF**; GET hanya membaca status skema. Ditutup dengan tombol **Jalankan Migrasi Skema** di panel agar alur ops tetap sekali klik. |
 | **Logout lewat GET** | 🟢 Rendah | ✅ | `/api/logout.php` kini mewajibkan **POST + CSRF token** (`require_csrf()`). Pemicuan logout tak sengaja via navigasi browser/prefetch/pratinjau tautan telah dicegah. |
 | **Rate limit login lock-out / enumerasi** | 🟡 Rendah | ✅ | Throttle di `api/config.php:login_too_many()` kini memeriksa kombinasi `username = ? OR ip = ?` sehingga penyerang dari IP yang sama dibatasi saat mencoba brute-force atau mengunci akun target secara masif. |
@@ -30,14 +73,14 @@ yang sengaja didokumentasikan sebagai trade-off atau|v2.8.0.
 | **`upload_tugas.php` menerima pertemuan non-aktif** | 🟡 Rendah | ✅ | `pertemuan_id` tidak divalidasi → mahasiswa bisa mengirim tautan tugas untuk pertemuan yang belum/non-aktif (mis. UTS/UAS) lewat crafted request. Kini harus termasuk `active_pertemuan()`. |
 | **`access` diklaim "public" padahal tidak dicek** | 🟡 Rendah | ✅ | Respons GET selalu melaporkan `access: 'public'` padahal hanya saat POST tautan diperiksa terhadap Google. Sekarang `null` = "tidak diketahui" (polling tidak memanggil Google). |
 | **Formula injection di ekspor CSV** | 🟡 Rendah | ✅ | Sel yang diawali `= + - @` dieksekusi sebagai formula Excel/Sheets; `nama` bisa mengandung karak itu. Ditambah kutip untuk sel berbaris baru. |
-| **Invariant "kunci tidak bocor" hanya dicek manual** | 🟠 Sedang | ✅ | Klaim audit sebelumnya落脚 di "seseorang sempat grep `dist/`" — tidak ada yang menegakkan. `scripts/verify-build.mjs` kini **menggagalkan build** kalau `"benar": <angka>`, literal `EVAL_KUNCI`, atau urutan kunci panjang muncul di `dist/`; juga gagal kalau ada bank soal di server yang halamannya tidak merender `<Evaluasi>`. Dijalankan oleh `npm run build`, `deploy:prep`, dan CI. |
+| **Invariant "kunci tidak bocor" hanya dicek manual** | 🟠 Sedang | ✅ (diperluas v2.8.0) | Klaim audit sebelumnya bertumpu pada "seseorang sempat grep `dist/`" — tidak ada yang menegakkan. `scripts/verify-build.mjs` kini **menggagalkan build** kalau `"benar": <angka>`, literal `EVAL_KUNCI`, atau urutan kunci panjang muncul di `dist/`; juga gagal kalau ada bank soal di server yang halamannya tidak merender `<Evaluasi>`. Dijalankan oleh `npm run build`, `deploy:prep`, dan CI. |
 
-### Temuan yang masih terbuka (ditambahkan pass ini)
+### Temuan pass ini (2 baris sudah ditutup di v2.8.0)
 
 | Area | Severity | Detail |
 |---|---|---|
-| **Kunci jawaban *latihan* masih inline di HTML** | 🟠 Sedang (dengan sengaja) | Terverifikasi: **84× `data-correct="true"`** di **18 halaman** hasil build (9 pertemuan × halaman materi + presentasi). Ini konsekuensi latihan memang client-side — `quiz-option` diberi atribut itu supaya bisa langsung menampilkan "[Benar] + penjelasan". Konsekuensinya: kunci latihan bisa dibaca dari View Source, dan `complete.php` sendiri memercayai skor kiriman client. Menutupnya = pola yang sama seperti evaluasi (kunci server + skor server), yaitu v2.8.0; **sampai saat itu, nilai latihan tidak bisa dianggap bukti kemampuan.** |
-| **Skor latihan client-reported** (`complete.php`) | 🔴 Tinggi (sisa v2.7.0) | Gate hanya memeriksa "pertemuan terbuka" + `quiz_score >= quiz_total`, jadi `POST {"pertemuan_id":2,"quiz_score":1,"quiz_total":1}` menuntaskan tanpa menjawab. Karena `GREATEST()`, mahasiswa juga bisa **menurunkan sendiri** nilainya (`quiz_total` dikirim 1e6) — hanya menyakiti diri sendiri, tapi menunjukkan server tidak memvalidasi apa pun. |
+| ~~**Kunci jawaban *latihan* masih inline di HTML**~~ | ✅ Ditutup v2.8.0 | Kunci latihan kini hidup di `api/kunci.php` (`KUIS_KUNCI`) dan dinilai `api/quiz.php`. Bentuk MDX berubah jadi props (`<QuizCard id="q1" soal="…" opsi={[…]} benar={n} jelas="…" />`); yang dirender hanya `{id, soal, opsi}`. `verify-build.mjs` kini **menggagalkan build** kalau `data-correct`/`data-explanation`/`KUIS_KUNCI` muncul di `dist/`, dan jumlah kartu kuis per halaman harus sama dengan jumlah soal di kunci. |
+| ~~**Skor latihan client-reported** (`complete.php`)~~ | ✅ Ditutup v2.8.0 | `POST {"pertemuan_id":2,"quiz_score":1,"quiz_total":1}` dulu menuntaskan tanpa menjawab. Sekarang mahasiswa hanya boleh mengirim `jawaban` (indeks opsi), dan `complete.php` menilai ulang lewat `kuis_nilai()` memakai kunci server. Skor tidak lagi pernah dibaca dari client di endpoint mana pun (grep `in['quiz_score']` hanya menyisakan jalur admin). |
 | **`ALTER TABLE … CONVERT` tiap migrasi** | 🟡 Rendah | `migrate.php` menjalankan `ALTER TABLE evaluasi CONVERT TO CHARACTER SET` **setiap kali** dipanggil (idempoten secara hasil, tapi tetap membangun ulang tabel). Pada data besar di shared hosting ini bisa timeout. Ide: jalankan sekali lalu dihapus dari skrip. |
 | **Service worker cache-first untuk `auth.js`** | 🟢 Rendah | `public/auth.js` (nama tetap, tanpa hash) di-cache cache-first; versi baru baru berlaku setelah satu page view. Assets `_astro/*` aman karena hash-nya berubah. |
 
@@ -69,7 +112,7 @@ yang sengaja didokumentasikan sebagai trade-off atau|v2.8.0.
 
 ---
 
-## 0.1 Pembaruan Audit — 26 September 2026 (v2.7.0)
+## 0.2 Pembaruan Audit — 26 September 2026 (v2.7.0)
 
 **Cakupan:** audit keamanan & performa pada lapisan API, berdasarkan pembacaan kode
 (bukan hanya dokumen lama di bawah). Rilis v2.6.1 (keamanan) lalu v2.7.0 (grading server,
@@ -121,7 +164,7 @@ deploy, error handling).
 
 ---
 
-## 0.1 Pembaruan Audit — 24 September 2026 (v2.6.0)
+## 0.3 Pembaruan Audit — 24 September 2026 (v2.6.0)
 
 **Cakupan:** dashboard admin (UI konsisten + navigasi cepat) dan perbaikan mekanisme deploy.
 
@@ -262,7 +305,7 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 
 ### 🟠 P2 — Fungsionalitas & Data
 6. **Sinkronkan progresi dengan tabel `pertemuan`** — ⚠️ sebagian: `active_pertemuan()` kini membaca `aktif=1 ORDER BY posisi` dari DB (fallback statis bila tabel belum ada). Tinggal sinkronisasi urutan sisi frontend saat admin reorder.
-7. **Definisikan "tuntas" yang benar** — ✅ pertemuan tuntas bila **semua kuis latihan** benar (`quiz_score == quiz_total`); evaluasi kolom terpisah.
+7. **Definisikan "tuntas" yang benar** — ✅ pertemuan tuntas bila **semua kuis latihan** benar; evaluasi kolom terpisah. v2.8.0: syarat "semua kuis benar" dihitung server dari `jawaban`, bukan angka kiriman client.
 8. **Perkuat perimeter** — ⚠️ pertemuan non-aktif & non-tersedia masih memuat isi placeholder (P8, P11–16) via URL langsung — bukan leak data, tapi buat halaman terkunci tidak me-render isi di masa depan.
 9. **Halaman Ganti Password** — ✅ selesai (v2.0.1).
 
@@ -294,7 +337,11 @@ c. Pendukung: PWA (nonaktif di HTTP), theme neumorphic, logo UNIPI
 [x] Evaluasi 1× per pertemuan + anti-copy-paste + skor tanpa kunci — selesai v2.1
 [x] Kunci jawaban tidak lagi di HTML & skor dihitung server — selesai v2.7.0
 [x] Durasi evaluasi diukur server (bukan client) — selesai v2.7.0
-[ ] Skor kuis latihan diverifikasi server (sisa: `complete.php` percaya client)
+[x] Skor kuis latihan diverifikasi server — selesai v2.8.0 (kunci di `api/kunci.php`
+    `KUIS_KUNCI`, dinilai `api/quiz.php`, `complete.php` tidak lagi baca skor client)
+[x] Kunci kuis latihan tidak lagi ada di HTML (dijalankan `verify-build.mjs`) — v2.8.0
+[~] Kuis latihan bukan alat ukur integritas (sisa yang memang tidak bisa ditutup tanpa
+    mode ujian: mengulang dengan sesi/cookie baru atau mengklik opsi satu per satu)
 [x] Akun dummy pengujian (mhs_dummy/dummy) — selesai v2.1
 ```
 

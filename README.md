@@ -6,7 +6,7 @@ Portal materi interaktif untuk mata kuliah **Basis Data**, Program Studi S1 Info
 
 | | |
 |---|---|
-| **Versi** | v2.6.0 |
+| **Versi** | v2.9.0 |
 | **Framework** | Astro 7.x (Static Site Generator) |
 | **Backend** | PHP 8.x + MySQL (`api/` dan `admin/`) |
 | **Content** | MDX (Markdown + JSX) via content collections |
@@ -16,8 +16,13 @@ Portal materi interaktif untuk mata kuliah **Basis Data**, Program Studi S1 Info
 ## Fitur Utama
 
 - **Materi 16 pertemuan** — ditulis MDX, dengan kuis latihan per pertemuan
+  (**server-graded** sejak v2.8.0: kunci & skor dihitung di `api/quiz.php`, tidak ada di HTML)
 - **Evaluasi per pertemuan (v2.1)** — 1× percobaan, anti-salin/pindah-tab, skor masuk nilai
+- **Dashboard mahasiswa** — lonceng pengingat (latihan/evaluasi & skor di bawah
+  ambang 75%/60%), kartu "lanjut belajar", nilai berjalan, dan strip status per materi
 - **Sistem autentikasi** — login mahasiswa & admin (NIM/NIP + password), progresi berurutan
+- **Kunci jawaban tidak pernah masuk build** — `api/kunci.php` menyimpan kunci evaluasi *dan*
+  kuis latihan; `verify-build.mjs` menggagalkan build kalau kunci bocor ke `dist/`
 - **Dashboard admin** — nilai akhir (kuis 40% + PTS 30% + UAS 30%), gradebook, impor mahasiswa, panel "Evaluasi & Integritas", mode presentasi dosen
 - **Dashboard admin · navigasi cepat** — sticky jump-menu antar bagian + scroll-spy (tanpa scroll panjang); kartu Ringkasan/Rekap Kelas/Distribusi Nilai seragam
 - **SQL Playground** (`/playground`) — SQLite di browser (WASM), tanpa server
@@ -51,14 +56,14 @@ npm run build
 
 ```
 ├── src/                   # Frontend Astro
-│   ├── components/        #   QuizCard, Evaluasi, Sidebar, DiagramViewer, CopyCode
+│   ├── components/        #   QuizCard (kuis latihan), Evaluasi, Sidebar, DiagramViewer, CopyCode
 │   ├── content/
-│   │   └── pertemuan/     #   16 materi perkuliahan (MDX)
+│   │   └── pertemuan/     #   16 materi perkuliahan (MDX; kuis & evaluasi di MDX)
 │   ├── layouts/           #   BaseLayout (tema, PWA, global JS)
 │   ├── pages/             #   Routing (beranda, login, admin, praktikum, playground)
 │   └── styles/global.css  #   Tema "Tinta & Emas"
 ├── public/                # Aset statis (SVG diagram, JS interaktif, service worker)
-├── api/                   # Backend PHP (login, me, complete, evaluasi, admin, ...)
+├── api/                   # Backend PHP (login, me, quiz, complete, evaluasi, admin, ...)
 ├── admin/                 # Guard PHP untuk dashboard admin statis
 ├── docs/                  # Dokumentasi lengkap (arsitektur, deployment, audit)
 └── backup/                # Versi lama (pre-Astro)

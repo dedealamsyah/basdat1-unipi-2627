@@ -67,11 +67,23 @@ Konten materi di sini...
 
 ## B. Kuis
 
-<QuizCard question="Pertanyaan kuis?">
-  <button class="quiz-option" data-correct="false">Opsi 1</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Penjelasan">Opsi 2</button>
-</QuizCard>
+<QuizCard id="q1" soal="Pertanyaan kuis?" opsi={["Opsi 1", "Opsi 2"]} benar={1} jelas="Penjelasan opsi 2." />
 ```
+
+Aturan kuis latihan (v2.8.0):
+
+- `id` berurutan dari `q1` di tiap pertemuan, tanpa duplikat
+- `benar` = indeks opsi yang benar (0-based), wajib < jumlah opsi
+- **Jangan** menulis kunci di HTML. Bentuk lama
+  (`<button data-correct="true">`) membuat `npm run build` gagal di
+  `verify-build.mjs`, dan kuncinya bocor ke View Source
+- Kunci dibaca `scripts/gen-kunci.mjs` → `api/kunci.php` (`KUIS_KUNCI`),
+  dinilai `api/quiz.php`. Teks penjelasan hanya sampai ke browser setelah
+  jawaban itu dinilai server
+- Teks dengan `>` atau `<` (mis. ekspresi aljabar relasional) boleh ditulis
+  apa adanya di `opsi={[...]}`; parser tag menghormati kutip & kurung kurawal
+- Jumlah soal latihan di frontmatter (`kuis.latihan`) harus ikut ditambah
+  supaya chip di header akurat
 
 ### Langkah 2: Restart Dev Server
 
@@ -165,18 +177,21 @@ Halaman `/praktikum` (`src/pages/praktikum.astro`) — satu file berisi markup +
 
 ### QuizCard
 
-Kuis interaktif dengan feedback.
+Kuis latihan dengan penilaian server-side (v2.8.0): halaman hanya mengirim
+pilihan yang diklik, `api/quiz.php` yang menentukan benar/salah dari
+`api/kunci.php` (`KUIS_KUNCI`).
 
 ```astro
 ---
 import QuizCard from '../components/QuizCard.astro';
 ---
 
-<QuizCard question="Pertanyaan?">
-  <button class="quiz-option" data-correct="true" data-explanation="Alasan">Benar</button>
-  <button class="quiz-option" data-correct="false">Salah</button>
-</QuizCard>
+<QuizCard id="q1" soal="Pertanyaan?" opsi={["Salah", "Benar"]} benar={1} jelas="Alasan" />
 ```
+
+Aturan: `id` berurutan (`q1`, `q2`, …), `benar` indeks 0-based, dan
+`benar`/`jelas` tidak boleh masuk HTML — `npm run build` akan gagal kalau
+`data-correct`/`data-explanation` muncul di `dist/`.
 
 ### DiagramViewer
 
@@ -240,6 +255,22 @@ Otomatis ditambahkan ke semua `<pre><code>`. Tidak perlu import manual.
 | `.chip` | Badge info (teal) |
 | `.chip--amber` | Badge warning (amber) |
 | `.chipRow` | Container chips |
+| `.row__flag` | Badge status di baris pertemuan (diisi MhsUI) |
+| `.pstatus` | Chip status di halaman materi (latihan/evaluasi/tugas) |
+
+### UI Mahasiswa (v2.9.0)
+
+| Class | Fungsi |
+|-------|--------|
+| `.appbar` | Bilah atas desktop: konteks halaman + lonceng |
+| `.iconbtn` + `.badge` | Tombol lonceng dan jumlah pengingat |
+| `.notif-panel` | Panel daftar pengingat |
+| `.notif-item` | Satu baris pengingat (`--tinggi` / `--sedang`) |
+| `.dash` | Blok dashboard di beranda |
+| `.nextcard` | Kartu "lanjut belajar" |
+| `.stat` | Kartu statistik nilai (`--perlu` / `--berat`) |
+| `.attn` | Baris "perlu perhatian" |
+| `.sidebar__notif` | Pill pengingat di sidebar |
 
 ### Code
 
@@ -271,16 +302,19 @@ Pastikan `content.config.ts` ada di `src/content.config.ts` (bukan `src/content/
 
 ### MDX Parse Error
 
-Hindari object literal kompleks di props MDX. Gunakan slot pattern:
+Hindari object literal kompleks di props MDX. Kuis ditulis self-closing:
 
 ```mdx
 <!-- SALAH -->
 <QuizCard options={[{ text: "...", correct: true }]} />
 
-<!-- BENAR -->
+<!-- juga salah: kunci jawaban di dalam HTML -->
 <QuizCard question="...">
   <button class="quiz-option" data-correct="true">...</button>
 </QuizCard>
+
+<!-- BENAR -->
+<QuizCard id="q1" soal="..." opsi={["...","..."]} benar={1} jelas="Penjelasan" />
 ```
 
 ### CSS Tidak Terload
@@ -298,6 +332,7 @@ Pastikan import CSS di layout:
 | Command | Fungsi |
 |---------|--------|
 | `npm run dev` | Jalankan dev server |
-| `npm run build` | Build untuk production |
+| `npm run build` | Build untuk production (termasuk gate anti-bocor kunci) |
+| `npm run test:notif` | Uji logika rekap & aturan notifikasi mahasiswa |
 | `npm run preview` | Preview hasil build |
 | `npm run astro` | Jalankan Astro CLI |

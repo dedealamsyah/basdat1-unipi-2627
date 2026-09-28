@@ -114,14 +114,26 @@ basdat1-unipi-2627/
 ### QuizCard
 
 ```astro
-<QuizCard question="Pertanyaan kuis?">
-  <button class="quiz-option" data-correct="false">Opsi salah</button>
-  <button class="quiz-option" data-correct="true" data-explanation="Penjelasan">Opsi benar</button>
-</QuizCard>
+<QuizCard
+  id="q1"
+  soal="Pertanyaan kuis?"
+  opsi={["Opsi salah", "Opsi benar"]}
+  benar={1}
+  jelas="Penjelasan opsi benar."
+/>
 ```
 
-- Menggunakan `data-quiz` ID unik untuk scope event handler
-- Client-side JavaScript hanya load saat komponen ada di halaman
+- `id` harus urut per pertemuan (`q1`, `q2`, ...) dan stabil — id inilah yang
+  dicocokkan server dengan kunci di `api/kunci.php` (`KUIS_KUNCI`)
+- `benar` & `jelas` **tidak pernah dirender**. Halaman hanya menampilkan
+  `{ id, soal, opsi }`; nilai dikirim server lewat `api/quiz.php`
+- Wajib self-closing. Bentuk lama (slot berisi `<button data-correct>`)
+  menaruh kunci jawaban di HTML dan **ditolak build** oleh
+  `scripts/verify-build.mjs`
+- Penilaian: client mengirim indeks opsi yang diklik (`POST /api/quiz.php`),
+  server menghitung dari kunci dan mengunci jawaban pertama per soal
+- Satu `<script>` ter-bundle untuk seluruh kartu di halaman (Astro dedup),
+  bukan satu script per kartu
 
 ### DiagramViewer
 
@@ -210,8 +222,12 @@ Browser (statis Astro)
 /api/*.php  (PHP 8, Byethost)  ── PDO (prepared statements) ──►  MySQL Byethost
    ├─ login.php   : POST sesi (password_hash bcrypt, regenerate id)
    ├─ logout.php  : destroy sesi
-   ├─ me.php      : GET status sesi + status progresi (open/locked/done) + map evaluasi
-   ├─ complete.php: POST tandai tuntas latihan; validasi urutan (lompat = 422)
+   ├─ me.php      : GET status sesi + progresi + rekap (skor latihan/evaluasi per
+   │                 pertemuan) + nilai berjalan → sumber data UI mahasiswa
+   ├─ complete.php: POST tandai tuntas (admin bebas; mahasiswa dinilai ulang
+   │                 dari `jawaban` memakai kunci server)
+   ├─ quiz.php    : GET state jawaban di sesi | POST nilai kuis latihan
+   │                 (server-side; kunci respons pertama per soal)
    ├─ evaluasi.php: POST simpan hasil evaluasi 1× per pertemuan + telemetri integritas
    ├─ admin.php   : GET daftar mahasiswa + nilai akhir/huruf + list evaluasi; ?nim= detail
    ├─ grade.php   : POST input manual PTS/UAS/tugas/hadir (admin)
@@ -254,12 +270,21 @@ Pertemuan pertama selalu terbuka. `active_pertemuan()` menentukan daftar konten 
 
 ### Frontend integration
 
-- `public/auth.js` (window.APIAuth): `me/login/logout/complete/refresh`; memperbarui
-  kotak akun sidebar, progress bar, chip status tiap pertemuan (`prog-done/open/locked`),
-  dan overlay menu pertemuan dari DB (judul/urutan/tampil).
-- Halaman pertemuan: `<span id="pageMeta" data-pertemuan data-active-order>` + gate
-  klien (overlay login/terkunci). Kuis latihan benar → `complete()` (pertemuan tuntas);
-  evaluasi terbuka setelah tuntas dan dikirim via `/api/evaluasi.php`.
+- `public/auth.js` (window.APIAuth): `me/login/logout/gradeQuiz/quizState/refresh`;
+  memperbarui kotak akun sidebar, progress bar, status tiap pertemuan
+  (`prog-done/open/locked`), overlay menu pertemuan dari DB (judul/urutan/tampil),
+  lalu meneruskan data ke `window.MhsUI.render(p)`.
+- `public/mhs-ui.js` (window.MhsUI, v2.9.0): seluruh UI mahasiswa tambahan —
+  model notifikasi, lonceng + panel di header, dashboard beranda, strip status
+  di halaman materi, badge status di baris sidebar. Semuanya membaca `rekap` +
+  `nilai` dari `/api/me.php`; untuk admin dan tamu modul ini tidak menampilkan
+  apa pun. Notifikasi hanya untuk mahasiswa dan hanya menyangkut pengerjaan
+  latihan/evaluasi serta skor di bawah ambang (75% / 60%).
+- Halaman pertemuan: `<span id="pageMeta" data-pertemuan data-active-order>` +
+  `<div id="pageStatus">` (strip status diisi MhsUI) + gate klien (overlay
+  login/terkunci). Jawaban latihan dikirim ke `/api/quiz.php` (nilai dihitung
+  server); evaluasi terbuka setelah latihan tuntas dan dikirim via
+  `/api/evaluasi.php`.
 - `src/pages/login.astro`: form login (toggle password, hint password awal = NIM).
 - `src/pages/admin.astro` → di-deploy sebagai `admin/panel.html`; `admin/index.php`
   (server-side guard) membaca panel tersebut hanya untuk role admin.
