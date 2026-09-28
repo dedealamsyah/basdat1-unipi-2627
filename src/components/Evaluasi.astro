@@ -185,7 +185,10 @@ const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
 
     var sel = {};          // qi -> original option index
     var draftOwner = '';
-    window.APIAuth.me().then(function(p) { if (p && p.logged_in) draftOwner = p.user.nim; });
+    
+    // Gunakan fungsi me() internal agar tidak bergantung pada window.APIAuth yang mungkin belum siap
+    me().then(function(p) { if (p && p.logged_in && p.user) draftOwner = p.user.nim; });
+    
     var backupKey = 'eval_draft_p' + pertemuanId;
     var pasteCount = 0, copyCount = 0, blurCount = 0;
     var submitted = false;
@@ -586,6 +589,7 @@ const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
     }
 
     function gate(p) {
+      console.log("[Evaluasi] Running gate for pid:", pertemuanId, "user:", p.user ? p.user.nim : 'none');
       if (!p.logged_in) {
         setState('<div class="evaluasi__locked">Evaluasi hanya untuk mahasiswa yang masuk. ' +
           '<a href="/login?next=' + encodeURIComponent(location.pathname) + '">Login</a> untuk melanjutkan.</div>');
@@ -619,6 +623,7 @@ const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
     formEl.addEventListener('click', onFormClick);
 
     me().then(function (p) {
+      console.log("[Evaluasi] p:", p, "progress[pid]:", (p.progress || {})[pertemuanId]);
       if (gate(p)) renderForm(draft());
     });
 

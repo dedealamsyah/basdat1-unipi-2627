@@ -176,10 +176,13 @@
 
     var missing = [];
     if (p && p.logged_in) {
+        var meta = p.meta_pertemuan || {};
         (p.active || []).forEach(function(id) {
-            if (p.progress && (p.progress[String(id)] === 'open' || p.progress[String(id)] === 'done')) {
-                if (!(p.tugas && p.tugas[String(id)])) missing.push("P" + id + ": Tugas");
-                if (!(p.evaluasi && p.evaluasi[String(id)])) missing.push("P" + id + ": Evaluasi");
+            var sId = String(id);
+            if (p.progress && (p.progress[sId] === 'open' || p.progress[sId] === 'done')) {
+                var m = meta[sId] || { has_tugas: true, has_evaluasi: true };
+                if (m.has_tugas && !(p.tugas && p.tugas[sId])) missing.push("P" + id + ": Tugas");
+                if (m.has_evaluasi && !(p.evaluasi && p.evaluasi[sId])) missing.push("P" + id + ": Evaluasi");
             }
         });
     }
@@ -198,6 +201,7 @@
 
     if (headerNotif) {
         headerNotif.style.display = missing.length > 0 ? 'block' : 'none';
+        if (missing.length > 0) headerNotif.textContent = missing.length;
     }
   }
 

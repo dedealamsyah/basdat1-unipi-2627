@@ -48,12 +48,28 @@ try {
     $tugasStatus = array();
 }
 
+// Ambil metadata pertemuan untuk mengetahui mana yang punya evaluasi/tugas
+$metaPertemuan = array();
+try {
+    $rows = db()->query('SELECT id, bobot FROM pertemuan WHERE aktif = 1')->fetchAll();
+    foreach ($rows as $r) {
+        $pid = (int)$r['id'];
+        // Asumsi sederhana: jika bobot > 0 atau ada kriteria tertentu, 
+        // tapi di portal ini biasanya evaluasi ada jika kuncinya ada.
+        $metaPertemuan[$pid] = array(
+            'has_evaluasi' => eval_kunci($pid) !== null,
+            'has_tugas' => true // Mayoritas pertemuan di portal ini memiliki slot tugas Drive
+        );
+    }
+} catch (Throwable $e) {}
+
 json_out(array('ok' => true, 'data' => array(
     'logged_in' => true,
     'user' => $u,
     'progress' => status_map($u['nim']),
     'evaluasi' => $evaluasi,
     'tugas' => $tugasStatus,
+    'meta_pertemuan' => $metaPertemuan,
     'active' => active_pertemuan(),
     'must_change_password' => $mustChange,
     'csrf' => $_SESSION['csrf'] ?? '',
