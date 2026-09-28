@@ -29,10 +29,7 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
 <!-- Pill pengingat: hanya mahasiswa. Rinciannya ada di panel lonceng.
      `hidden` adalah sumber kebenaran; CSS tidak boleh override `display`
      untuk elemen ini (lihat `.sidebar__notif[hidden]`). -->
-<div id="notifBox" class="sidebar__notif" data-level="aman" hidden>
-  <span class="sidebar__notif-icon" aria-hidden="true">!</span>
-  <span id="notifList" class="sidebar__notif-text"></span>
-</div>
+
 
 <div class="sidebar__search">
   <label for="sidebarSearch" class="visually-hidden">Cari materi</label>
@@ -106,9 +103,7 @@ const sorted = allPertemuan.sort((a, b) => a.data.order - b.data.order);
 <!-- Kartu akun TIDAK di sini lagi (v2.9.4): sudah pindah ke app bar
      desktop & mobile header. Footer sidebar sekarang hanya tema + kredit. -->
 <div class="sidebar__footer">
-  <button id="themeToggle" class="theme-btn">
-    <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
-  </button>
+  
   <p class="sidebar__credit">© {new Date().getFullYear()} · UNIPI</p>
 </div>
 
