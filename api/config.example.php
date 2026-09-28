@@ -490,6 +490,75 @@ function kuis_nilai(int $pertemuanId, array $terpilih): ?array
     );
 }
 
+/**
+ * Susun rekap per pertemuan untuk UI mahasiswa (v2.9.0).
+ *
+ * Dipisah ke sini (bukan inline di me.php) supaya bisa diuji tanpa database:
+ * fungsi ini murni, tidak menyentuh DB/sesi.
+ *
+ * PENTING: `pct` = null berarti **belum dikerjakan**; 0 berarti **sudah
+ * dikerjakan dan nilainya nol**. Kalau keduanya disamakan, notifikasi
+ * "skor 0%" akan muncul untuk soal yang belum pernah dijawab.
+ *
+ * @param int[]                    $active     id pertemuan aktif
+ * @param array<string,string>     $statusMap  id => open|locked|done
+ * @param array                    $evaluasi   hasil evaluasi_rows()
+ * @param array                    $tugasStatus id => true
+ * @param array                    $skorLatihan id => array(skor, total) dari tabel progress
+ * @return array<int,array>
+ */
+function rekap_mahasiswa(array $active, array $statusMap, array $evaluasi, array $tugasStatus, array $skorLatihan): array
+{
+    $rekap = array();
+    foreach ($active as $pid) {
+        $pid = (int) $pid;
+        $lat = isset($skorLatihan[$pid]) ? $skorLatihan[$pid] : null;
+        $ev = isset($evaluasi[$pid]) ? $evaluasi[$pid] : null;
+
+        $rekap[$pid] = array(
+            'status' => $statusMap[$pid] ?? 'locked',
+            'ada_latihan' => kuis_kunci($pid) !== null,
+            'ada_evaluasi' => eval_kunci($pid) !== null,
+            'ada_tugas' => !empty($tugasStatus[$pid]),
+            'latihan' => array(
+                'skor' => $lat ? (int) $lat['skor'] : 0,
+                'total' => $lat ? (int) $lat['total'] : 0,
+                'pct' => ($lat && (int) $lat['total'] > 0)
+                    ? (int) round(((int) $lat['skor'] / (int) $lat['total']) * 100)
+                    : null,
+            ),
+            'evaluasi' => array(
+                'skor' => $ev ? (int) $ev['skor'] : 0,
+                'total' => $ev ? (int) $ev['total'] : 0,
+                'pct' => ($ev && (int) $ev['total'] > 0)
+                    ? (int) round(((int) $ev['skor'] / (int) $ev['total']) * 100)
+                    : null,
+                'flagged' => $ev ? (int) $ev['flagged'] : 0,
+            ),
+        );
+    }
+    return $rekap;
+}
+
+/** Ambil skor latihan satu mahasiswa: id pertemuan => array(skor, total). */
+function progress_skor(string $nim): array
+{
+    try {
+        $st = db()->prepare('SELECT pertemuan_id, quiz_score, quiz_total FROM progress WHERE nim = ?');
+        $st->execute(array($nim));
+        $out = array();
+        foreach ($st as $r) {
+            $out[(int) $r['pertemuan_id']] = array(
+                'skor' => (int) $r['quiz_score'],
+                'total' => (int) $r['quiz_total'],
+            );
+        }
+        return $out;
+    } catch (Throwable $e) {
+        return array();  // tabel belum termigrasi
+    }
+}
+
 function evaluasi_sum(string $nim): array
 {
     try {

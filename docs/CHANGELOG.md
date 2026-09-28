@@ -1,5 +1,62 @@
 # Changelog
 
+## [2.9.1] - 2026-09-28
+
+> ⚠️ **Deploy perbaikan.** Rilis 2.9.0 sempat membuat **seluruh portal tidak bisa
+> dipakai**: `/api/me.php` membalas 500 untuk setiap pengguna yang sudah login.
+
+### Fixed — `me.php` 500 karena variabel tak terdefinisi
+
+- **`$active` tidak pernah di-assign.** Kode lama menulis
+  `'active' => active_pertemuan()` secara inline; saat `rekap` ditambahkan,
+  nilainya diekstrak ke variabel `$active` dan di-`foreach` — tapi assignment-nya
+  hilang. Akibatnya beruntai:
+  `me.php` 500 → `auth.js` jatuh ke fallback `{logged_in:false}` → sidebar,
+  progres, dan notifikasi kosong sehingga **portal tampak sudah logout** →
+  halaman login memanggil `warmUp()`, yang gagal, lalu `location.reload()`
+  setiap 600 ms → **looping login**.
+  `php -l` tidak menangkapnya: ini galat runtime, bukan galat sintaks.
+- **Logika rekap dipindah ke `config.php`** sebagai `rekap_mahasiswa()` +
+  `progress_skor()`. Alasannya bukan kerapian: fungsi murni bisa diuji tanpa
+  database, jadi kelas bug ini bisa dicek otomatis.
+- **`me.php` sekarang fail-soft.** `me.php` dipanggil setiap halaman dan jadi
+  sumber kebenaran seluruh UI; rekap dan nilai dibungkus `try/catch` sehingga
+  galat di sana menurunkan tampilan, **bukan** mengembalikan 500.
+
+### Added — smoke test yang menangkap kelas bug ini
+
+- **`scripts/test-endpoints.php`** (`npm run test:api`, ikut CI): menyalin tiap
+  endpoint ke sandbox bersama `config.php` tiruan, lalu **mengeksekusinya**
+  dengan `error_reporting(E_ALL)`. Warning, notice, deprecated, dan output
+  non-JSON diperlakukan sebagai kegagalan. 12 skenario: tamu / mahasiswa /
+  admin untuk `me.php`, GET & POST `quiz.php`, `complete.php`, `admin.php`
+  (`?kunci=1` dan `?kuis=1`).
+  - **Diuji balik:** dengan `$active` dihapus, harness langsung menangkap
+    `Undefined variable $active` — bug yang lolos `php -l`.
+- **`npm test`** menjalankan `test:api` lalu `test:notif`.
+
+### Fixed — dua galat CSS dari 2.9.0
+
+- **`.main` kehilangan padding atas** (`0 56px 80px`) karena diasumsikan app bar
+  selalu ada. Padahal app bar `hidden` untuk tamu, admin, dan sebelum `me()`
+  selesai — hasilnya konten merapat ke tepi atas layar.
+  Kini `padding: 40px 56px 80px` (seperti pra-2.9.0) dan app bar memakai margin
+  negatif `-40px` untuk menembak ke atas.
+- **`var(--red-500)` tidak pernah didefinisikan** (hanya ada `--red-600` dan
+  `--red-100`), jadi badge lonceng & ikon pengingat tingkat tinggi tidak punya
+  warna latar. Diganti ke `--red-600`.
+
+### Fixed — skrip deploy melewatkan halaman HTML
+
+Skrip upload statis melewati berkas bila **ukuran sama**. Nama berkas CSS
+ber-hash sama-sama 8 karakter (`Sidebar.BEjJW86z.css` vs `Sidebar.pKgEVOql.css`),
+jadi HTML yang hanya berbeda pada referensi CSS punya ukuran byte identik —
+halaman tidak pernah ter-upload, dan perbaikan CSS tidak sampai ke pengguna
+padahal "0 gagal" dilaporkan. Sekarang **perbandingan berbasis hash** (unduh
+remote lalu bandingkan MD5), bukan ukuran.
+
+---
+
 ## [2.9.0] - 2026-09-28
 
 > ⚠️ **DEPLOY.** Ada berkas baru yang wajib ada di server dan di build:
@@ -93,7 +150,7 @@ Pemicunya **pengerjaan latihan/evaluasi dan skor** — bukan tugas:
 
 ---
 
-## [2.8.0] - 2026-09-28 - 2026-09-28
+## [2.8.0] - 2026-09-28
 
 > ⚠️ **DEPLOY — BACA DULU.** Rilisan ini menutup celah terakhir di checklist
 > audit ("skor kuis latihan diverifikasi server") dan menambah **berkas baru

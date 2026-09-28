@@ -67,55 +67,31 @@ try {
  * Rekap per pertemuan (v2.9.0) — dasar UI mahasiswa: lonceng notifikasi,
  * kartu "Perlu perhatian" di beranda, dan strip status di halaman materi.
  *
- * `progress` (status open/locked/done) saja tidak cukup untuk itu: notifikasi
- * berbasis skor butuh angka latihan & evaluasi, dan halaman materi perlu tahu
- * komponen mana yang sudah beres.
+ * `progress` (status open/locked/done) saja tidak cukup: notifikasi berbasis
+ * skor butuh angka latihan & evaluasi, dan halaman materi perlu tahu
+ * komponen mana yang sudah beres. Logikanya ada di `rekap_mahasiswa()`.
+ *
+ * DEFENSIF: me.php dipanggil setiap halaman dan jadi sumber kebenaran seluruh
+ * UI. Kalau rekap gagal, endpoint tetap harus balas 200 dengan `rekap` kosong —
+ * bukan 500. Rilis v2.9.0 sempat mengirim 500 karena satu variabel tak
+ * terdefinisi, dan akibatnya bukan sekadar "notifikasi kosong": seluruh portal
+ * tampak seperti sudah logout (sidebar kosong), lalu halaman login memuat
+ * ulang dirinya sendiri terus-menerus.
  * ------------------------------------------------------------------------- */
-$skorLatihan = array();
-try {
-    $st = db()->prepare('SELECT pertemuan_id, quiz_score, quiz_total FROM progress WHERE nim = ?');
-    $st->execute(array($u['nim']));
-    foreach ($st as $r) {
-        $skorLatihan[(int) $r['pertemuan_id']] = array(
-            'skor' => (int) $r['quiz_score'],
-            'total' => (int) $r['quiz_total'],
-        );
-    }
-} catch (Throwable $e) {
-    $skorLatihan = array();
-}
-
-$rekap = array();
+$active = active_pertemuan();
 $statusMap = status_map($u['nim']);
-foreach ($active as $pid) {
-    $lat = isset($skorLatihan[$pid]) ? $skorLatihan[$pid] : null;
-    $ev = isset($evaluasi[$pid]) ? $evaluasi[$pid] : null;
-    $rekap[$pid] = array(
-        'status' => $statusMap[$pid] ?? 'locked',
-        'ada_latihan' => kuis_kunci($pid) !== null,
-        'ada_evaluasi' => eval_kunci($pid) !== null,
-        'ada_tugas' => !empty($tugasStatus[$pid]),
-        'latihan' => array(
-            'skor' => $lat ? $lat['skor'] : 0,
-            'total' => $lat ? $lat['total'] : 0,
-            // null (bukan 0) bila belum ada latihan sama sekali — pembeda
-            // penting: "belum dikerjakan" ≠ "dikerjakan dan nilainya 0".
-            'pct' => ($lat && $lat['total'] > 0)
-                ? (int) round(($lat['skor'] / $lat['total']) * 100) : null,
-        ),
-        'evaluasi' => array(
-            'skor' => $ev ? (int) $ev['skor'] : 0,
-            'total' => $ev ? (int) $ev['total'] : 0,
-            'pct' => ($ev && (int) $ev['total'] > 0)
-                ? (int) round(((int) $ev['skor'] / (int) $ev['total']) * 100) : null,
-            'flagged' => $ev ? (int) $ev['flagged'] : 0,
-        ),
-    );
+$rekap = array();
+$nilai = null;
+
+try {
+    $rekap = rekap_mahasiswa($active, $statusMap, $evaluasi, $tugasStatus, progress_skor($u['nim']));
+} catch (Throwable $e) {
+    error_log('[me] rekap gagal: ' . $e->getMessage());
+    $rekap = array();
 }
 
 // Nilai berjalan (kuis 40% + PTS 30% + UAS 30%) untuk kartu nilai di beranda.
 // Toleran: tabel `grades` belum ada di instalasi lama -> null, bukan 500.
-$nilai = null;
 try {
     $nilai = compute_nilai($u['nim']);
 } catch (Throwable $e) {

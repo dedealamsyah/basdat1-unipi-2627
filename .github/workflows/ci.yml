@@ -34,11 +34,13 @@ jobs:
       - name: Verifikasi kunci jawaban tidak bocor ke dist/
         run: node scripts/verify-build.mjs
 
-      - name: Uji logika rekap & aturan notifikasi
+      - name: Uji endpoint & logika rekap
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq php-cli
-          php scripts/test-rekap.php
+          php -l api/me.php
+          php scripts/test-endpoints.php   # smoke test: variabel tak terdefinisi, dll
+          php scripts/test-rekap.php        # logika rekap & aturan notifikasi
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

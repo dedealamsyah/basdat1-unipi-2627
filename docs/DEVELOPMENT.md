@@ -333,6 +333,8 @@ Pastikan import CSS di layout:
 |---------|--------|
 | `npm run dev` | Jalankan dev server |
 | `npm run build` | Build untuk production (termasuk gate anti-bocor kunci) |
+| `npm run test` | Semua uji PHP: smoke test endpoint + logika notifikasi |
+| `npm run test:api` | Smoke test endpoint (menangkap variabel tak terdefinisi) |
 | `npm run test:notif` | Uji logika rekap & aturan notifikasi mahasiswa |
 | `npm run preview` | Preview hasil build |
 | `npm run astro` | Jalankan Astro CLI |
