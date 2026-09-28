@@ -51,17 +51,22 @@ try {
 // Ambil metadata pertemuan untuk mengetahui mana yang punya evaluasi/tugas
 $metaPertemuan = array();
 try {
-    $rows = db()->query('SELECT id, bobot FROM pertemuan WHERE aktif = 1')->fetchAll();
+    $rows = db()->query('SELECT id FROM pertemuan WHERE aktif = 1')->fetchAll();
     foreach ($rows as $r) {
         $pid = (int)$r['id'];
-        // Asumsi sederhana: jika bobot > 0 atau ada kriteria tertentu, 
-        // tapi di portal ini biasanya evaluasi ada jika kuncinya ada.
         $metaPertemuan[$pid] = array(
             'has_evaluasi' => eval_kunci($pid) !== null,
-            'has_tugas' => true // Mayoritas pertemuan di portal ini memiliki slot tugas Drive
+            // Daftar ini di-generate dari MDX (`<TugasUpload>`), bukan
+            // ditebak: sebelumnya di-hardcode `true` untuk semua pertemuan
+            // aktif sehingga tidak pernah bisa membedakan "ada slot tugas"
+            // dari "sudah dikirim".
+            'has_tugas' => isset(tugas_slot_map()[$pid]),
         );
     }
-} catch (Throwable $e) {}
+} catch (Throwable $e) {
+    error_log('[me] meta pertemuan gagal: ' . $e->getMessage());
+    $metaPertemuan = array();
+}
 
 /* ---------------------------------------------------------------------------
  * Rekap per pertemuan (v2.9.0) — dasar UI mahasiswa: lonceng notifikasi,

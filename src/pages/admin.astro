@@ -1055,14 +1055,36 @@ import { erdTemplates } from '../data/erdTemplates';
       if (el) el.textContent = txt;
     }
 
+    /* Pertahankan pilihan filter kelas.
+       `fillKelas()` membangun ulang seluruh <option>, jadi option yang
+       sedang terpilih ikut terhapus dan `#qKelas.value` jatuh kembali ke "".
+       Padahal `fillKelas()` dipanggil dari `loadAdmin()`, yang berjalan
+       SETIAP kali ada mutasi (hapus akun, buka pertemuan, simpan nilai,
+       impor). Akibatnya: filter ke IF3A + cari nama -> buka detail -> tandai
+       tuntas -> daftar tiba-tiba melebar ke semua kelas tanpa ada yang
+       menyadarinya. */
+    var kelasDipilih = '';
     function fillKelas() {
       var sel = document.getElementById('qKelas');
+      if (!sel) return;
+      var sebelumnya = sel.value || kelasDipilih || '';
       sel.innerHTML = '<option value="">Semua kelas</option>';
       kelasOptions.sort().forEach(function (k) {
         var o = document.createElement('option');
         o.value = k; o.textContent = k;
         sel.appendChild(o);
       });
+      if (sebelumnya && kelasOptions.indexOf(sebelumnya) !== -1) sel.value = sebelumnya;
+      kelasDipilih = sel.value;
+    }
+
+    /* `posisi` di DB adalah INT DEFAULT 0 dan form ini boleh dikosongkan
+       (jadi 0). `a.posisi || 99` memperlakukan 0 sebagai "tidak ada" lalu
+       menaruh baris itu di AKHIR urutan — padahal 0 itu posisi paling depan.
+       Yang dijaga di sini hanya "bukan angka" (NaN), bukan angka 0. */
+    function posisiAngka(row) {
+      var n = parseInt(row && row.posisi, 10);
+      return isNaN(n) ? 999 : n;
     }
 
     function flagBits(f) { return [1, 2, 4].filter(function (b) { return (f & b) !== 0; }); }
@@ -1112,7 +1134,7 @@ import { erdTemplates } from '../data/erdTemplates';
       var tb = document.getElementById('nilaiEvalTbody');
       if (!head || !tb) return;
       var cols = (ptRows || []).filter(function (p) { return !!p.aktif; })
-        .sort(function (a, b) { return ((a.posisi || 99) - (b.posisi || 99)) || (a.id - b.id); });
+        .sort(function (a, b) { return (posisiAngka(a) - posisiAngka(b)) || (a.id - b.id); });
       head.innerHTML = '<tr><th>Mahasiswa</th><th>Kelas</th>' +
         cols.map(function (p) { return '<th title="Evaluasi Pertemuan ' + p.id + '">P' + String(p.id).padStart(2, '0') + '</th>'; }).join('') +
         '<th>Rata Evaluasi</th></tr>';
@@ -1259,11 +1281,29 @@ import { erdTemplates } from '../data/erdTemplates';
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    /* Nomor urut permintaan. Dua `loadDetail` yang tumpang tindih bisa
+       kembali tidak berurutan; tanpa penjaga ini respons lama bisa menimpa
+       panel yang sudah diisi oleh permintaan yang lebih baru (judul NIM A,
+       tabel NIM B — atau sebaliknya). */
+    var detailReq = 0;
+
     function loadDetail(nim) {
+      var req = ++detailReq;
       detailBox.hidden = false;
       detailBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
       document.getElementById('detailTitle').textContent = 'Memuat detail ' + nim + '…';
+      /* Kosongkan NIM tujuan dan isian nilai SELAGI memuat. Sebelumnya
+         `window.__curNim` masih menunjuk mahasiswa yang lama dan kolom
+         PTS/UAS masih berisi nilainya, jadi menekan "Simpan Nilai" di
+         tengah proses memuat menuliskan nilai mahasiswa yang salah. */
+      window.__curNim = null;
+      var gradeBtn = document.getElementById('gradeSave');
+      if (gradeBtn) gradeBtn.disabled = true;
+      ['gPts', 'gUas', 'gTugas', 'gHadir'].forEach(function (id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
       api('/api/admin.php?nim=' + encodeURIComponent(nim)).then(function (d) {
+        if (req !== detailReq) return;   // sudah digantikan permintaan lain
         if (!d.ok) { alert(d.error || 'Gagal memuat detail.'); detailBox.hidden = true; return; }
         document.getElementById('detailTitle').textContent = 'Detail Progres: ' + nim;
         window.__curNim = nim;
@@ -1277,6 +1317,7 @@ import { erdTemplates } from '../data/erdTemplates';
         document.getElementById('gHadir').value = n.hadir != null ? n.hadir : '';
         document.getElementById('gAkhir').textContent = n.akhir != null ? n.akhir : '–';
         document.getElementById('gHuruf').textContent = n.huruf || '–';
+        if (gradeBtn) gradeBtn.disabled = false;
         dtbody.innerHTML = '';
         d.data.progress.forEach(function (p) {
           var st = p.status;
@@ -1314,6 +1355,8 @@ import { erdTemplates } from '../data/erdTemplates';
           });
         }
       }).catch(function () {
+        if (req !== detailReq) return;
+        if (gradeBtn) gradeBtn.disabled = false;
         alert('Gagal menghubungi API detail.');
         detailBox.hidden = true;
       });
@@ -1330,6 +1373,8 @@ import { erdTemplates } from '../data/erdTemplates';
           if (!d.ok) { alert(d.error || 'Gagal.'); return; }
           detailBox.hidden = true;
           loadAdmin();
+        }).catch(function () {
+          alert('Gagal menghubungi server. Akun belum dihapus.');
         });
       }
     });
@@ -1345,6 +1390,8 @@ import { erdTemplates } from '../data/erdTemplates';
         if (!d.ok) { alert(d.error || 'Gagal.'); return; }
         loadDetail(nim);
         loadAdmin();
+      }).catch(function () {
+        alert('Gagal menghubungi server. Perubahan belum tersimpan.');
       });
     });
 
@@ -1357,18 +1404,39 @@ import { erdTemplates } from '../data/erdTemplates';
                    { k: 'tugas', el: gEl('gTugas') }, { k: 'hadir', el: gEl('gHadir') }];
       var btn = document.getElementById('gradeSave');
       btn.disabled = true; btn.textContent = 'Menyimpan…';
+
+      /* Keempat komponen dikirim berurutan, jadi hasilnya harus diperiksa
+         SEMUA, bukan hanya yang terakhir. Sebelumnya hanya respons `hadir`
+         yang dilihat: kalau PTS ditolak (mis. "Nilai maksimal 100.") tapi
+         hadir berhasil, `res.ok` tetap true — admin melihat "berhasil" lalu
+         tabel dimuat ulang dengan PTS lama. `.catch` juga wajib: tanpa itu
+         kegagalan jaringan membuat tombol terkunci selamanya di "Menyimpan…". */
+      var gagal = [];
       var chain = Promise.resolve();
       comps.forEach(function (c) {
         chain = chain.then(function () {
           var v = c.el.value.trim();
           var nilai = v === '' ? -1 : parseInt(v, 10);
-          return api('/api/grade.php', { method: 'POST', body: { nim: nim, komponen: c.k, nilai: isNaN(nilai) ? -1 : nilai } });
+          return api('/api/grade.php', { method: 'POST', body: { nim: nim, komponen: c.k, nilai: isNaN(nilai) ? -1 : nilai } })
+            .then(function (res) {
+              if (!res || !res.ok) {
+                gagal.push((c.k.toUpperCase() + ': ' + ((res && res.error) || 'gagal disimpan')));
+              }
+            });
         });
       });
-      chain.then(function (res) {
+      chain.then(function () {
         btn.disabled = false; btn.textContent = 'Simpan Nilai';
-        if (res && res.ok) { loadDetail(nim); loadAdmin(); }
-        else { alert((res && res.error) || 'Gagal menyimpan.'); }
+        if (gagal.length) {
+          alert('Nilai tersimpan sebagian — periksa kembali:\n\n' + gagal.join('\n'));
+          loadDetail(nim);
+          return;
+        }
+        loadDetail(nim);
+        loadAdmin();
+      }).catch(function () {
+        btn.disabled = false; btn.textContent = 'Simpan Nilai';
+        alert('Gagal menghubungi server. Nilai mungkin belum tersimpan.');
       });
     });
     function gEl(id) { return document.getElementById(id); }
@@ -1406,9 +1474,12 @@ import { erdTemplates } from '../data/erdTemplates';
       api('/api/import_users.php', { method: 'POST', body: text, headers: { 'Content-Type': 'text/plain' } }).then(function (d) {
         if (!d.ok) { document.getElementById('importResult').textContent = 'Gagal: ' + (d.error || '?'); return; }
         document.getElementById('importResult').textContent =
-          'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' diperbarui. Password awal = NIM.';
+          'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' diperbarui. Password awal = NIM.'
+          + (d.data.ditolak_admin ? ' ' + d.data.ditolak_admin + ' akun admin dilewati (tidak diubah).' : '');
         document.getElementById('importText').value = '';
         loadAdmin();
+      }).catch(function () {
+        document.getElementById('importResult').textContent = 'Gagal menghubungi server. Data tidak diubah.';
       });
     }
     document.getElementById('importBtn').addEventListener('click', function () { doImport(); });
@@ -1418,10 +1489,17 @@ import { erdTemplates } from '../data/erdTemplates';
       document.getElementById('importResult').textContent = 'Mengimpor + reset password…';
       api('/api/import_users.php?reset=1', { method: 'POST', body: text, headers: { 'Content-Type': 'text/plain' } }).then(function (d) {
         document.getElementById('importResult').textContent = d.ok
-          ? 'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' direset.'
+          ? 'Selesai: ' + d.data.imported + ' baru, ' + d.data.updated_existing + ' direset'
+            + (d.data.ditolak_admin ? ', ' + d.data.ditolak_admin + ' akun admin dilewati.' : '') + '.'
           : 'Gagal: ' + (d.error || '?');
-        document.getElementById('importText').value = '';
+        // Teks impor HANYA dikosongkan kalau impor benar-benar berhasil.
+        // Sebelumnya dikosongkan tanpa syarat: satu 403 CSRF atau "Tidak ada
+        // data mahasiswa" membuat seluruh daftar yang sudah ditempel hilang
+        // tanpa ada jalan untuk mencobanya lagi.
+        if (d.ok) document.getElementById('importText').value = '';
         loadAdmin();
+      }).catch(function () {
+        document.getElementById('importResult').textContent = 'Gagal menghubungi server. Data tidak diubah.';
       });
     });
     document.getElementById('importCsv').addEventListener('change', function (e) {
@@ -1437,12 +1515,16 @@ import { erdTemplates } from '../data/erdTemplates';
     });
 
     document.getElementById('qNim').addEventListener('input', applyFilter);
-    document.getElementById('qKelas').addEventListener('change', applyFilter);
+    document.getElementById('qKelas').addEventListener('change', function () {
+      kelasDipilih = this.value;
+      applyFilter();
+    });
     document.getElementById('qProgres').addEventListener('change', applyFilter);
     document.getElementById('qHuruf').addEventListener('change', applyFilter);
     document.getElementById('resetFilter').addEventListener('click', function () {
       document.getElementById('qNim').value = '';
       document.getElementById('qKelas').value = '';
+      kelasDipilih = '';
       document.getElementById('qProgres').value = '';
       document.getElementById('qHuruf').value = '';
       applyFilter();
@@ -1466,6 +1548,8 @@ import { erdTemplates } from '../data/erdTemplates';
       api('/api/pertemuan.php').then(function (d) {
         if (!d.ok) { ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Gagal memuat.</td></tr>'; return; }
         ptRows = d.data.pertemuan; renderPt(); renderMengajar();
+      }).catch(function () {
+        ptTbody.innerHTML = '<tr><td colspan="7" class="muted">Gagal menghubungi server.</td></tr>';
       });
     }
     function renderMengajar() {
@@ -1481,7 +1565,7 @@ import { erdTemplates } from '../data/erdTemplates';
         countEl.textContent = 'Daftar ' + ptRows.length + ' pertemuan · ' + nAktif + ' aktif';
       }
       var rows = ptRows.slice().sort(function (a, b) {
-        return ((a.posisi || 99) - (b.posisi || 99)) || (a.id - b.id);
+        return (posisiAngka(a) - posisiAngka(b)) || (a.id - b.id);
       });
       tbody.innerHTML = '';
       rows.forEach(function (p) {
@@ -1548,7 +1632,10 @@ import { erdTemplates } from '../data/erdTemplates';
         btn.disabled = false; btn.textContent = 'Simpan Menu Pertemuan';
         if (!d.ok) { msg.textContent = 'Gagal: ' + (d.error || '?'); return; }
         msg.textContent = 'Menu pertemuan tersimpan dan langsung tampil di portal.';
-        ptRows = d.data.pertemuan; renderPt();
+        ptRows = d.data.pertemuan; renderPt(); renderMengajar();
+      }).catch(function () {
+        btn.disabled = false; btn.textContent = 'Simpan Menu Pertemuan';
+        msg.textContent = 'Gagal menghubungi server. Perubahan belum tersimpan.';
       });
     });
     document.getElementById('ptReset').addEventListener('click', function () {
@@ -1580,6 +1667,8 @@ import { erdTemplates } from '../data/erdTemplates';
         var t = d.data.tabel || {};
         var rows = Object.keys(t).map(function (k) { return k + ': ' + (t[k] ? 'ada' : 'BELUM ADA'); });
         msg.textContent = 'Status skema — ' + rows.join(' · ');
+      }).catch(function () {
+        msg.textContent = 'Gagal menghubungi server.';
       });
     });
 

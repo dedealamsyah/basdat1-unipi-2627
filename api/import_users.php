@@ -39,7 +39,11 @@ if (strpos($contentType, 'application/json') !== false) {
         if ($line === '' || $line[0] === '#') {
             continue;
         }
-        $parts = str_getcsv($line);
+        // `$escape` ("\\") ditulis eksplisit. Tanpa itu PHP 8.4+ memunculkan
+        // deprecation, dan karena config.php elevate semua warning jadi
+        // exception, satu deprecation cukup untuk membalas 500 — artinya
+        // impor CSV mati total di hosting yang sudah upgraded.
+        $parts = str_getcsv($line, ',', '"', '\\');
         if (count($parts) >= 2) {
             $users[] = array(
                 'nim' => trim($parts[0]),
@@ -58,13 +62,14 @@ if (empty($users)) {
 $pdo = db();
 $pdo->beginTransaction();
 
-$selUser = $pdo->prepare('SELECT pass_hash FROM users WHERE nim = ?');
+$selUser = $pdo->prepare('SELECT pass_hash, role FROM users WHERE nim = ?');
 $insUser = $pdo->prepare('INSERT INTO users (nim, nama, kelas, role, pass_hash, must_change_password) VALUES (?, ?, ?, "mahasiswa", ?, 1)');
-$updUser = $pdo->prepare('UPDATE users SET nama = ?, kelas = ? WHERE nim = ?');
-$updHash = $pdo->prepare('UPDATE users SET pass_hash = ?, must_change_password = 1 WHERE nim = ?');
+$updUser = $pdo->prepare('UPDATE users SET nama = ?, kelas = ? WHERE nim = ? AND role <> "admin"');
+$updHash = $pdo->prepare('UPDATE users SET pass_hash = ?, must_change_password = 1 WHERE nim = ? AND role <> "admin"');
 
 $imported = 0;
 $updated = 0;
+$ditolak = 0;
 foreach ($users as $u) {
     $nim = trim((string) ($u['nim'] ?? ''));
     $nama = trim((string) ($u['nama'] ?? ''));
@@ -75,6 +80,16 @@ foreach ($users as $u) {
 
     $selUser->execute(array($nim));
     $existing = $selUser->fetch();
+
+    if ($existing && ($existing['role'] ?? '') === 'admin') {
+        /* Lewati akun admin. Daftar impor adalah daftar MAHASISWA; tanpa
+           penjaga ini satu baris `admin,Nama Baru,IF3A` menimpa nama & kelas
+           akun admin, dan dengan `?reset=1` juga me-reset passwordnya jadi
+           password_hash('admin') — dilaporkan hanya sebagai
+           `updated_existing: 1`, jadi kelihatannya seperti impor biasa. */
+        $ditolak++;
+        continue;
+    }
 
     if ($existing) {
         // update identitas
@@ -95,5 +110,6 @@ $pdo->commit();
 json_out(array('ok' => true, 'data' => array(
     'imported' => $imported,
     'updated_existing' => $updated,
+    'ditolak_admin' => $ditolak,
     'default_password' => 'NIM masing-masing',
 )));

@@ -233,6 +233,19 @@ import Sidebar from '../components/Sidebar.astro';
     seeded.forEach(s => instance.run(s));
   }
 
+  /* Satu pintu untuk mengubah isi editor.
+     Nugasan hanya auto-save pada event `input`, sedangkan `value` yang diisi
+     lewat kode TIDAK memicu event itu — sehingga "Bersihkan Editor" dan
+     tombol preset tidak pernah menimpa what's in localStorage. Akibatnya
+     setelah reload, query yang dikosongkan/chosenPreset kembali lagi.
+     Semua perubahan lewat kode harus lewat fungsi ini. */
+  const SIMPAN_KEY = 'sql_playground_query';
+  function setEditorSql(sql: string) {
+    const ed = $pg<HTMLTextAreaElement>("pgEditor");
+    ed.value = sql;
+    try { localStorage.setItem(SIMPAN_KEY, ed.value); } catch (e) { /* kuota penuh */ }
+  }
+
   function initPresets() {
     const box = $pg("pgPresets");
     if (!box) return;
@@ -242,7 +255,7 @@ import Sidebar from '../components/Sidebar.astro';
       b.textContent = p.label;
       b.addEventListener("click", () => {
         if (!db) { setStatus("SQLite belum siap, tunggu sebentar lalu coba lagi.", false); return; }
-        $pg<HTMLTextAreaElement>("pgEditor").value = p.sql; runSql(p.sql);
+        setEditorSql(p.sql); runSql(p.sql);
       });
       box.appendChild(b);
     });
@@ -252,23 +265,32 @@ import Sidebar from '../components/Sidebar.astro';
     initPresets();
     
     // Load saved query from localStorage
-    const savedQuery = localStorage.getItem('sql_playground_query');
+    const savedQuery = localStorage.getItem(SIMPAN_KEY);
     const editor = $pg<HTMLTextAreaElement>("pgEditor");
-    
+
+    /* Editor dikunci sampai WASM selesai dimuat. Sebelumnya textarea terisi
+       & bisa diklik sedari awal, lalu `editor.value = ...` menimpa apa pun
+       yang diketik selama menunggu unduhan ~1 MB. */
+    editor.setAttribute("readonly", "readonly");
+    editor.setAttribute("aria-busy", "true");
+
     try {
       SQL = await initSqlJs({ locateFile: () => "/sql-wasm.wasm" });
       setupDB();
       setStatus("✓ SQLite siap (berjalan di browser). Jalankan query untuk mulai.", true);
-      editor.value = savedQuery || PRESETS[0].sql;
+      setEditorSql(savedQuery || PRESETS[0].sql);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus("✗ Gagal memuat SQLite: " + msg, false);
       editor.value = savedQuery || PRESETS[0].sql;
+    } finally {
+      editor.removeAttribute("readonly");
+      editor.removeAttribute("aria-busy");
     }
 
     // Auto-save on input
     editor.addEventListener('input', () => {
-      localStorage.setItem('sql_playground_query', editor.value);
+      try { localStorage.setItem(SIMPAN_KEY, editor.value); } catch (er) { /* abaikan */ }
     });
   }
 
@@ -280,12 +302,18 @@ import Sidebar from '../components/Sidebar.astro';
   });
 
   $pg("pgReset").addEventListener("click", () => {
+    // setupDB() adalah no-op kalau WASM belum termuat; melapor "di-reset"
+    // padahal tidak ada yang di-reset hanya menambah kebingungan.
+    if (!db) { setStatus("Database belum siap — tunggu SQLite selesai dimuat.", false); return; }
     setupDB();
     setStatus("✓ Data contoh di-reset ke kondisi awal.", true);
     $pg("pgResult").innerHTML = "";
   });
 
-  $pg("pgClear").addEventListener("click", () => { $pg<HTMLTextAreaElement>("pgEditor").value = ""; $pg("pgResult").innerHTML = ""; });
+  $pg("pgClear").addEventListener("click", () => {
+    setEditorSql("");            // lewat setEditorSql -> auto-save ikut diperbarui
+    $pg("pgResult").innerHTML = "";
+  });
 
   const ALLOWED_TABLES = new Set(["mahasiswa", "dosen", "matakuliah", "krs", "nilai"]);
 

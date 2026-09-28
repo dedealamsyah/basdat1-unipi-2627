@@ -443,11 +443,24 @@ const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
       questions.forEach(function (_, qi) { jawaban.push(sel[qi]); });
 
       var payload = {
-        pertemuan_id:_permissionPt, jawaban: jawaban,
+        pertemuan_id: pertemuanId, jawaban: jawaban,
         paste_count: pasteCount, copy_count: copyCount, blur_count: blurCount
       };
 
-      api('/api/evaluasi.php', { method: 'POST', body: payload }).then(function (d) {
+      // Pembangunan payload & pemanggilan `api` dibungkus try/catch: kalau ada
+      // yang lempar sebelum request benar-benar dikirim, `catch` di rantai
+      // `.then()` di bawah tidak akan pernah tersentuh dan tombol tetap
+      // terkunci di "Mengumpulkan…" selamanya.
+      var req;
+      try {
+        req = api('/api/evaluasi.php', { method: 'POST', body: payload });
+      } catch (e) {
+        submitting = false;
+        showGagal('Permintaan tidak dapat dikirim. Periksa koneksi lalu coba lagi.');
+        return;
+      }
+
+      req.then(function (d) {
         submitting = false;
         if (d.ok) {
           submitted = true;
@@ -589,7 +602,6 @@ const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
     }
 
     function gate(p) {
-      console.log("[Evaluasi] Running gate for pid:", pertemuanId, "user:", p.user ? p.user.nim : 'none');
       if (!p.logged_in) {
         setState('<div class="evaluasi__locked">Evaluasi hanya untuk mahasiswa yang masuk. ' +
           '<a href="/login?next=' + encodeURIComponent(location.pathname) + '">Login</a> untuk melanjutkan.</div>');
@@ -623,7 +635,6 @@ const soalTanpaKunci = data.map((q) => ({ soal: q.soal, opsi: q.opsi }));
     formEl.addEventListener('click', onFormClick);
 
     me().then(function (p) {
-      console.log("[Evaluasi] p:", p, "progress[pid]:", (p.progress || {})[pertemuanId]);
       if (gate(p)) renderForm(draft());
     });
   })();

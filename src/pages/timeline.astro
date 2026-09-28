@@ -96,7 +96,12 @@ RPS_WEEKS.forEach((w) => {
           </div>
           {items.map((w) => {
             const isLocked = locked(w.week);
-            const link = isLocked ? '#tl' : `/pertemuan/${w.week}`;
+            /* `#tl` adalah anchor mati: tidak ada elemen ber-id "tl" di
+               halaman (wadah timeline-nya `<div class="tl">`), jadi 7 dari 16
+               kartu — semuanya berstatus terkunci — hanya menambahkan
+               "#tl" ke URL lalu menggulir ke mana saja. Kartu terkunci tidak
+               punya tujuan; tombolnya jadi teks biasa. */
+            const link = isLocked ? null : `/pertemuan/${w.week}`;
             return (
               <div class={`tl-item tl-item--${fase}`} data-id={w.week}>
                 <span class={`tl-dot tl-dot--${w.cpmk}`}>{w.week}</span>
@@ -111,9 +116,15 @@ RPS_WEEKS.forEach((w) => {
                   <h3 class="tl-card__title">{w.topic}</h3>
                   <p class="tl-card__outcome">{w.outcome}</p>
                   <div class="tl-card__benefit"><span>{w.ringkas}</span></div>
-                  <a class="tl-card__link" href={link}>
-                    {isLocked ? 'Menunggu materi dibuka' : 'Buka Materi →'}
-                  </a>
+                  {link ? (
+                    <a class="tl-card__link" href={link}>
+                      Buka Materi →
+                    </a>
+                  ) : (
+                    <span class="tl-card__link is-disabled" aria-disabled="true">
+                      Menunggu materi dibuka
+                    </span>
+                  )}
                 </div>
               </div>
             );
@@ -204,6 +215,11 @@ RPS_WEEKS.forEach((w) => {
     .tl-card__outcome { font-size: 13px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
     .tl-card__link { font-size: 12.5px; font-weight: 700; color: var(--teal-500); text-decoration: none; }
     .tl-card__link:hover { text-decoration: underline; }
+    /* Kartu terkunci tidak punya tujuan (semula href="#tl" — anchor yang tak
+       ada), jadi teksnya dibuat non-interaktif, bukan tautan yang tak
+       melakukan apa pun. */
+    .tl-card__link.is-disabled { color: var(--ink-soft); cursor: default; }
+    .tl-card__link.is-disabled:hover { text-decoration: none; }
 
     .tl-card__benefit {
       display: flex; gap: 10px; align-items: flex-start;

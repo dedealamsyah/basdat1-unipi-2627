@@ -18,7 +18,20 @@ $nim = trim((string) ($in['nim'] ?? ''));
 if ($nim === '') {
     json_out(array('ok' => false, 'error' => 'nim wajib diisi.'), 422);
 }
-if (strtolower($nim) === ADMIN_DEFAULT_NIM || strtolower($nim) === 'admin') {
+
+/* Jangan hapus akun dengan peran admin — dicek dari TABEL, bukan dari nama.
+   Sebelumnya penjaga ini membandingkan NIM dengan `ADMIN_DEFAULT_NIM`, yang
+   nilainya justru 'admin', jadi penjaganya efektif hanya `nim === 'admin'`.
+   Akun admin lain (NIP, atau hasil impor) sama sekali tak terlindungi —
+   bisa dihapus dari panel, termasuk oleh dirinya sendiri, dan seluruh
+   progresnya ikut terhapus berantai. */
+$stRole = db()->prepare('SELECT role FROM users WHERE nim = ? LIMIT 1');
+$stRole->execute(array($nim));
+$rowRole = $stRole->fetch();
+if (!$rowRole) {
+    json_out(array('ok' => false, 'error' => 'Akun tidak ditemukan.'), 404);
+}
+if (($rowRole['role'] ?? '') === 'admin' || strtolower($nim) === ADMIN_DEFAULT_NIM) {
     json_out(array('ok' => false, 'error' => 'Akun admin tidak boleh dihapus.'), 422);
 }
 

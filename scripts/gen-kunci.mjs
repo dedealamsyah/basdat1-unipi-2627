@@ -10,6 +10,11 @@
  *   EVAL_KUNCI  — bank EVALUASI, format:  { soal: "...", opsi: [...], benar: 2 }
  *   KUIS_KUNCI  — bank KUIS LATIHAN, format:
  *                 <QuizCard id="q1" soal="..." opsi={["...", "..."]} benar={1} jelas="..." />
+ *   TUGAS_SLOT  — id pertemuan yang punya kotak pengumpulan tugas
+ *                 (<TugasUpload> di MDX). Dipakai me.php untuk mengisi
+ *                 `rekap.ada_tugas`; sebelumnya nilainya di-hardcode `true`
+ *                 untuk semua pertemuan aktif, sehingga tidak pernah bisa
+ *                 membedakan "ada slot tugas" dari "mahasiswa sudah kirim".
  *
  * Validasi keras — build GAGAL kalau:
  *   - jumlah `benar` tidak sama dengan jumlah objek soal,
@@ -293,6 +298,7 @@ const files = readdirSync(CONTENT_DIR)
 
 const kunci = {};
 const kuis = {};
+const tugasSlot = [];
 for (const f of files) {
   const pid = Number(f.replace(/\.mdx$/, ''));
   if (!Number.isInteger(pid)) {
@@ -303,6 +309,7 @@ for (const f of files) {
   if (bank) kunci[pid] = bank;
   const bankKuis = bacaKuis(f, sumber);
   if (bankKuis) kuis[pid] = bankKuis;
+  if (/<TugasUpload(?![A-Za-z0-9])/.test(sumber)) tugasSlot.push(pid);
 }
 
 const totalSoal = Object.values(kunci).reduce((n, b) => n + b.benar.length, 0);
@@ -339,6 +346,8 @@ baris.push(" *         KUIS_KUNCI[pertemuan_id] = array('id'    => ['q1', 'q2', 
 baris.push(" *                                      'benar' => [indeks per soal],");
 baris.push(" *                                      'opsi'  => [jumlah opsi per soal],");
 baris.push(" *                                      'jelas' => [penjelasan]);");
+baris.push(' *');
+baris.push(' * TUGAS_SLOT berisi id pertemuan yang punya <TugasUpload> di MDX.');
 baris.push(' */');
 baris.push('declare(strict_types=1);');
 baris.push('');
@@ -361,6 +370,8 @@ for (const pid of Object.keys(kuis).map(Number).sort((a, b) => a - b)) {
 }
 baris.push(');');
 baris.push('');
+baris.push(`const TUGAS_SLOT = ${phpArr(tugasSlot)};`);
+baris.push('');
 
 writeFileSync(OUT_FILE, baris.join('\n'));
 
@@ -373,4 +384,5 @@ console.log(`gen-kunci: ${pids.length} bank evaluasi (${totalSoal} soal), ` +
   `${pidsKuis.length} bank kuis latihan (${totalKuis} soal) -> api/kunci.php`);
 console.log(`  evaluasi: ${ringkas}`);
 console.log(`  kuis    : ${ringkasKuis}`);
+console.log(`  tugas   : ${tugasSlot.length ? tugasSlot.map((p) => `P${p}`).join(' ') : '(tidak ada)'}`);
 

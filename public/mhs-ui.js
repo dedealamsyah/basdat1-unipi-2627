@@ -267,6 +267,9 @@
 
     /* Progres + nilai berjalan. */
     var total = (p.active || []).length;
+    // Tanpa pertemuan aktif, `total` = 0 dan pembagian di bawah jadi NaN%
+    // yang tampil apa adanya di kartu nilai.
+    if (total < 1) total = 1;
     var done = 0;
     var kuisLatihan = null;
     var kuisEvaluasi = null;
@@ -318,6 +321,45 @@
         })
         .join("");
     }
+
+    renderAttention(bangunNotifikasi(p));
+  }
+
+  /* Seksi "Perlu perhatian" di beranda. Markup + CSS-nya sudah ada
+     (`.dash__attention`, `.attn--tinggi/--sedang`), tapi tidak pernah diisi —
+     jadi bagian itu selalu kosong. Isinya memakai daftar pengingat yang sama
+     dengan lonceng, supaya dua tempat tidak pernah berbeda pendapat. */
+  function renderAttention(list) {
+    var wrap = document.getElementById("dashAttention");
+    if (!wrap) return;
+    var listEl = document.getElementById("dashAttentionList");
+    var headEl = document.getElementById("dashAttentionHead");
+    if (!listEl) { wrap.hidden = true; return; }
+
+    if (!list.length) {
+      listEl.innerHTML = "";
+      if (headEl) headEl.textContent = "";
+      wrap.hidden = true;
+      return;
+    }
+
+    var berat = list.filter(function (x) { return x.level === "tinggi"; }).length;
+    if (headEl) {
+      headEl.textContent =
+        list.length + " pengingat" + (berat ? " · " + berat + " perlu segera" : "");
+    }
+    listEl.innerHTML = list
+      .map(function (x) {
+        return (
+          '<li class="attn attn--' + esc(x.level) + '">' +
+          '<a class="attn__link" href="' + esc(x.href) + '">' +
+          '<span class="attn__judul">' + esc(x.judul) + "</span>" +
+          '<span class="attn__detail">' + esc(x.detail) + "</span>" +
+          "</a></li>"
+        );
+      })
+      .join("");
+    wrap.hidden = false;
   }
 
   function salamWaktu() {
@@ -364,18 +406,24 @@
     }
     if (r.ada_evaluasi) {
       var ev = r.evaluasi;
-      var lv = "done";
-      if (ev.pct === null) lv = "todo";
-      else {
+      var evSudah = ev.pct !== null && ev.pct !== undefined;
+      // Kelas harus berupa SATU penanda (`pstatus--done` / `pstatus--todo` /
+      // `pstatus--warn-perlu` / `pstatus--warn-berat`) karena CSS hanya
+      // menuliskan aturan untuk keempat bentuk itu. Sebelumnya kelasnya
+      // dirangkai jadi "done warn-perlu", sehingga `pstatus--warn-perlu`
+      // tidak pernah terbentuk dan skor di bawah ambang tidak pernah diberi
+      // warna peringatan.
+      var lv = "todo";
+      if (evSudah) {
         var lvSkor = levelSkor(ev.pct);
-        if (lvSkor !== "aman") lv += " warn-" + lvSkor;
+        lv = lvSkor === "aman" ? "done" : "warn-" + lvSkor;
       }
       html += chip(
         lv,
         "Evaluasi",
-        ev.pct === null
-          ? (r.status === "done" ? "Belum dikerjakan" : "Setelah latihan tuntas")
-          : "Skor " + esc(ev.pct) + "%"
+        evSudah
+          ? "Skor " + esc(ev.pct) + "%"
+          : (r.status === "done" ? "Belum dikerjakan" : "Setelah latihan tuntas")
       );
     }
     if (r.ada_tugas) {

@@ -17,6 +17,13 @@ declare(strict_types=1);
 require __DIR__ . '/config.php';
 
 $u = require_auth();
+// Endpoint ini menulis data milik seorang mahasiswa, jadi admin ikut
+// ditolak — sama seperti `quiz.php` dan `evaluasi.php`. Tanpa ini sesi admin
+// bisa mengirim tautan yang lalu muncul di panel admin seolah-olah kiriman
+// mahasiswa. (GET di bawah tetap boleh dibaca admin lewat `?nim=`.)
+if (($u['role'] ?? '') === 'admin') {
+    json_out(array('ok' => false, 'error' => 'Mode admin: kiriman tugas tidak disimpan.'), 403);
+}
 
 const TUGAS_MAX_LINK = 700;
 
@@ -129,6 +136,16 @@ if ($pid <= 0) {
 // (mis. UTS/UAS atau materi yang belum/non-aktif) lewat crafted request.
 if (!in_array($pid, active_pertemuan(), true)) {
     json_out(array('ok' => false, 'error' => 'Pertemuan belum tersedia untuk pengumpulan tugas.'), 422);
+}
+
+// Pertemuan juga harus benar-benar TERBUKA untuk mahasiswa ini. Endpoint lain
+// (quiz.php, complete.php, evaluasi.php) semuanya menjaga itu; di sini hanya
+// "aktif" yang dicek, sehingga mahasiswa yang masih di P1 bisa membuat baris
+// `tugas` untuk P10 lewat crafted request. Baris itu tidak membuka apa pun,
+// tapi merusak data yang dilihat admin.
+$stTugas = status_map($u['nim']);
+if (($stTugas[$pid] ?? 'locked') === 'locked') {
+    json_out(array('ok' => false, 'error' => 'Pertemuan ' . $pid . ' masih terkunci. Selesaikan pertemuan sebelumnya dulu.'), 422);
 }
 
 $rawLink = trim((string) ($in['drive_link'] ?? ''));

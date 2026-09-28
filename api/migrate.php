@@ -172,15 +172,12 @@ if ($cnt === 0) {
     }
 }
 
-// Akun dummy untuk pengujian (idempoten): nim/nama = mhs_dummy, password = dummy
-$stDummy = $pdo->prepare('SELECT 1 FROM users WHERE nim = ?');
-$stDummy->execute(array('mhs_dummy'));
-if (!$stDummy->fetch()) {
-    $pdo->prepare(
-        'INSERT INTO users (nim, nama, kelas, role, pass_hash, must_change_password)
-         VALUES (?, ?, ?, "mahasiswa", ?, 0)'
-    )->execute(array('mhs_dummy', 'mhs_dummy', 'IF3A', password_hash('dummy', PASSWORD_DEFAULT)));
-}
+/* Akun dummy untuk pengujian TIDAK lagi dibuat di sini.
+   Sebelumnya setiap POST membuat baris `users` sungguhan dengan NIM
+   `mhs_dummy` dan password `dummy` — dan karena `must_change_password = 0`,
+   akun itu sekaligus lepas dari kewajiban ganti password. Row-nya tidak pernah
+   dibersihkan dan tidak bisa dibedakan dari NIM mahasiswa asli di daftar
+   admin. Gunakan akun uji yang memang sudah ada, atau hapus manual. */
 
 // Tabel pengumpulan tugas via tautan Google Drive — idempoten
 $pdo->exec(
@@ -210,4 +207,28 @@ try {
     // tabel belum ada / kolom sudah ada tentunya
 }
 
-json_out(array('ok' => true, 'data' => array('status' => 'migrasi selesai')));
+/* Status tabel dikembalikan di sini juga, bukan hanya pada GET.
+   Panel admin membaca `data.tabel` setelah menekan "Jalankan Migrasi Skema";
+   sebelumnya POST hanya mengirim `status`, jadi panel selalu menampilkan
+   "Status tabel: ?" padahal statusnya sudah diketahui. */
+$ada = array();
+foreach ($CEK_TABEL as $t) {
+    try {
+        $ada[$t] = (bool) $pdo->query("SHOW TABLES LIKE '" . $t . "'")->fetchColumn();
+    } catch (Throwable $e) {
+        $ada[$t] = false;
+    }
+}
+$hilang = array();
+foreach ($ada as $t => $ok) {
+    if (!$ok) {
+        $hilang[] = $t;
+    }
+}
+
+json_out(array('ok' => true, 'data' => array(
+    'status' => 'migrasi selesai',
+    'tabel' => $ada,
+    'belum_ada' => $hilang,
+    'siap' => empty($hilang),
+)));

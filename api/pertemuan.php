@@ -45,9 +45,22 @@ require_csrf();
     }
 }
 
-// respons daftar (publik)
-$rows = db()->query('SELECT id, title, subtitle, aktif, posisi, alokasi, bobot, cpmk FROM pertemuan ORDER BY posisi ASC, id ASC')
-    ->fetchAll();
+// Respons daftar (publik).
+//
+// Tabel `pertemuan` dibuat oleh `api/migrate.php`, bukan `setup_db.php`,
+// jadi pada instalasi yang belum pernah menjalankan migrasi tabel ini belum
+// ada. Query-nya dibungkus try/catch: endpoint ini dipanggil di SETIAP
+// pemuatan halaman oleh `public/auth.js` (termasuk untuk tamu), sehingga 500
+// di sini memunculkan error di konsol tiap kali halaman dibuka. Helper
+// `active_pertemuan()` di config.php sudah punya daftar cadangan; endpoint ini
+// sekarang konsisten: 200 dengan daftar kosong, bukan 500.
+try {
+    $rows = db()->query('SELECT id, title, subtitle, aktif, posisi, alokasi, bobot, cpmk FROM pertemuan ORDER BY posisi ASC, id ASC')
+        ->fetchAll();
+} catch (Throwable $e) {
+    error_log('[pertemuan] tabel belum ada: ' . $e->getMessage());
+    $rows = array();
+}
 
 $list = array();
 foreach ($rows as $r) {

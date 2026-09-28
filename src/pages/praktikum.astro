@@ -298,16 +298,41 @@ const studyCases = [
       box.innerHTML = '<p class="muted">Isi daftar entitas pada langkah C terlebih dahulu.</p>';
       return;
     }
-    // sinkronkan baris atribut → jika entitas baru, tambahkan baris kosong
+    /* Sinkronkan baris atribut dengan daftar entitas.
+       Setiap entitas harus punya barisNYA SENDIRI, urutnya sama dengan
+       urutan entitas. Pencocokan lama memakai NAMA (`find(a => a.entitas ===
+       e.nama)`), sehingga:
+         - dua entitas dengan nama sama berbagi satu baris → entitas kedua
+           tidak punya baris sama sekali dan atributnya tak bisa diisi;
+         - dua entitas yang belum diketik (nama "") juga berbagi satu baris.
+       Di sini setiap entitas dicocokkan ke baris pada SLOT ke-(n) untuk nama
+       itu, jadi kasus di atas tidak lagi menggabung. Baris untuk entitas yang
+       dihapus otomatis hilang karena hasilnya dibangun dari `state.entitas`. */
+    var lama = state.atribut.slice();
+    var urutLama = {};
+    lama.forEach(function (a) {
+      var n = a.entitas || "";
+      urutLama[n] = (urutLama[n] || 0) + 1;
+      a.__ke = urutLama[n];
+    });
+    var urutBaru = {};
+    var hasil = [];
     state.entitas.forEach(function (e) {
-      if (!state.atribut.find(function (a) { return a.entitas === e.nama; })) {
-        state.atribut.push({ entitas: e.nama, atribut: e.nama + " (PK)?", pk: false, fk: false, truepk: "" });
+      var nama = e.nama || "";
+      urutBaru[nama] = (urutBaru[nama] || 0) + 1;
+      var ke = urutBaru[nama];
+      var cocok = null;
+      for (var i = 0; i < lama.length; i++) {
+        if (lama[i].__ke === ke && (lama[i].entitas || "") === nama) { cocok = lama[i]; break; }
       }
+      // Baris baru = kosong. Teks "NAMA (PK)?" sebelumnya ditulis sebagai
+      // VALUE, bukan placeholder, sehingga muncul di kotak isian, ikut
+      // tersimpan ke laporan .txt, diekspor ke JSON, dan memblokir
+      // validasi "atribut kosong" yang justru meantinya menandai belum diisi.
+      hasil.push(cocok || { entitas: nama, atribut: "", pk: false, fk: false });
     });
-    // hapus baris atribut yang entitasnya dihapus
-    state.atribut = state.atribut.filter(function (a) {
-      return state.entitas.some(function (e) { return e.nama === a.entitas; });
-    });
+    lama.forEach(function (a) { delete a.__ke; });
+    state.atribut = hasil;
     box.innerHTML =
       '<table class="wks-table"><thead><tr><th style="width:30%">Entitas</th><th>Daftar Atribut</th><th style="width:70px">PK</th><th style="width:70px">FK</th></tr></thead><tbody></tbody></table>';
     var tbody = box.querySelector("tbody");
@@ -323,6 +348,7 @@ const studyCases = [
   }
 
   // ---------- relasi ----------
+  var sudahAdaDefault = false;
   function renderRelasi() {
     var box = $("relasiRows");
     if (!box) return;
@@ -336,8 +362,12 @@ const studyCases = [
     box.innerHTML =
       '<table class="wks-table"><thead><tr><th>Entitas A</th><th style="width:70px">Kardinalitas</th><th>Entitas B</th><th style="width:120px">Partisipasi</th><th style="width:40px">✕</th></tr></thead><tbody></tbody></table>';
     var tbody = box.querySelector("tbody");
-    if (!state.relasi.length) {
-      // satu baris default
+    // Baris default hanya dibuat saat MEMBUKA halaman dengan daftar kosong,
+    // bukan setiap kali render. Sebelumnya disjokkan di sini, jadi tombol
+    // "Bersihkan" langsung memunculkan baris lagi (terlihat tak berfungsi)
+    // dan tombol ✕ pada satu-satunya baris juga tak pernah mengosongkan.
+    if (!state.relasi.length && !sudahAdaDefault) {
+      sudahAdaDefault = true;
       state.relasi.push({ entitasA: state.entitas[0].nama, relasi: "1 : N", entitasB: state.entitas[1] ? state.entitas[1].nama : state.entitas[0].nama, partisipasi: "Total" });
     }
     state.relasi.forEach(function (r, i) {
@@ -413,15 +443,20 @@ const studyCases = [
 
     var html = "";
     html += '<div class="v-item __label">HASIL VALIDASI: SKOR KELENGKAPAN: <span class="v-score">' + score + '%</span></div>';
+    /* `issues`/`warns` dirangkai ke dalam innerHTML. Sebagian isinya memuat
+       nama entitas yang diketik pengguna (mis. "nama entitas duplikat: …"),
+       jadi harus lewat esc() — kalau tidak, satu entitas bernama
+       `<img src=x onerror=…>` dieksekusi saat validasi dijalankan. Semua
+       jalur render lain di berkas ini sudah memakai esc(). */
     if (issues.length) {
       html += '<div class="v-item err"><strong>Perlu diperbaiki (' + issues.length + '):</strong><ul style="margin:6px 0 0 18px;padding:0;">' +
-        issues.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul></div>";
+        issues.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul></div>";
     } else {
       html += '<div class="v-item ok"><strong>✓ Tidak ada masalah kritis.</strong> Worksheet siap dikumpulkan.</div>';
     }
     if (warns.length) {
       html += '<div class="v-item warn"><strong>Saran (' + warns.length + '):</strong><ul style="margin:6px 0 0 18px;padding:0;">' +
-        warns.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul></div>";
+        warns.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul></div>";
     }
     $("wksValidation").innerHTML = html;
   }
@@ -516,7 +551,9 @@ const studyCases = [
     });
     $("entitasClear").addEventListener("click", function () {
       state.entitas = []; state.atribut = []; state.relasi = [];
-      renderEntitas(); renderAtribut(); renderRelasi(); save();
+      renderEntitas(); renderAtribut(); renderRelasi();
+      $("wksValidation").innerHTML = "";
+      save();
     });
 
     // relasi add/clear
@@ -525,11 +562,17 @@ const studyCases = [
         $("wksFeedback").innerHTML = '<span style="color:var(--red-600);">Minimal 2 entitas untuk membuat relasi.</span>';
         return;
       }
-      state.relasi.push({ entitasA: state.entitas[0].nama, relasi: "1:N", entitasB: state.entitas[1].nama, partisipasi: "Total" });
+      // Harus persis sama dengan teks <option> di renderRelasi(). Nilai
+      // "1:N" tidak ada di daftar itu, jadi `select.value = r.relasi`
+      // tidak memilih apa pun dan kotak kardinalitas tampil KOSONG.
+      state.relasi.push({ entitasA: state.entitas[0].nama, relasi: "1 : N", entitasB: state.entitas[1].nama, partisipasi: "Total" });
       renderRelasi(); save();
     });
     $("relasiClear").addEventListener("click", function () {
       state.relasi = [];
+      // Jangan biarkan renderRelasi() menyuntik baris default lagi —
+      // itulah yang membuat "Bersihkan" tampak tidak berfungsi.
+      sudahAdaDefault = true;
       renderRelasi(); save();
     });
 
@@ -619,6 +662,9 @@ const studyCases = [
         $("kelTanggal").value = "";
         $("caseNarasi").innerHTML = '<p class="muted" style="margin:0;">Pilih studi kasus untuk menampilkan narasi bisnisnya.</p>';
         $("wksFeedback").innerHTML = '<span style="color:#166534;">Worksheet telah direset.</span>';
+        // Hasil validasi lama ikut dibersihkan: tanpa ini layar tetap
+        // menampilkan "SKOR KELENGKAPAN: 100%" padahal semua kolom kosong.
+        $("wksValidation").innerHTML = "";
       }
     });
 
@@ -643,6 +689,10 @@ const studyCases = [
           }
         } else {
           state.relasi.splice(i, 1);
+          // Menghapus baris terakhir pun tidak boleh memunculkan baris
+          // default lagi (sebelumnya ✕ pada satu-satunya baris tak pernah
+          // benar-benar mengosongkan tabel).
+          sudahAdaDefault = true;
         }
         renderEntitas(); renderAtribut(); renderRelasi(); save();
       });
@@ -678,6 +728,37 @@ const studyCases = [
     }
   }
 
+  /* Perbarui isi <select> entitas A/B pada tabel Relasi agar ikut nama
+     terbaru, tanpa me-render ulang seluruh tabel (fokus/input tidak hilang).
+     Opsi yang tidak ada di `state.entitas` akan dihapus. */
+  function sinkronSelectEntitas() {
+    var namaValid = state.entitas.map(function (e) { return e.nama; });
+    var rows = $("relasiRows").querySelectorAll("tr");
+    Array.prototype.forEach.call(rows, function (tr) {
+      ["entitasA", "entitasB"].forEach(function (role) {
+        var sel = tr.querySelector('select[data-role="' + role + '"]');
+        if (!sel) return;
+        var sekarang = sel.value;
+        var opsiLama = Array.prototype.map.call(sel.options, function (o) { return o.value; });
+        opsiLama.forEach(function (v) {
+          if (namaValid.indexOf(v) === -1) {
+            var o = Array.prototype.find.call(sel.options, function (x) { return x.value === v; });
+            if (o) sel.remove(o);
+          }
+        });
+        namaValid.forEach(function (v) {
+          var ada = Array.prototype.some.call(sel.options, function (o) { return o.value === v; });
+          if (!ada) {
+            var opt = document.createElement("option");
+            opt.value = v; opt.textContent = v;
+            sel.appendChild(opt);
+          }
+        });
+        sel.value = namaValid.indexOf(sekarang) !== -1 ? sekarang : namaValid[0];
+      });
+    });
+  }
+
   // delegate edits ke state (tanpa re-render penuh agar fokus tidak hilang)
   function onEdit(e) {
     var t = e.target;
@@ -692,19 +773,43 @@ const studyCases = [
       if (role === "desk") {
         state.entitas[idx].desk = t.value;
       } else if (role === "nama") {
+        var lama = t.value.toUpperCase().replace(/\s+/g, "_");
+        /* Tolak nama yang ganda. Baris atribut & relasi identifiable lewat
+           NAMA, jadi dua entitas bernama sama membuat keduanya berbagi satu
+           baris dan menghapus salah satunya ikut menghapus milik yang lain. */
+        var bentrok = false;
+        for (var k = 0; k < state.entitas.length; k++) {
+          if (k !== idx && state.entitas[k].nama === lama) { bentrok = true; break; }
+        }
+        if (bentrok && lama !== "") {
+          state.entitas[idx].nama = lama;
+          t.value = lama;
+          $("wksFeedback").innerHTML =
+            '<span style="color:var(--red-600);">Nama entitas "' + esc(lama) +
+            '" sudah dipakai entitas lain. Setiap entitas harus bernama unik.</span>';
+          renderEntitas(); renderAtribut(); renderRelasi(); save();
+          return;
+        }
         var old = state.entitas[idx].nama;
-        state.entitas[idx].nama = t.value.toUpperCase().replace(/\s+/g, "_");
-        t.value = state.entitas[idx].nama;
+        state.entitas[idx].nama = lama;
+        t.value = lama;
         // sinkronkan referensi di atribut & relasi
-        state.atribut.forEach(function (a) { if (a.entitas === old) a.entitas = state.entitas[idx].nama; });
+        state.atribut.forEach(function (a) { if (a.entitas === old) a.entitas = lama; });
         state.relasi.forEach(function (r) {
-          if (r.entitasA === old) r.entitasA = state.entitas[idx].nama;
-          if (r.entitasB === old) r.entitasB = state.entitas[idx].nama;
+          if (r.entitasA === old) r.entitasA = lama;
+          if (r.entitasB === old) r.entitasB = lama;
         });
         // update sel entitas readonly pada tabel atribut
         $("atributRows").querySelectorAll('input[data-role="entitas"]').forEach(function (cell) {
-          if (cell.value === old) cell.value = state.entitas[idx].nama;
+          if (cell.value === old) cell.value = lama;
         });
+        /* Select di tabel Relasi TIDAK ikut ter-update: isinya <option>
+           dibangun ulang hanya di renderRelasi(). Akibatnya kotak A/B
+           menampilkan nama lama sementara state sudah nama baru — dan kalau
+           admin menyentuh kotak itu, `onEdit` menuliskan nama basi kembali
+           lalu validasi melapor "Relasi #1 merujuk entitas A yang tidak
+           terdaftar". */
+        sinkronSelectEntitas();
       }
     } else if (tbody.parentNode && tbody.parentNode.parentNode === $("atributRows")) {
       var i2 = Array.prototype.indexOf.call(tbody.children, tr);

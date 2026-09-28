@@ -73,16 +73,23 @@ if (jelas !== undefined && typeof jelas !== 'string') {
   function initKuis(pid: number, daftar: HTMLElement[]) {
     /** qid -> penilaian server (sumber kebenaran tampilan di halaman ini) */
     const dinilai: Record<string, HasilSoal> = {};
-    let sedangKirim = false;
+    /** qid yang sedang dikirim, supaya satu kartu tak dobel-kirim. */
+    const sedangKirim = new Set<string>();
     let tuntas = false;
 
     daftar.forEach((card) => {
       Array.from(card.querySelectorAll<HTMLButtonElement>('.quiz-option')).forEach((btn) => {
         btn.addEventListener('click', () => {
-          if (sedangKirim || tuntas) return;
           const qid = card.getAttribute('data-quiz') || '';
           const opt = parseInt(btn.getAttribute('data-opt') || '-1', 10);
+          if (tuntas) return;
           if (isNaN(opt) || dinilai[qid]) return;
+          /* Penjaga per-soal, bukan global. Sebelumnya satu flag global
+             `sedangKirim` membuat klik di kartu LAIN diam-diam dibuang
+             selama satu request berjalan: mahasiswa menekan opsi di soal
+             berikutnya dan tidak terjadi apa-apa tanpa pesan apa pun.
+             Sekarang hanya kartu yang sedang mengirim yang terkunci. */
+          if (sedangKirim.has(qid)) return;
           kirim(qid, opt);
         });
       });
@@ -103,11 +110,11 @@ if (jelas !== undefined && typeof jelas !== 'string') {
         pesan(qid, 'API belum siap. Muat ulang halaman.');
         return;
       }
-      sedangKirim = true;
+      sedangKirim.add(qid);
       const kirimMap: Record<string, number> = {};
       kirimMap[qid] = opt;
       auth.gradeQuiz(pid, kirimMap).then((res) => {
-        sedangKirim = false;
+        sedangKirim.delete(qid);
         if (!res || !res.ok) {
           pesan(qid, pesanError(res));
           return;
@@ -116,7 +123,7 @@ if (jelas !== undefined && typeof jelas !== 'string') {
         if (res.data) terapkan(res.data);
         if (tuntas && auth.refresh) auth.refresh();
       }).catch(() => {
-        sedangKirim = false;
+        sedangKirim.delete(qid);
         pesan(qid, 'Gagal menghubungi server. Coba lagi.');
       });
     }
