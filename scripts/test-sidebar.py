@@ -78,7 +78,10 @@ b = blok(".sidebar__footer")
 cek(".sidebar__footer flex:none (tidak gepeng)", b and re.search(r"flex:\s*(0|none)", b))
 
 print("\n== Aturan [hidden] wajib ada ==")
-for sel in [".appbar[hidden]", ".sidebar__notif[hidden]", ".pageStatus[hidden]",
+# Elemen yang masih memakai atribut `hidden` perlu aturan [hidden], karena
+# `display` eksplisit di class mengalahkan atribut itu. .appbar TIDAK lagi
+# memakai hidden (v2.9.4: selalu tampil, berisi tautan "Masuk" untuk tamu).
+for sel in [".sidebar__notif[hidden]", ".pageStatus[hidden]",
             ".dash[hidden]", ".iconbtn .badge[hidden]", ".notif-panel__empty[hidden]"]:
     cek(sel, sel in css, "-> display:flex mengalahkan atribut hidden")
 
@@ -87,6 +90,19 @@ d = set(re.findall(r'(--[a-z0-9-]+)\s*:', css))
 u = set(re.findall(r'var\((--[a-z0-9-]+)', css))
 hilang = sorted(u - d)
 cek("tidak ada var() tanpa definisi", not hilang, "-> %s" % ", ".join(hilang))
+
+print("\n== Kartu akun di header (v2.9.4) ==")
+for label, pola in [
+    (".appbar__ada (kartu akun di app bar)", r"\.appbar__account"),
+    (".appbar__login (tautan Masuk untuk tamu)", r"\.appbar__login"),
+    (".mh-account (kartu akun di mobile header)", r"\.mh-account"),
+    (".mh-account__login (Masuk di mobile)", r"\.mh-account__login"),
+    (".acc__avatar--sm (avatar versi mobile)", r"\.acc__avatar--sm"),
+    (".acc__logout--sm (keluar versi mobile)", r"\.acc__logout--sm"),
+]:
+    cek(label, re.search(pola, css) is not None)
+cek("kartu akun tidak lagi di sidebar", ".sidebar__account" not in css,
+    "-> masih ada gaya sidebar yang tidak terpakai")
 
 print("\n== Account box ringkas (v2.9.3) ==")
 for label, pola in [
@@ -160,6 +176,12 @@ kasus = [
     (".acc__logout kembali melebar (tanpa width tetap)",
      re.sub(r"\.acc__logout\{[^}]*\}", ".acc__logout{padding:3px 10px}", css, count=1),
      lambda c: not bool(re.search(r"\.acc__logout\{[^}]*width:28px", c))),
+    ("kartu akun balik lagi ke sidebar",
+     css + ".sidebar__account{padding:12px}",
+     lambda c: bool(re.search(r"\.sidebar__account\{", c))),
+    (".appbar__account hilang (tidak ada tempat masuk)",
+     re.sub(r"\.appbar__account\{[^}]*\}", "", css, count=1),
+     lambda c: not bool(re.search(r"\.appbar__account", c))),
 ]
 for nama, rusak, deteksi in kasus:
     if rusak == css:

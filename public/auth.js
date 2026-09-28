@@ -222,54 +222,78 @@
     });
   }
 
+  /* Kartu akun (v2.9.4) — pindah dari footer sidebar ke header atas.
+   *
+   * Dua tempat sekaligus, karena app bar desktop disembunyikan di mobile:
+   *   #accountBox       -> app bar (desktop): avatar + nama + NIM·kelas + aksi
+   *   #accountBoxMobile -> mobile header: avatar + tombol keluar, tanpa teks
+   *
+   * Tamu tetap butuh jalan masuk, jadi keduanya menampilkan tautan "Masuk".
+   * App bar sengaja TIDAK disembunyikan untuk tamu: isinya konteks halaman
+   * yang berguna sekaligus tempat tautan masuk yang selalu terlihat.
+   */
   function refreshAccountBox(p) {
-    var box = document.getElementById("accountBox");
-    if (!box) return;
+    var desktop = document.getElementById("accountBox");
+    var mobile = document.getElementById("accountBoxMobile");
+    if (!desktop && !mobile) return;
 
-    if (!p.logged_in) {
-      var next = encodeURIComponent(location.pathname + location.search);
-      box.innerHTML =
-        '<div class="acc acc--out">' +
-        '<p class="acc__title">Portal Dosen & Mahasiswa</p>' +
-        '<a class="btn-sim acc__login" href="/login?next=' + next + '">Login</a>' +
-        '<p class="acc__hint">Khusus mahasiswa terdaftar</p>' +
-        "</div>";
+    var next = encodeURIComponent(location.pathname + location.search);
+
+    if (!p || !p.logged_in) {
+      if (desktop) {
+        desktop.innerHTML = '<a class="appbar__login" href="/login?next=' + next + '">Masuk</a>';
+      }
+      if (mobile) {
+        mobile.innerHTML = '<a class="mh-account__login" href="/login?next=' + next + '">Masuk</a>';
+      }
       return;
     }
 
     var u = p.user || {};
-
-    // Peringatan tugas/evaluasi dipindah ke lonceng notifikasi (v2.9.0).
-    // Di sini cukup penanda peran supaya admin jelas tampilan mana.
     var isAdmin = u.role === "admin";
     var kelas = u.kelas ? " · " + u.kelas : "";
+    var inisial = esc((u.nama || u.nim).charAt(0).toUpperCase());
 
-    // Ringkas: satu baris identitas + tombol keluar. Versi sebelumnya
-    // menumpuk chip peran, nama, meta, dan baris progres — padahal progres
-    // sudah tampil di bar "PROGRES BELAJAR" di atas sidebar, jadi angka
-    // yang sama muncul dua kali dan kotaknya memakan tinggi layar.
-    box.innerHTML =
-      '<div class="acc acc--in">' +
-      '<div class="acc__row">' +
-      '<span class="acc__avatar" aria-hidden="true">' + esc((u.nama || u.nim).charAt(0).toUpperCase()) + "</span>" +
-      '<span class="acc__id">' +
-      '<span class="acc__name">' + esc(u.nama || u.nim) + "</span>" +
-      '<span class="acc__meta">' + esc(u.nim) + esc(kelas) + "</span>" +
-      "</span>" +
-      (isAdmin
-        ? '<a class="acc__adminlink" href="/admin/" title="Buka dashboard admin">Dashboard</a>'
-        : '<button type="button" class="acc__logout acc__logout--icon" id="accLogout"' +
-          ' title="Keluar" aria-label="Keluar dari akun">' +
-          '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"' +
-          ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-          '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/>' +
-          '<path d="M21 12H9"/></svg></button>') +
-      "</div>" +
-      "</div>";
+    // Ikon keluar sama di kedua tempat. Tombolnya dicari lewat data-attr,
+    // bukan id, karena keduanya dirender bersamaan (id akan ganda).
+    var svgKeluar =
+      '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/>' +
+      '<path d="M21 12H9"/></svg>';
 
-    var btn = document.getElementById("accLogout");
-    if (btn) btn.addEventListener("click", function () {
-      logout().then(function () { location.reload(); });
+    var aksi = isAdmin
+      ? '<a class="acc__adminlink" href="/admin/" title="Buka dashboard admin">Dashboard</a>'
+      : '<button type="button" class="acc__logout" data-acc-logout' +
+        ' title="Keluar" aria-label="Keluar dari akun">' + svgKeluar + "</button>";
+
+    if (desktop) {
+      desktop.innerHTML =
+        '<div class="acc acc--in"><div class="acc__row">' +
+        '<span class="acc__avatar" aria-hidden="true">' + inisial + "</span>" +
+        '<span class="acc__id">' +
+        '<span class="acc__name">' + esc(u.nama || u.nim) + "</span>" +
+        '<span class="acc__meta">' + esc(u.nim) + esc(kelas) + "</span>" +
+        "</span>" + aksi +
+        "</div></div>";
+    }
+
+    if (mobile) {
+      // Mobile: avatar + keluar saja. Nama sudah ada di drawer & halaman.
+      mobile.innerHTML =
+        '<span class="acc__avatar acc__avatar--sm" aria-hidden="true">' + inisial + "</span>" +
+        (isAdmin
+          ? '<a class="acc__adminlink acc__adminlink--sm" href="/admin/" title="Dashboard admin">D</a>'
+          : '<button type="button" class="acc__logout acc__logout--sm" data-acc-logout' +
+            ' title="Keluar" aria-label="Keluar dari akun">' + svgKeluar + "</button>");
+    }
+
+    // Listener dipasang ulang tiap render karena markup ikut diganti, jadi
+    // node lamanya sudah hilang (tanpa ini, klik kedua tidak bereaksi).
+    document.querySelectorAll("[data-acc-logout]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        logout().then(function () { location.reload(); });
+      });
     });
   }
 
@@ -309,14 +333,22 @@
     esc: esc
   };
 
+  // True bila halaman punya header tempat kartu akun & lonceng hidup
+  // (semua halaman BaseLayout; login & ganti-password tidak).
+  function adaHeader() {
+    return !!(document.getElementById("accountBox") ||
+              document.getElementById("accountBoxMobile") ||
+              document.getElementById("appbar"));
+  }
+
   // Muat otomatis saat first-load & navigasi dalam situs (astro)
   function init() {
-    if (document.getElementById("accountBox")) refresh();
+    if (adaHeader()) refresh();
     loadPertemuanMeta();
 
     // Polling status 5 menit: menyegarkan progres, lonceng, dan panel.
     var timer = setInterval(function () {
-      if (document.getElementById("accountBox")) refresh();
+      if (adaHeader()) refresh();
     }, 300000);
 
     // Jangan jalankan interval saat tab disembunyikan (hemat kuota & server),
@@ -327,7 +359,7 @@
       } else {
         refresh();
         timer = setInterval(function () {
-          if (document.getElementById("accountBox")) refresh();
+          if (adaHeader()) refresh();
         }, 300000);
       }
     });

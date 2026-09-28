@@ -60,6 +60,7 @@ const { title, description = "Portal materi interaktif untuk mata kuliah Basis D
       </button>
       <img src="/logo-unipi.png" alt="" class="mobile-header__logo" width="20" height="20" />
       <span class="mobile-header__title" id="mobileHeaderTitle">Basis Data</span>
+      <div id="accountBoxMobile" class="mh-account"></div>
       <button
         type="button"
         class="iconbtn iconbtn--dark"
@@ -101,13 +102,17 @@ const { title, description = "Portal materi interaktif untuk mata kuliah Basis D
     <!-- Main Content -->
     <main class="main">
       <!-- App bar (desktop): konteks halaman, lonceng pengingat, akun -->
-      <div class="appbar" id="appbar" data-appbar hidden>
+      <div class="appbar" id="appbar" data-appbar>
         <div class="appbar__ctx">
           <span class="appbar__course">Basis Data</span>
           <span class="appbar__sep" aria-hidden="true">/</span>
           <span class="appbar__page" id="appbarPage">{title}</span>
         </div>
         <div class="appbar__actions">
+          <!-- Kartu akun pindah ke sini (v2.9.4): app bar adalah tempat yang
+               tetap terlihat di semua halaman, sedangkan footer sidebar
+               hanya muncul kalau sidebar kebuka (mobile) dan memakan tinggi. -->
+          <div id="accountBox" class="appbar__account"><span class="muted">Memuat…</span></div>
           <button
             type="button"
             class="iconbtn"

@@ -1,5 +1,40 @@
 # Changelog
 
+## [2.9.4] - 2026-09-28
+
+> Deploy statis saja (`_deploy/`). Tidak ada perubahan API.
+
+### Changed — kartu akun pindah ke header atas
+
+Diminta dosen. Alasannya juga teknis: footer sidebar hanya terlihat kalau
+sidebar terbuka, dan di situ ia menggeser daftar materi ke bawah. App bar
+justru selalu terlihat di setiap halaman, jadi itu tempat yang wajar.
+
+- **Desktop**: kartu akun kini di app bar, sebelum lonceng.
+- **Mobile**: app bar disembunyikan (<900px), jadi muncul versi ringkas di
+  mobile header — avatar + tombol keluar saja, tanpa nama (nama sudah ada
+  di drawer dan di halaman).
+- **App bar tidak lagi disembunyikan untuk tamu.** Sebelumnya `hidden` sampai
+  `me()` selesai, artinya tamu tidak punya jalan masuk yang selalu terlihat;
+  sekarang menampilkan tautan "Masuk" di kedua header.
+- Footer sidebar tinggal tombol tema + kredit. Gaya `.sidebar__account`,
+  `.acc--out`, `.acc__title`, `.acc__hint`, `.acc__login` dihapus karena
+  tidak ada yang memakainya lagi.
+- Tombol keluar dicari lewat `data-acc-logout`, bukan `id="accLogout"`, karena
+  sekarang dua tombol dirender bersamaan (id akan ganda di DOM).
+- Judul mobile header dibuat bisa terpotong (ellipsis) supaya tidak mendorong
+  kartu akun keluar layar.
+
+### Added — uji kartu akun
+
+`test-account` (Node, DOM minimal) memeriksa `refreshAccountBox()` untuk tiga
+skenario: tamu (tautan Masuk + `next=`), mahasiswa (avatar, nama, NIM·kelas,
+tombol keluar; mobile tanpa teks nama), dan admin (tautan Dashboard, tanpa
+tombol keluar). Termasuk uji XSS — nama dari DB wajib ter-escape, dan tidak
+boleh ada `id` ganda saat desktop & mobile dirender bersamaan.
+
+---
+
 ## [2.9.3] - 2026-09-28
 
 > Deploy statis saja (`_deploy/`). Tidak ada perubahan API.

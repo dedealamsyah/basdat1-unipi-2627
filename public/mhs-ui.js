@@ -446,11 +446,12 @@
     var isAdmin = !!(p && p.user && p.user.role === "admin");
     var boleh = !!(p && p.logged_in) && !isAdmin;
 
-    // App bar hanya untuk pengguna login. Admin tetap boleh melihatnya
-    // (konteks halaman), tapi TANPA lonceng — tidak ada notifikasi untuknya.
+    // App bar (v2.9.4) SELALU tampil, termasuk untuk tamu — isinya konteks
+    // halaman, kartu akun, dan tautan "Masuk". Sebelumnya disembunyikan untuk
+    // tamu, padahal di sanalah tempat paling logis untuk masuk. Admin tetap
+    // boleh melihatnya, tapi TANPA lonceng: tidak ada notifikasi untuknya.
     var appbar = document.getElementById("appbar");
     if (appbar) {
-      appbar.hidden = !(p && p.logged_in);
       appbar.classList.toggle("appbar--no-notif", isAdmin);
     }
     var toggles = document.querySelectorAll("[data-notif-toggle]");

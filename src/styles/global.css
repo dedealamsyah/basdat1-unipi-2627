@@ -203,7 +203,11 @@ a { color: inherit; }
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
-  flex: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mobile-header__logo {
@@ -626,19 +630,6 @@ a { color: inherit; }
 .row.prog-done .row__title { color: var(--navy-700); }
 .row.prog-open { opacity: 1; }
 
-/* Account box in sidebar — v2.9.3: satu baris ringkas.
-   Versi lama menumpuk chip peran + nama + meta + baris progres dalam kotak
-   berlapis; padahal progres sudah tampil di bar "PROGRES BELAJAR" di atas,
-   jadi angkanya tampil dua kali. Kotak setinggi ~120px di sidebar 300px
-   terasa berat. Sekarang: avatar + nama/NIM + tombol keluar, satu baris. */
-.sidebar__account {
-  margin-bottom: 8px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, .04);
-  border: 1px solid rgba(255, 255, 255, .06);
-}
-
 .acc__row {
   display: flex;
   align-items: center;
@@ -708,6 +699,31 @@ a { color: inherit; }
 
 .acc__logout:focus-visible { outline: 2px solid var(--teal-300); outline-offset: 2px; }
 
+.acc__avatar--sm {
+  width: 26px;
+  height: 26px;
+  font-size: 11.5px;
+  background: rgba(255, 255, 255, .14);
+  color: #EAF2EC;
+}
+
+.acc__logout--sm {
+  width: 26px;
+  height: 26px;
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .16);
+  color: #DCE6F1;
+}
+
+.acc__adminlink--sm {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+}
+
 .acc__adminlink {
   flex: 0 0 auto;
   padding: 4px 9px;
@@ -721,12 +737,6 @@ a { color: inherit; }
 }
 
 .acc__adminlink:hover { background: var(--teal-400); }
-
-/* Tampilan tamu (belum login) */
-.acc--out { text-align: center; }
-.acc__title { font-size: 11.5px; font-weight: 600; color: #E7EDE6; margin: 0 0 6px; }
-.acc__hint { font-size: 10.5px; color: #9DB2A4; margin: 6px 0 0; }
-.acc__login { display: block; text-align: center; text-decoration: none; }
 
 .sidebar__footer {
   flex: 0 0 auto;
@@ -796,10 +806,45 @@ a { color: inherit; }
   border-bottom: 1px solid var(--line);
 }
 
-/* Saat app bar disembunyikan, kembalikan ruang atas ke kondisi semula.
-   Sama seperti .sidebar__notif[hidden]: `display: flex` di atas mengalahkan
-   atribut `hidden`, jadi aturan ini wajib ada. */
-.appbar[hidden] { display: none; }
+/* Kartu akun di app bar (v2.9.4) */
+.appbar__account { flex: 0 0 auto; }
+
+.appbar__login {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: var(--navy-700);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s;
+}
+
+.appbar__login:hover { background: var(--green-600); }
+
+/* Kartu akun di mobile header */
+.mh-account {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.mh-account__login {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, .2);
+}
+
+.mh-account__login:hover { background: rgba(255, 255, 255, .1); }
 
 .appbar__ctx {
   display: flex;

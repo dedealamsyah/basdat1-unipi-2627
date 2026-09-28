@@ -271,7 +271,8 @@ Pertemuan pertama selalu terbuka. `active_pertemuan()` menentukan daftar konten 
 ### Frontend integration
 
 - `public/auth.js` (window.APIAuth): `me/login/logout/gradeQuiz/quizState/refresh`;
-  memperbarui kotak akun sidebar, progress bar, status tiap pertemuan
+  memperbarui **kartu akun di header atas** (`#accountBox` di app bar desktop +
+  `#accountBoxMobile` di mobile header, v2.9.4), progress bar, status tiap pertemuan
   (`prog-done/open/locked`), overlay menu pertemuan dari DB (judul/urutan/tampil),
   lalu meneruskan data ke `window.MhsUI.render(p)`.
 - `public/mhs-ui.js` (window.MhsUI, v2.9.0): seluruh UI mahasiswa tambahan —
