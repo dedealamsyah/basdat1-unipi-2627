@@ -384,6 +384,19 @@ a { color: inherit; }
   background: rgba(255, 255, 255, .09);
 }
 
+/* Notifikasi tugas/evaluasi di sidebar */
+.sidebar__notif {
+  background: rgba(240, 158, 11, .10);
+  border-left: 3px solid #F59E0B;
+}
+
+.sidebar__notif a {
+  color: #FDE68A;
+  text-decoration: none;
+}
+
+.sidebar__notif a:hover { text-decoration: underline; }
+
 .sidebar__list {
   list-style: none;
   margin: 0;

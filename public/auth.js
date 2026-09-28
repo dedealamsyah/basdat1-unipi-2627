@@ -174,12 +174,16 @@
     var notifList = document.getElementById("notifList");
     if (!notifBox || !notifList) return;
 
+    if (!p || !p.logged_in) {
+        notifBox.style.display = 'none';
+        return;
+    }
+
     var missing = [];
     (p.active || []).forEach(function(id) {
-        // Cek hanya pertemuan yang sudah terbuka/done
         if (p.progress && (p.progress[String(id)] === 'open' || p.progress[String(id)] === 'done')) {
-             if (!(p.tugas && p.tugas[String(id)])) missing.push("P" + id + ": Tugas");
-             if (!(p.evaluasi && p.evaluasi[String(id)])) missing.push("P" + id + ": Evaluasi");
+            if (!(p.tugas && p.tugas[String(id)])) missing.push("P" + id + ": Tugas");
+            if (!(p.evaluasi && p.evaluasi[String(id)])) missing.push("P" + id + ": Evaluasi");
         }
     });
 
@@ -187,7 +191,8 @@
         notifBox.style.display = 'block';
         notifList.innerHTML = missing.map(function(m) { return '<div>• ' + m + '</div>'; }).join('');
     } else {
-        notifBox.style.display = 'none';
+        notifBox.style.display = 'block';
+        notifList.innerHTML = '<div>✔ Semua tugas & evaluasi sudah selesai.</div>';
     }
   }
 
