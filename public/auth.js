@@ -172,27 +172,32 @@
   function refreshNotifBox(p) {
     var notifBox = document.getElementById("notifBox");
     var notifList = document.getElementById("notifList");
-    if (!notifBox || !notifList) return;
-
-    if (!p || !p.logged_in) {
-        notifBox.style.display = 'none';
-        return;
-    }
+    var headerNotif = document.getElementById("headerNotif");
 
     var missing = [];
-    (p.active || []).forEach(function(id) {
-        if (p.progress && (p.progress[String(id)] === 'open' || p.progress[String(id)] === 'done')) {
-            if (!(p.tugas && p.tugas[String(id)])) missing.push("P" + id + ": Tugas");
-            if (!(p.evaluasi && p.evaluasi[String(id)])) missing.push("P" + id + ": Evaluasi");
-        }
-    });
+    if (p && p.logged_in) {
+        (p.active || []).forEach(function(id) {
+            if (p.progress && (p.progress[String(id)] === 'open' || p.progress[String(id)] === 'done')) {
+                if (!(p.tugas && p.tugas[String(id)])) missing.push("P" + id + ": Tugas");
+                if (!(p.evaluasi && p.evaluasi[String(id)])) missing.push("P" + id + ": Evaluasi");
+            }
+        });
+    }
 
-    if (missing.length > 0) {
-        notifBox.style.display = 'block';
-        notifList.innerHTML = missing.map(function(m) { return '<div>• ' + m + '</div>'; }).join('');
-    } else {
-        notifBox.style.display = 'block';
-        notifList.innerHTML = '<div>✔ Semua tugas & evaluasi sudah selesai.</div>';
+    if (notifBox && notifList) {
+        if (missing.length > 0) {
+            notifBox.style.display = 'block';
+            notifList.innerHTML = missing.map(function(m) { return '<div>• ' + m + '</div>'; }).join('');
+        } else if (p && p.logged_in) {
+            notifBox.style.display = 'block';
+            notifList.innerHTML = '<div>✔ Semua tugas & evaluasi selesai.</div>';
+        } else {
+            notifBox.style.display = 'none';
+        }
+    }
+
+    if (headerNotif) {
+        headerNotif.style.display = missing.length > 0 ? 'block' : 'none';
     }
   }
 
